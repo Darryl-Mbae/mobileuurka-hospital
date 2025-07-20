@@ -57,6 +57,7 @@ const Chat = ({ patient, user }) => {
 
   const transformChatsToMessages = (chats) => {
     const result = [];
+    console.log(chats)
 
     chats.forEach((chat) => {
       const timestamp = new Date(chat.date).toLocaleTimeString([], {

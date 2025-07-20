@@ -9,7 +9,7 @@
   transition: all 0.3s ease-in-out;
   position: relative;
   font-family: "Inter", sans-serif !important;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 .patient .profile {
   width: 100%;
