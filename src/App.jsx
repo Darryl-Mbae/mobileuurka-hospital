@@ -93,7 +93,6 @@ function App() {
       try {
         const { apiGet } = await import('./config/api.js');
         const data = await apiGet('/organisations/my');
-        console.log("Organizations fetched:", data);
         dispatch(setOrganisations(data));
       } catch (err) {
         console.error("Error fetching organizations:", err);
@@ -140,7 +139,7 @@ function App() {
   if (loading) {
     return (
       <div className="admin-loading">
-        <div>Loading...</div>
+        <div></div>
       </div>
     );
   }

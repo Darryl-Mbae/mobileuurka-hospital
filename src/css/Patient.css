@@ -123,6 +123,7 @@
   grid-template-columns: 25% 75%;
 
 }
+
 .patient.active .tabs {
   border-right: 1px solid rgba(9, 9, 9, 0.09);
 }
@@ -216,15 +217,18 @@
   flex-direction: column;
   position: relative;
 }
-
-.patient .loading{
+.patient-page {
+  width: 100%;
+  height: 100%;
+}
+.patient-page .loading{
   margin: auto;
   position: absolute;
-  top: 40%;
-  left: 60%;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
 }
-.patient .loading .image{
+.patient-page .loading .image{
   width:60px;
   aspect-ratio: 1;
   margin: auto;
@@ -235,7 +239,7 @@
 
 
 }
-.patient .loading .image img{
+.patient-page .loading .image img{
   width: 100%;
   margin: auto;
 }

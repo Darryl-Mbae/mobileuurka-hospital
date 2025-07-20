@@ -1,17 +1,25 @@
 import { io } from "socket.io-client";
-import { 
-  setOnlineUsers, 
+import {
+  setOnlineUsers,
   setOnlineUsersDetailed,
-  setUser, 
-  setUsers, 
+  setUser,
+  setUsers,
   userCameOnline,
   userWentOffline,
   updateUser,
   addTypingUser,
-  removeTypingUser
+  removeTypingUser,
 } from "../realtime/Slices/userSlice";
-import { setOrganisations, updateOrganisation } from "../realtime/Slices/organizationSlice";
-import { setPatients, addPatient, updatePatient, deletePatient } from "../realtime/Slices/patientsSlice";
+import {
+  setOrganisations,
+  updateOrganisation,
+} from "../realtime/Slices/organizationSlice";
+import {
+  setPatients,
+  addPatient,
+  updatePatient,
+  deletePatient,
+} from "../realtime/Slices/patientsSlice";
 import { setSocket, resetSocket } from "../realtime/Slices/socketSlice";
 
 let socketInstance = null;
@@ -239,7 +247,7 @@ let pingInterval = null;
 
 export const startHealthCheck = () => {
   if (pingInterval) clearInterval(pingInterval);
-  
+
   pingInterval = setInterval(() => {
     socketUtils.ping();
   }, 30000); // 30 seconds

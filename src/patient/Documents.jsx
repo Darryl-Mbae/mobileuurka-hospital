@@ -94,7 +94,8 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     navigate("/Screening", { 
       state: { 
         patientId: patient?.id,
-        returnTo: 'documents'
+        returnTo: 'documents',
+        internalTab: 1 // Documents/screening tab
       } 
     });
   };
@@ -206,7 +207,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
                 onChange={handleSearchChange}
               />
             </div>
-            <div className="button">
+            <div className="button" onClick={handleAddDocument}>
               <IoMdAdd />
               Add Document
             </div>

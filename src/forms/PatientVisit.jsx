@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import SuccessMessage from "../components/SuccessMessage";
+import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -16,9 +18,26 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);
+
+  // Clear form function
+  const clearForm = () => {
+    setFormData({
+      patientId: selectedPatientId || "",
+      editor: currentUser?.name || "",
+      date: new Date().toISOString().split("T")[0],
+      visitNumber: 1,
+      gestationWeek: 0,
+      visitReason: "",
+      visitExplanation: "",
+      nextVisit: "",
+    });
+    setPatientName("");
+  };
+
+  // Use success message hook
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
@@ -90,7 +109,20 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Visit created:", result);
-      setSuccess(true);
+      
+      // Show success message
+      showSuccessMessage({
+        title: "Visit Recorded Successfully!",
+        message: `Visit ${formData.visitNumber} for ${patientName || 'the patient'} has been recorded.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        nextButtonText: "Add Another Visit",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
       alert(error.message || "Failed to submit form. Please try again.");
@@ -113,6 +145,7 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Patient Visit</h2>
 
@@ -233,11 +266,7 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
           <button type="submit" className="button primary" disabled={loading}>
             {loading ? <div className="spinner"></div> : "Submit"}
           </button>
-          {success && (
-            <div className="button primary" onClick={() => setInternalTab(0)}>
-              Back to Patient
-            </div>
-          )}
+
         </div>
       </form>
     </div>

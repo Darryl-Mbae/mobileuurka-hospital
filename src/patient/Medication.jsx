@@ -23,12 +23,13 @@ const Medication = ({ setActiveTab, patient, setTab }) => {
   }, []);
 
   function handleAddMedication() {
-    // Navigate to PatientIntake form for adding medication
-    navigate("/PatientIntake", { 
+    // Navigate to Screening prescription form
+    navigate("/Screening", { 
       state: { 
         patientId: patient?.id,
-        formType: 'medication',
-        returnTo: 'medication'
+        formType: 'prescription',
+        returnTo: 'medication',
+        internalTab: 2.9 // Prescription form tab
       } 
     });
   }

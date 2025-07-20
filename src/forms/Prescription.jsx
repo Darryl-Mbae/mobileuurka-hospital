@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import SuccessMessage from "../components/SuccessMessage";
+import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const Prescription = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -20,9 +22,30 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
 
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);
+
+  // Clear form function
+  const clearForm = () => {
+    setFormData({
+      patientId: selectedPatientId || "",
+      editor: currentUser?.name || "",
+      date: new Date().toISOString().split("T")[0],
+      gestationWeek: 0,
+      trimester: 1,
+      medicine: "",
+      prescription: "",
+      dosage: "",
+      startDate: new Date().toISOString().split("T")[0],
+      stopDate: "",
+      medicationPurpose: "",
+    });
+    setGrid(0);
+    setPatientName("");
+  };
+
+  // Use success message hook
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
 
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -111,7 +134,20 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Prescription created:", result);
-      setSuccess(true);
+      
+      // Show success message
+      showSuccessMessage({
+        title: "Prescription Added Successfully!",
+        message: `${formData.medicine} has been prescribed for ${patientName || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        nextButtonText: "Add Another Prescription",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
       alert(error.message || "Failed to submit form. Please try again.");
@@ -144,6 +180,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Prescription</h2>
 
@@ -324,11 +361,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}
-          {success && (
-            <div className="button primary" onClick={() => setInternalTab(0)}>
-              Back to Patient
-            </div>
-          )}
+
         </div>
       </form>
     </div>

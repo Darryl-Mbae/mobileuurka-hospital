@@ -10,6 +10,11 @@
   width: calc(100%);
   padding: 0px;
 }
+.admin-loading{
+  width: 100%;
+  height: 100%;
+  background: red;
+}
 
 @media screen and (max-width: 900px) {
   .admin {

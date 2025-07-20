@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
+import useSuccessMessage from "../hooks/useSuccessMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 const Triage = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -18,11 +20,36 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
     bmi: 0,
   });
 
+
+
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");
+  const [success, setSuccess] = useState(false); 
   const [fetchingPatient, setFetchingPatient] = useState(false);
+
+  // Clear form function
+  const clearForm = () => {
+    setFormData({
+      patientId: selectedPatientId || "",
+      editor: currentUser?.name || "",
+      date: new Date().toISOString().split("T")[0],
+      gestationWeek: 0,
+      height: 0,
+      heartRate: 0,
+      diastolic: 0,
+      systolic: 0,
+      map: 0,
+      temperature: 0.0,
+      weight: 0,
+      bmi: 0,
+    });
+    setGrid(0);
+    setPatientName("");
+  };
+
+  // Use success message hook
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
@@ -118,7 +145,18 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
         throw new Error(errorData.error || "Submission failed");
       }
 
+
       const result = await response.json();
+      showSuccessMessage({
+        title: "Triage Registered Successfully!",
+        message: `UUU`,
+        showRedoButton: true,
+        showNextButton: true,
+        nextButtonText: "Reg",
+        nextButtonAction: clearForm,
+        patientId: result.patientId,
+        showScreeningButton: true
+      });        
       console.log("Triage created:", result);
       setSuccess(true);
     } catch (error) {
@@ -131,6 +169,7 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+       {showSuccess && <SuccessMessage {...successConfig} />}
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Patient Triage</h2>
 

@@ -11,7 +11,6 @@ import {
 const FetalGraph = ({ patient = [], selectedOption }) => {
   const chartRef = useRef(null);
   const [hoveredPoint, setHoveredPoint] = useState(null);
-  console.log(selectedOption)
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   const formatWeekLabel = (week) => {

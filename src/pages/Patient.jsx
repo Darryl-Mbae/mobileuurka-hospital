@@ -48,7 +48,6 @@ const Patient = ({ id }) => {
       const { apiGet } = await import("../config/api.js");
       const patientData = await apiGet(`/patients/${patientId}`);
 
-      console.log(patientData);
       setPatient(patientData);
       console.log("Patient fetched:", patientData);
     } catch (err) {
@@ -63,8 +62,15 @@ const Patient = ({ id }) => {
     return (
       <div className="patient-page">
         <div className="loading">
-          <div className="spinner"></div>
-          <p>Loading patient details...</p>
+          <div className="image">
+            <img src="/logo.png" alt="" />
+          </div>
+          <DotLottieReact
+            src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
+            loop
+            autoplay
+            style={{ width: "70%", margin: "-20px auto" }}
+          />
         </div>
       </div>
     );
@@ -150,21 +156,19 @@ const Patient = ({ id }) => {
       label: "Last Visit",
       value: patient?.visits?.length
         ? formatDate(patient.visits[patient.visits.length - 1]?.date) || "-"
-        : "-"
+        : "-",
     },
-    
+
     {
       label: "Visit Number",
       value: patient?.visits?.[patient.visits.length - 1]?.visitNumber ?? "-",
     },
     {
       label: "Next Visit",
-      value:
-        patient?.visits?.length ?
-        formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
+      value: patient?.visits?.length
+        ? formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
         : "-",
-    }
-    ,
+    },
     {
       label: "Estimated Due date",
       value: new Date(
@@ -303,6 +307,12 @@ const Patient = ({ id }) => {
   };
 
   const allergies = processAllergies();
+
+  // Handle alert notifications
+  const handleShowAlert = () => {
+    // TODO: Implement alert functionality
+    console.log("Show alerts clicked");
+  };
 
   // Copy patient ID to clipboard
   const handleCopyId = async () => {
@@ -469,9 +479,11 @@ const Patient = ({ id }) => {
                   />
                 )}
                 {activeTab === "document" && <Document document={document} />}
-                {activeTab === "note" && <Note note={note} user={user} />}
+                {activeTab === "note" && (
+                  <Note note={note} user={currentUser} />
+                )}
                 {activeTab === "notepad" && (
-                  <Notepad patient={patient} user={user} />
+                  <Notepad patient={patient} user={currentUser} />
                 )}
               </div>
             ) : (
