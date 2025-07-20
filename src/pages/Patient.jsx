@@ -17,6 +17,8 @@ import Notes from "../patient/Notes";
 import Document from "../patient/Document";
 import Note from "../patient/Note";
 import Notepad from "./Notepad";
+import { FaRegCopy } from "react-icons/fa";
+import { TiTick } from "react-icons/ti";
 
 const Patient = ({ id }) => {
   const [patient, setPatient] = useState(null);
@@ -28,10 +30,9 @@ const Patient = ({ id }) => {
   const currentUser = useSelector((s) => s.user.currentUser);
   const [profilePic, setProfilePic] = useState(defaultImg);
   const [chatActive, setChatActive] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [document, setDocument] = useState([]);
   const [note, setNote] = useState("");
-
-
 
   useEffect(() => {
     if (id) {
@@ -44,9 +45,9 @@ const Patient = ({ id }) => {
     setError(null);
 
     try {
-      const { apiGet } = await import('../config/api.js');
+      const { apiGet } = await import("../config/api.js");
       const patientData = await apiGet(`/patients/${patientId}`);
-      
+
       console.log(patientData);
       setPatient(patientData);
       console.log("Patient fetched:", patientData);
@@ -143,22 +144,27 @@ const Patient = ({ id }) => {
     },
     {
       label: "Visit Reason",
-      value: patient?.visits?.[patient.visits.length - 1]?.visitReason ?? "N/A",
+      value: patient?.visits?.[patient.visits.length - 1]?.visitReason ?? "-",
     },
     {
       label: "Last Visit",
-      value: formatDate(patient?.visits?.[patient.visits.length - 1]?.date),
+      value: patient?.visits?.length
+        ? formatDate(patient.visits[patient.visits.length - 1]?.date) || "-"
+        : "-"
     },
+    
     {
       label: "Visit Number",
-      value: patient?.visits?.[patient.visits.length - 1]?.visitNumber ?? "N/A",
+      value: patient?.visits?.[patient.visits.length - 1]?.visitNumber ?? "-",
     },
     {
       label: "Next Visit",
       value:
-        formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit) ??
-        "N/A",
-    },
+        patient?.visits?.length ?
+        formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
+        : "-",
+    }
+    ,
     {
       label: "Estimated Due date",
       value: new Date(
@@ -194,7 +200,7 @@ const Patient = ({ id }) => {
               `${
                 patient?.lifestyles?.[
                   patient?.lifestyles.length - 1
-                ]?.caffeine_sources?.join(", ") || "Not specified"
+                ]?.caffeineSources?.join(", ") || "Not specified"
               }`,
               // `Servings per day: ${
               //   patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine_quantity ?? "Not specified"
@@ -298,6 +304,35 @@ const Patient = ({ id }) => {
 
   const allergies = processAllergies();
 
+  // Copy patient ID to clipboard
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(patient?.id?.toString() || "");
+      setCopied(true);
+      // Reset the tick icon after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy patient ID:", err);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = patient?.id?.toString() || "";
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
+      } catch (fallbackErr) {
+        console.error("Fallback copy failed:", fallbackErr);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   const renderSection = (title, items) => (
     <section>
       <h4>{title}</h4>
@@ -326,11 +361,25 @@ const Patient = ({ id }) => {
                 <div className="row-end">
                   <div className="details">
                     <div className="name">{patient?.name}</div>
-                    <div className="phone">{patient?.phone_number}</div>
+                    <div className="phone">
+                      {patient?.id}
+                      <span
+                        onClick={handleCopyId}
+                        style={{
+                          cursor: "pointer",
+                          marginLeft: "8px",
+                          color: copied ? "#4CAF50" : "#666",
+                          transition: "color 0.3s ease",
+                        }}
+                        title={copied ? "Copied!" : "Copy ID"}
+                      >
+                        {copied ? <TiTick /> : <FaRegCopy />}
+                      </span>
+                    </div>
                   </div>
-                  <div className="edit">
+                  {/* <div className="edit">
                     <HiOutlineDotsHorizontal />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -394,57 +443,50 @@ const Patient = ({ id }) => {
               </div>
             </div>
             {patient?.name ? (
-                <div className="tab">
-                  {activeTab === "overview" && (
-                    <Overview
-                      patient={patient}
-                      setActiveTab={setActiveTab}
-                    />
-                  )}
+              <div className="tab">
+                {activeTab === "overview" && (
+                  <Overview patient={patient} setActiveTab={setActiveTab} />
+                )}
 
-                  {activeTab === "profile" && <Profile patient={patient} />}
-               
+                {activeTab === "profile" && <Profile patient={patient} />}
 
-                  {activeTab === "medication" && (
-                    <Medication
-                      setActiveTab={setActiveTab}
-                      patient={patient}
-                    />
-                  )}
-                  {activeTab === "documents" && (
-                    <Documents
-                      setActiveTitle={setActiveTab}
-                      setDocument={setDocument}
-                      document={document}
-                      patient={patient}
-                    />
-                  )}
-                  {activeTab === "notes" && (
-                    <Notes
-                      setActiveTitle={setActiveTab}
-                      setNotes={setNote}
-                      patient={patient}
-                    />
-                  )}
-                  {activeTab === "document" && <Document document={document} />}
-                  {activeTab === "note" && <Note note={note} user={user} />}
-                  {activeTab === "notepad" && (
-                    <Notepad patient={patient} user={user} />
-                  )}
-                </div>
-              ) : (
-                <div className="loading">
-                  <div className="image">
-                    <img src="/logo.png" alt="" />
-                  </div>
-                  <DotLottieReact
-                    src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
-                    loop
-                    autoplay
-                    style={{ width: "70%", margin: "-20px auto" }}
+                {activeTab === "medication" && (
+                  <Medication setActiveTab={setActiveTab} patient={patient} />
+                )}
+                {activeTab === "documents" && (
+                  <Documents
+                    setActiveTitle={setActiveTab}
+                    setDocument={setDocument}
+                    document={document}
+                    patient={patient}
                   />
+                )}
+                {activeTab === "notes" && (
+                  <Notes
+                    setActiveTitle={setActiveTab}
+                    setNotes={setNote}
+                    patient={patient}
+                  />
+                )}
+                {activeTab === "document" && <Document document={document} />}
+                {activeTab === "note" && <Note note={note} user={user} />}
+                {activeTab === "notepad" && (
+                  <Notepad patient={patient} user={user} />
+                )}
+              </div>
+            ) : (
+              <div className="loading">
+                <div className="image">
+                  <img src="/logo.png" alt="" />
                 </div>
-              )}
+                <DotLottieReact
+                  src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
+                  loop
+                  autoplay
+                  style={{ width: "70%", margin: "-20px auto" }}
+                />
+              </div>
+            )}
           </div>
           {chatActive && (
             <div className="chat">

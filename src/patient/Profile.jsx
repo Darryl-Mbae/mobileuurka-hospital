@@ -35,7 +35,7 @@ const Profile = ({ patient }) => {
     </section>
   );
 
-  const latestHistory = getLatestEntry(patient?.histories);
+  const latestHistory = getLatestEntry(patient?.patientHistories);
   console.log("Latest History:", latestHistory);
   console.log("Patient Data:", patient);
 
@@ -44,7 +44,7 @@ const Profile = ({ patient }) => {
     { label: "Gravida", value: latestHistory?.gravida ?? "-" },
     { label: "Parity", value: latestHistory?.parity ?? "-" },
     { label: "C-Section", value: latestHistory?.csection ?? "-" },
-    { label: "C-Section Count", value: latestHistory?.csection_num ?? "-" },
+    { label: "C-Section Count", value: latestHistory?.csectionNum ?? "-" },
     { label: "Postpartum Hemorrhage (PPH)", value: latestHistory?.pph ?? "-" },
     { label: "Infertility", value: latestHistory?.infertility ?? "-" },
     { label: "IVF", value: latestHistory?.ivf ?? "-" },
@@ -55,38 +55,38 @@ const Profile = ({ patient }) => {
     { label: "Miscarriage", value: latestHistory?.miscarriage ?? "-" },
     {
       label: "Miscarriage Count",
-      value: latestHistory?.miscarriage_num ?? "-",
+      value: latestHistory?.miscarriageNum ?? "-",
     },
     { label: "Stillbirth", value: latestHistory?.stillbirth ?? "-" },
-    { label: "Stillbirth Count", value: latestHistory?.stillbirth_num ?? "-" },
+    { label: "Stillbirth Count", value: latestHistory?.stillbirthNum ?? "-" },
     {
       label: "History of Eclampsia",
-      value: latestHistory?.eclampsiahistory ?? "-",
+      value: latestHistory?.eclampsiaHistory ?? "-",
     },
     {
       label: "History of GDM",
-      value: latestHistory?.gestationaldiabeteshistory ?? "-",
+      value: latestHistory?.gestationalDiabetesHistory ?? "-",
     },
     {
       label: "History of Gestational HTN",
-      value: latestHistory?.gestationalhypertensionhistory ?? "-",
+      value: latestHistory?.gestationalHypertensionHistory ?? "-",
     },
     {
       label: "History of Preeclampsia",
-      value: latestHistory?.preeclampsiahistory ?? "-",
+      value: latestHistory?.preeclampsiaHistory ?? "-",
     },
     {
       label: "Previous Child's Weight",
-      value: latestHistory?.prevchildweight ?? "-",
+      value: latestHistory?.prevChildWeight ?? "-",
     },
     {
       label: "Previous Gynecological Surgery",
-      value: latestHistory?.prevgynasurgery ?? "-",
+      value: latestHistory?.prevGynaSurgery ?? "-",
     },
-    { label: "Prolonged Labour", value: latestHistory?.prolongedlabour ?? "-" },
+    { label: "Prolonged Labour", value: latestHistory?.prolongedLabour ?? "-" },
     {
       label: "Prolonged Labour Duration",
-      value: latestHistory?.prolongedlabour_hours ?? "-",
+      value: latestHistory?.prolongedLabourHours ?? "-",
     },
     {
       label: "Contraceptives Used",
@@ -94,7 +94,7 @@ const Profile = ({ patient }) => {
     },
     {
       label: "Anemia in Pregnancy",
-      value: latestHistory?.pregnancyhistoryanemia ?? "-",
+      value: latestHistory?.pregnancyHistoryAnemia ?? "-",
     },
   ];
 
@@ -102,36 +102,36 @@ const Profile = ({ patient }) => {
   const familyHistoryDetails = [
     {
       label: "Preeclampsia",
-      value: latestHistory?.famhistorypreeclampsia ?? "-",
+      value: latestHistory?.famHistoryPreeclampsia ?? "-",
     },
     {
       label: "Cardiac Disease",
-      value: latestHistory?.famhistorycardiacdisease ?? "-",
+      value: latestHistory?.famHistoryCardiacDisease ?? "-",
     },
     {
       label: "Gestational Hypertension",
-      value: latestHistory?.famhistorygestationalhypertension ?? "-",
+      value: latestHistory?.famHistoryGestationalHypertension ?? "-",
     },
     {
       label: "Gestational Diabetes",
-      value: latestHistory?.famhistorygestationaldiabetes ?? "-",
+      value: latestHistory?.famHistoryGestationalDiabetes ?? "-",
     },
-    { label: "Anemia", value: latestHistory?.famhistoryanemia ?? "-" },
-    { label: "Obesity", value: latestHistory?.famobesehistory ?? "-" },
+    { label: "Anemia", value: latestHistory?.famHistoryAnemia ?? "-" },
+    { label: "Obesity", value: latestHistory?.famObeseHistory ?? "-" },
     {
       label: "Autoimmune Disorders",
-      value: latestHistory?.famhistoryautoimmune ?? "-",
+      value: latestHistory?.famHistoryAutoimmune ?? "-",
     },
     {
       label: "Hypertension",
-      value: latestHistory?.famhistoryhypertension ?? "-",
+      value: latestHistory?.famHistoryHypertension ?? "-",
     },
-    { label: "Sickle Cell", value: latestHistory?.famsickle_cell ?? "-" },
-    { label: "Thalassemia", value: latestHistory?.famthalassemia ?? "-" },
-    { label: "Partner's Age", value: latestHistory?.male_age ?? "-" },
+    { label: "Sickle Cell", value: latestHistory?.famSickleCell ?? "-" },
+    { label: "Thalassemia", value: latestHistory?.famThalassemia ?? "-" },
+    { label: "Partner's Age", value: latestHistory?.maleAge ?? "-" },
     {
       label: "Partner's Preeclampsia History",
-      value: latestHistory?.malepreeclampsiaprevhistory ?? "-",
+      value: latestHistory?.malePreeclampsiaPrevHistory ?? "-",
     },
   ];
 
@@ -141,29 +141,29 @@ const Profile = ({ patient }) => {
     { label: "Anemia", value: latestHistory?.anemia ?? "-" },
     { label: "Liver Disorders", value: latestHistory?.liver ?? "-" },
     { label: "Thyroid Disorders", value: latestHistory?.thyroid ?? "-" },
-    { label: "Cardiac Disease", value: latestHistory?.cardiacdisease ?? "-" },
+    { label: "Cardiac Disease", value: latestHistory?.cardiacDisease ?? "-" },
     {
       label: "Chronic Hypertension",
-      value: latestHistory?.chronichypertension ?? "-",
+      value: latestHistory?.chronicHypertension ?? "-",
     },
     {
       label: "Chronic Renal Disease",
-      value: latestHistory?.chronicrenaldisease ?? "-",
+      value: latestHistory?.chronicRenalDisease ?? "-",
     },
     {
       label: "Diabetes Mellitus",
-      value: latestHistory?.diabetesmelitus ?? "-",
+      value: latestHistory?.diabetesMelitus ?? "-",
     },
     { label: "Kidney Disorders", value: latestHistory?.kidney ?? "-" },
     {
       label: "Rheumatoid Arthritis",
-      value: latestHistory?.rheumatoid_arthritis ?? "-",
+      value: latestHistory?.rheumatoidArthritis ?? "-",
     },
     { label: "Menorrhagia", value: latestHistory?.menorrhagia ?? "-" },
     { label: "PCOS", value: latestHistory?.pcos ?? "-" },
     {
       label: "Uterine Fibroids",
-      value: latestHistory?.uterine_fibroids ?? "-",
+      value: latestHistory?.uterineFibroids ?? "-",
     },
     { label: "Hypothyroidism", value: latestHistory?.hypothyroidism ?? "-" },
   ];
@@ -181,7 +181,7 @@ const Profile = ({ patient }) => {
       label: "Race",
       value:
         patientInfo?.race === "Other"
-          ? patientInfo?.race_other || "Other"
+          ? patientInfo?.raceOther || "Other"
           : patientInfo?.race || "-",
     },
     {
@@ -194,7 +194,7 @@ const Profile = ({ patient }) => {
   ];
 
   const contactDetails = [
-    { label: "Phone Number", value: patientInfo?.phone_number || "-" },
+    { label: "Phone Number", value: patientInfo?.phone || "-" },
     { label: "Email", value: patientInfo?.email || "-" },
     { label: "Address", value: patientInfo?.address || "-" },
     { label: "Insurance", value: patientInfo?.insurance || "-" },
@@ -203,8 +203,8 @@ const Profile = ({ patient }) => {
 
   const healthSummary = [
     //   { label: "User ID", value: patientInfo?.user_id || "-" },
-    { label: "Org ID", value: patientInfo?.org_id || "-" },
-    { label: "Date Registered", value: patientInfo?.date || "-" },
+    { label: "Org ", value: patientInfo?.organization?.name || "-" },
+    { label: "Date Registered", value: patientInfo?.createdAt || "-" },
   ];
 
   return (

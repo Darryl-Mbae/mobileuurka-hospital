@@ -11,6 +11,7 @@ import {
 const FetalGraph = ({ patient = [], selectedOption }) => {
   const chartRef = useRef(null);
   const [hoveredPoint, setHoveredPoint] = useState(null);
+  console.log(selectedOption)
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   const formatWeekLabel = (week) => {
@@ -20,7 +21,7 @@ const FetalGraph = ({ patient = [], selectedOption }) => {
   const normalizeFetalData = (data) => {
     const formatted = data
       .map((entry) => ({
-        date: formatWeekLabel(entry.gestationweek),
+        date: formatWeekLabel(entry.gestationWeek),
         rawWeek: entry.gestationweek,
         value:
           entry[selectedOption] !== undefined && entry[selectedOption] !== null

@@ -17,7 +17,7 @@ const Overview = ({ patient,setActiveTab }) => {
           <Weight patient={patient?.triages} />
         </div>
         <div className="chart">
-          <Fetal  patient={patient?.fetalinfos}/>
+          <Fetal  patient={patient?.fetalInfos}/>
         </div>
         <div className="chart">
           <Predisposition patient={patient} setActiveTab={setActiveTab} />

@@ -25,10 +25,13 @@ const Medications = ({ patient, setActiveTab }) => {
   const allMedications = patient?.medications || [];
   const allergies = patient?.allergies || [];
 
+  console.log("Allergies:", allergies);
+  console.log("Medications:", allMedications);
+
   // Filter medications where stop date is in the future
   const currentDate = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
   const activeMedications = allMedications.filter((med) => {
-    return med.stopdate >= currentDate;
+    return med.stopDate >= currentDate;
   });
 
   return (

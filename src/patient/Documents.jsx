@@ -3,14 +3,15 @@ import { RiSearchLine } from "react-icons/ri";
 import { IoDocumentTextOutline, IoWarningOutline } from "react-icons/io5";
 import "./css/Document.css";
 import { IoIosWarning, IoMdAdd } from "react-icons/io";
-import Patient from "../pages/Patient";
 import { useSelector } from "react-redux";
 import { FaShieldAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import Document from "./Document";
 
 const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const users = useSelector((s) => s.user.users);
+  const navigate = useNavigate();
 
   console.log(document.title);
 
@@ -88,6 +89,16 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     setSearchTerm(event.target.value);
   };
 
+  const handleAddDocument = () => {
+    // Navigate to Screening for adding documents
+    navigate("/Screening", { 
+      state: { 
+        patientId: patient?.id,
+        returnTo: 'documents'
+      } 
+    });
+  };
+
   const getUserName = (user_id) => {
     const user = users.find((u) => u.user_id === user_id);
     return user ? user.name : "System";
@@ -155,7 +166,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
 
       return {
         title,
-        visit_id: item.visit_id || "N/A",
+        // visit_id: item.id || "-",
         date_of_visit: item.date || item.timestamp || "N/A",
         editor: getUserName(item.user_id),
         source: item,

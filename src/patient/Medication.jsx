@@ -6,10 +6,10 @@ import { IoDocumentTextOutline, IoWarningOutline } from "react-icons/io5";
 import "./css/Document.css";
 import { useNavigate } from "react-router-dom";
 
-const Medication = ({ setActiveTab, patient,setTab }) => {
+const Medication = ({ setActiveTab, patient, setTab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllergyButton, setShowAllergyButton] = useState(false);
-  const navigate =  useNavigate();
+  const navigate = useNavigate();
 
   console.log("Patient Data:", patient);
 
@@ -22,8 +22,15 @@ const Medication = ({ setActiveTab, patient,setTab }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-    function handleclick(value) {
-    navigate("/", { state: { newTab: value ,internal : 2.9} });
+  function handleAddMedication() {
+    // Navigate to PatientIntake form for adding medication
+    navigate("/PatientIntake", { 
+      state: { 
+        patientId: patient?.id,
+        formType: 'medication',
+        returnTo: 'medication'
+      } 
+    });
   }
 
   const handleSearchChange = (event) => {
@@ -53,7 +60,7 @@ const Medication = ({ setActiveTab, patient,setTab }) => {
             onChange={handleSearchChange}
           />
         </div>
-        <div className="buttonz" onClick={() => handleclick(2)}>
+        <div className="buttonz" onClick={handleAddMedication}>
           <IoMdAdd />
           Add Medicine
         </div>
@@ -79,12 +86,12 @@ const Medication = ({ setActiveTab, patient,setTab }) => {
                   <div className="details">
                     <div className="doc-name">{med.medicine}</div>
 
-                    <div className="doc-visit">{med.dosage}</div>
+                    {/* <div className="doc-visit">{med.dosage}</div> */}
                   </div>
                 </div>
-                <div className="doc-editor">{med.prescription}</div>
+                <div className="doc-editor">{med.dosage}</div>
                 <div className="date">
-                  {formatDate(med.startdate)} - {formatDate(med.stopdate)}
+                  {formatDate(med.startDate)} - {formatDate(med.stopDate)}
                 </div>
               </div>
             ))}
