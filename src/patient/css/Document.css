@@ -1,0 +1,326 @@
+.documents {
+  margin-top: 50px;
+}
+
+.documents .title {
+  width: 99%;
+  display: grid;
+  margin: 10px;
+  grid-template-columns: 40% 30% 30% ;
+  font-size: 0.9em;
+  color: #333;
+  margin-bottom: 15px;
+}
+.documents .title .title-name {
+  margin-left: 0px;
+  color: black;
+  font-weight: 800 !important;
+}
+
+.record {
+  display: flex;
+  flex-direction: row;
+  padding: 20px 10px;
+  display: grid;
+  grid-template-columns: 40% 30% 30% ;
+  font-size: 0.9em;
+  color: #333;
+  align-items: center;
+  border-bottom: 1px solid rgba(223, 222, 222, 0.5);
+  cursor: pointer;
+  transition: padding-left 0.3s ease-in-out;
+}
+.record:hover {
+  padding-left: 20px;
+}
+.record .doc {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  align-items: center;
+}
+.record .doc .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffae1b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 1.1em;
+}
+
+.record .doc .details .doc-name {
+  font-weight: bold;
+  color: black;
+}
+.record .doc .details .doc-name span {
+  font-size: 0.9em;
+  color: #4e4e4e;
+}
+.record .doc .details .doc-visit {
+  font-size: 0.9em;
+  margin-top: 3px;
+}
+.record .doc-editor {
+  color: rgba(1, 1, 1, 0.7);
+}
+.file {
+  width: 90%;
+  margin: auto;
+  border: 1px solid rgba(1, 1, 1, 0.4);
+  border-radius: 7px;
+}
+.file .header {
+  padding: 20px;
+  border-bottom: 1px solid rgba(1, 1, 1, 0.4);
+  position: relative;
+}
+.file .header .timestamp {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  font-size: 0.9em;
+  color: #5d5d5d;
+}
+.file .header .title {
+  font-size: 1.5em;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.file .header .title span {
+  font-size: 0.7em;
+  color: #5d5d5d;
+  margin-left: 5px;
+}
+.doc-file .values {
+  display: grid;
+
+  grid-template-columns: 50% 50%;
+  border-bottom: 1px solid rgba(1, 1, 1, 0.1);
+  border-top: 1px solid rgba(1, 1, 1, 0.1);
+  border-left: 1px solid rgba(1, 1, 1, 0.1);
+  border-radius: 5px;
+}
+.doc-file .values .value {
+  border-bottom: 1px solid rgba(1, 1, 1, 0.1);
+  display: grid;
+  grid-template-columns: 50% 50%;
+  font-size: 0.9em;
+  color: #333;
+}
+/* .doc-file .values  .value:nth-child(even){
+        border-left: 1px solid rgba(1, 1, 1, .1);
+    
+    } */
+.doc-file .values .value:last-child {
+  border-bottom: none;
+}
+.doc-file .values .value:nth-last-child(2):nth-child(odd) {
+  border-bottom: none;
+}
+
+.doc-file .values .value .name {
+  border-right: 1px solid rgba(1, 1, 1, 0.1);
+  padding: 20px;
+  text-transform: capitalize;
+}
+
+.doc-file .values .value .value-key {
+  border-right: 1px solid rgba(1, 1, 1, 0.1);
+  padding: 20px;
+  color: #686868;
+}
+
+.doc-file {
+  width: 95%;
+  background: white;
+  margin: auto;
+  position: relative;
+  padding: 60px 0px 30px 15px;
+  border-radius: 10px; /* Optional: for rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Soft shadow effect */
+}
+.doc-file .logo {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: whitesmoke;
+  border-radius: 5px;
+  width: 50px;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.doc-file .logo img {
+  width: 65%;
+  margin: auto;
+}
+.doc-file .details {
+  width: 95%;
+  margin: auto;
+}
+.doc-file .details .name {
+  margin-top: 45px;
+  color: black;
+  font-size: 1.6em;
+  font-size: 800;
+  margin-bottom: 4px;
+}
+.doc-file .details .visit-id {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+.doc-file .labtest-results {
+  width: 88%;
+  margin: auto;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 30px;
+  background: whitesmoke !important;
+}
+.doc-file .labtest-results .row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+}
+
+.doc-file .labtest-results .row h3 {
+  margin: 0px;
+  padding: 0;
+}
+.doc-file .labtest-results .row .date {
+  font-size: 0.9em;
+  color: rgba(0, 0, 0, 0.5);
+  margin-top: -5px;
+}
+
+.doc-file .version-container {
+  position: absolute;
+  right: 30px;
+  background: whitesmoke;
+}
+.doc-file .version-dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background-color: whitesmoke;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  width: 250px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+.doc-file .version-item {
+  padding: 10px;
+  font-size: 0.9em;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s ease-in-out;
+}
+
+.doc-file .version-item:last-child {
+  border-bottom: none;
+}
+
+.doc-file .version-item:hover {
+  background-color: #f5f5f5;
+}
+
+.doc-file .version-item.selected {
+  background-color: #e0eaff;
+  font-weight: bold;
+}
+.con {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.con .search-input {
+  position: relative;
+  margin-right: 0;
+  width: 60%;
+  height: 50px;
+  border-radius: 11px;
+  margin-left: 0px;
+  border: solid rgba(198, 198, 198, 0.56) 1px;
+  padding-left: 40px; /* Increased padding for the icon */
+}
+.con .search-input input[type="search"] {
+  width: 95%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  border-radius: inherit;
+  outline: none;
+  background: transparent; /* Transparent background for the input */
+  padding-left: 10px;
+  font-size: 15px;
+}
+.con .search-input input[type="search"]::placeholder {
+  color: rgba(79, 69, 53, 0.47);
+}
+
+.con .button {
+  height: 50px;
+  padding: 0px 25px;
+  border-radius: 11px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #008540;
+  font-size: 0.9em;
+  gap: 10px;
+}
+
+.record .result {
+  color: rgb(131, 131, 131);
+  /* font-size: .9em; */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.documents.new {
+  .title {
+    width: 99%;
+  }
+  .title {
+    width: 99%;
+    display: grid;
+    margin: 10px;
+    grid-template-columns: 25% 16% 20% 39%;
+    font-size: 0.9em;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  .title .title-name {
+    margin-left: 0px;
+    color: black;
+    font-weight: 800 !important;
+  }
+
+  .record {
+    display: flex;
+    flex-direction: row;
+    padding: 20px 10px;
+    display: grid;
+    grid-template-columns: 25% 16% 20% 39%;
+    font-size: 0.9em;
+    color: #333;
+    align-items: center;
+    border-bottom: 1px solid rgba(223, 222, 222, 0.5);
+    cursor: pointer;
+    transition: padding-left 0.3s ease-in-out;
+  }
+  .record:hover {
+  padding-left: 20px;
+}
+}

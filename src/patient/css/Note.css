@@ -1,0 +1,93 @@
+#notes .picker2 {
+    width: 75%;
+    padding: 20px;
+    background: #F7F1EB;
+    margin-bottom: 20px;
+    border-radius: 7px;
+    position: relative;
+
+}
+#notes .picker2 .edit-btn,#notes .picker2 .save-btn{
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    color: #333;
+    cursor: pointer;
+    background: white;
+    border-radius: 5px;
+    padding: 10px 15px ;
+    font-size: .9em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:6px;
+}
+/* #notes .picker2 .version-btn{
+    position: absolute;
+    right: 100px;
+    top: 20px;
+    color: #333;
+    cursor: pointer;
+    background: white;
+    border-radius: 5px;
+    padding: 10px 15px ;
+    font-size: .9em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:6px;
+} */
+
+#notes .picker2 .flex {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+}
+
+#notes .picker2 .flex .circle {
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    background: #007BFF;
+}
+
+#notes .picker2 .flex .name {
+    color: rgba(79, 69, 53, 0.85);
+}
+
+#notes .picker2 .flex .role {
+    font-size: 0.6em;
+    font-weight: 600;
+    margin: 7px 0px 0px -7px;
+}
+
+#notes .picker2 .date {
+    font-weight: 600;
+    margin-left: 28px;
+    margin-top: 4px;
+    font-size: 0.9em;
+}
+
+
+#notes .picker2 p, #notes .picker2 textarea{
+    margin: 0px;
+    line-height: 0px;
+    width: 95%;
+    color: rgba(79, 69, 53, 0.85);
+    margin-left: 28px;
+    font-size: 0.9em;
+    padding-bottom: 20px;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: "Inter", sans-serif;
+}
+
+#notes .picker2 .realtime{
+    color: rgba(79, 69, 53, 0.85);
+    font-size: 0.8em;
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}

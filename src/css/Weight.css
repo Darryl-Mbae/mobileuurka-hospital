@@ -1,0 +1,53 @@
+.weight-chart {
+  width: 100%;
+  height: 100%;
+}
+.weight-chart .top{
+    width: 90%;
+
+    height: calc(16% - 10px);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0px auto 5px;
+    gap: 20px;
+}
+.weight-chart .top .top-box{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 8px;
+    border-radius: 5px;
+}
+.weight-chart .top .top-box p{
+    margin: 0;
+}
+.weight-chart .mid{
+    width: 88%;
+    height: calc(64% - 5px);
+    margin: 0px auto;
+}
+.weight-chart .bottom{
+    width: 100%;
+    height: 20%;
+    display: flex;
+}
+.weight-chart .bottom .weight-analysis{
+    width: calc(90% - 30px);
+    padding: 0px 15px;
+    margin: 0px auto;
+    height: 45px;
+    border-radius: 10px;
+    background: white;
+    font-size: .8em;
+    color: #333;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+.weight-chart .bottom .weight-analysis span{
+    font-weight: bold;
+    color: black;
+}

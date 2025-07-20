@@ -1,0 +1,24 @@
+.admin {
+  display: flex;
+  flex-direction: row;
+}
+.admin .content {
+  width: calc(100% - 22% - 40px);
+  padding: 13vh 40px;
+}
+.admin .content.active {
+  width: calc(100%);
+  padding: 0px;
+}
+
+@media screen and (max-width: 900px) {
+  .admin {
+    flex-direction: column;
+  }
+}
+@media screen and (max-width: 500px) {
+  .admin .content {
+    width: calc(100% - 40px);
+    padding: 5vh 20px;
+  }
+}

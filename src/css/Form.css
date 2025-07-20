@@ -1,0 +1,266 @@
+.form {
+  width: 90%;
+  margin: 0px auto;
+  height: 85vh;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.form h2 {
+  font-size: 1.17em;
+  font-weight: 400;
+  color: #a7a18e;
+  margin: 0px;
+}
+.form form {
+  width: 100% !important;
+  max-width: 80vw;
+  height: 100%;
+}
+
+.form .form-grid {
+  margin-top: 3vh;
+  width: calc(100% - 20px);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form .form-half-grid {
+  width: 50%;
+  margin-top: 5vh;
+}
+
+.form .form-group {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form .form-group label {
+  color: #686868;
+  font-size: 0.8rem;
+}
+
+.form .form-group input,
+.form .form-group textarea {
+  width: 98%;
+  height: 40px;
+  border-radius: 5px;
+  border: solid rgba(144, 144, 144, 0.56) 1px;
+  padding-left: 10px;
+  background: transparent;
+}
+
+.form .form-group textarea {
+  height: 80px;
+  resize: none;
+}
+.form .form-group .select-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+}
+.form .form-group select {
+  width: 100%;
+  height: 45px;
+  padding: 0 0px 0px 10px;
+  border-radius: 5px;
+  border: solid rgba(144, 144, 144, 0.56) 1px;
+  background: transparent;
+  -webkit-appearance: none; /* Safari and Chrome */
+  -moz-appearance: none; /* Firefox */
+  appearance: none;
+}
+
+.form .form-group input[type="date"] {
+  width: calc(98% - 10px);
+  padding-right: 10px;
+}
+.form .form-group .select-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.form .form-navigation {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  align-items: center;
+}
+.form .button {
+  /* min-width: calc(120px - 40px); */
+  padding: 0px 30px;
+  height: 50px;
+  color: white;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: rgb(0, 133, 64);
+  border-radius: 11px;
+  border-style: none;
+  margin-top: 20px;
+  font-size: 0.9em;
+  font-family: "Inter", sans-serif;
+}
+
+form textarea {
+  font-family: "Inter", sans-serif;
+  padding-top: 10px;
+}
+form textarea:focus {
+  outline: none;
+}
+.spinner {
+  border: 2px solid #f3f3f3; /* Light grey */
+  border-top: 2px solid #008540; /* Green */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.caffeine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  align-items: center;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 14px;
+  padding: 6px 10px;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.checkbox-item input[type="checkbox"] {
+  margin: 0;
+  height: 10px;
+  width: 10px;
+}
+
+.checkbox-item:hover {
+  background-color: #eaeaea;
+}
+/* Hospital Selection Styles */
+.form-section {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid rgba(144, 144, 144, 0.2);
+  border-radius: 8px;
+  background: rgba(249, 249, 249, 0.3);
+}
+
+.form-section h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1em;
+  color: #686868;
+  font-weight: 500;
+}
+
+.hospital-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.hospital-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #686868;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.checkbox-label:hover {
+  background-color: rgba(0, 133, 64, 0.05);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkmark {
+  position: relative;
+}
+
+/* Custom checkbox styling */
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(144, 144, 144, 0.56);
+  border-radius: 3px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background: rgb(0, 133, 64);
+  border-color: rgb(0, 133, 64);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive design for hospital selection */
+@media screen and (max-width: 768px) {
+  .hospital-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .form-section {
+    padding: 15px;
+  }
+}

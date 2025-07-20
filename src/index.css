@@ -1,0 +1,67 @@
+/* :root {
+  --background: rgb(255, 250, 245)  ;
+  --section: rgba(247, 241, 235, 0.5);
+  --section-darker:  #f3eee8;
+
+} */
+:root {
+  --background: white  ;
+  --section: rgba(246, 246, 246,.8);
+  --section-darker: rgb(239, 239, 239);
+}
+
+
+
+body{
+  width: 100vw;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  /* background: #fffaf5; */
+  background: var(--background);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", sans-serif;;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+section {
+  width: 100%;
+}
+section h4 {
+  font-size: 0.8em;
+}
+section .container {
+  margin: 10px 0px;
+  background: var(--section);
+  padding: 15px 0px;
+  border-radius: 10px;
+  width: 98%;
+  display: flex;
+  flex-direction: column;
+}
+section .container .list {
+  width: 92%;
+  margin: auto;
+  padding: 15px 0px;
+  border-bottom: 1px solid rgba(144, 144, 144, 0.16);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8em;
+  color: #585858;
+}
+section .container .list:last-child {
+  border-bottom: none;
+}
+section .container .list .label {
+  font-weight: bolder;
+}

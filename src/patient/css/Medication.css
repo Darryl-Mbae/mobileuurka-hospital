@@ -1,0 +1,89 @@
+.medication .med-grid {
+  width: 100%;
+  min-height: 78vh;
+  display: grid;
+  grid-template-columns: 68.5% 31.5%;
+  gap: 1%;
+}
+.medication .buttonz {
+  height: 50px;
+  padding: 0px 25px;
+  border-radius: 11px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #008540;
+  font-size: 0.9em;
+  gap: 10px;
+}
+.medication .meds {
+  width: 90%;
+  height: 100%;
+  border-radius: 10px;
+}
+.medication .warning {
+  width: calc(100% - 40px);
+  height: 200px;
+  background: rgba(253, 245, 230, 0.9);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  border: 1px solid rgba(220, 155, 50, 0.05);
+  padding: 20px;
+  padding-bottom: 25px;
+  margin-top: 30px;
+  margin-left: -15px;
+}
+
+.medication .warning .icon {
+  width: 50px;
+  height: 50px; /* Explicit height */
+  margin-right: 15px;
+  background: rgba(245, 183, 74, 0.1); /* 15% opacity */
+  display: flex;
+  border-radius: 50%;
+  justify-content: center;
+  align-items: center;
+  color: rgb(220, 155, 50);
+  flex-shrink: 0; /* Prevents shrinking */
+  font-size: 1.4em;
+}
+.medication .warning .details {
+  flex: 1;
+}
+.medication .warning .title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 0.9em;
+  font-weight: 900;
+  color: black;
+}
+
+.medication .warning p {
+  color: rgb(34, 17, 10);
+  font-size: 0.8em;
+  margin: 0px;
+}
+.medication .warning .allergy-button {
+  width: 150px;
+  height: 50px;
+  background: rgb(47, 17, 4);
+  margin-top: 15px;
+  border-radius: 6px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8em;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease-in-out;
+}
+.medication .warning .allergy-button.active {
+  display: flex;
+  opacity: 1;
+}

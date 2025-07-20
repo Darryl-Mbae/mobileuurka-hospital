@@ -1,0 +1,88 @@
+.search-container {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 15px;
+  justify-self: flex-end;
+  background: transparent;
+}
+
+.search-container .input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-container .input-container .search-icon {
+  position: absolute;
+  left: 12px;
+  color: #a7a18e;
+  font-size: 16px;
+  z-index: 1;
+}
+
+.search-container .input-container input {
+
+  padding: 15px 12px 15px 40px;
+  border: 1px solid rgba(167, 161, 142, 0.3);
+  border-radius: 8px;
+  font-size: 14px;
+  width: 250px;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.search-container .input-container input:focus {
+  outline: none;
+}
+
+.search-container .input-container input::placeholder {
+  color: #a7a18e;
+}
+
+.search-container .add-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 16px;
+  background: #008540;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.search-container .add-button:hover {
+  background: #008540;
+  transform: translateY(-1px);
+}
+
+.search-container .add-button .add-icon {
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .search-container .input-container input {
+    width: 100%;
+  }
+
+  .search-container .add-button {
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .search-container .input-container input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

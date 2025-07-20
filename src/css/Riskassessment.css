@@ -1,0 +1,173 @@
+.riskassessment{
+    width: 100%;
+    height: calc(100% - 45px);
+    display: grid;
+    grid-template-columns: 42% 58%;
+}
+.riskassessment .r-chart{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.riskassessment .r-details{
+    width: calc(100% - 10px);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-left: 10px;
+}
+.riskassessment .r-details .top{
+    height: 30%;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+}
+.riskassessment .r-details .top .arrow{
+    cursor: pointer;
+}
+.riskassessment .r-details .top .arrow.disabled{
+    cursor:not-allowed;
+}
+.riskassessment .r-details .top .date{
+    height: 90%;
+    width: 50px;
+    border-radius: 30px;
+    background: rgba(196, 196, 196, .12);
+}
+.riskassessment .r-details .top .date .day{
+    width: 70%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    margin: 16% auto;
+    background: rgba(221, 221, 221, .39);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: .9em;
+    font-weight: 800;
+    color: black;
+    
+
+}
+.riskassessment .r-details .top .date.active{
+    background: rgba(133, 198, 154, 0.16);
+    cursor: pointer;
+}
+.riskassessment .r-details .top .date.active .day{
+    background: #008540;
+    color: white;
+}
+
+.riskassessment .r-details .top .date.future{
+    background: rgba(239, 166, 92, 0.13);
+    cursor: pointer;
+}
+.riskassessment .r-details .top .date.future .day{
+    background: #EFA65C;
+    color: white;
+}
+.riskassessment .r-details .top .date .month{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: .8em;
+    margin-top: -2px;
+    color: rgba(0, 0, 0, .61);
+}
+.riskassessment .r-details .bottom{
+    max-height: calc(60% - 20px);
+    width: calc(100% - 50px);
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    padding:5px 25px 15px;
+    flex-direction: column;
+    gap: 10px;
+
+}
+
+.riskassessment .r-details .bottom .ra-title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1em;
+    margin: 10px 0px;
+
+}
+.riskassessment .r-details .bottom .ra-title h4{
+    margin: 0px;
+    font-size: .8em;
+}
+.riskassessment .r-details .bottom .ra-title .dot{
+    width:6px;
+    aspect-ratio:  1 ;
+    border-radius: 50%;
+    background: #008540;
+
+}
+.riskassessment .r-details .bottom .ra-title h3{
+    margin: 0;
+}
+.riskassessment .r-details .bottom p{
+    color: rgba(51, 51, 51, .75);
+    font-size: .8em;
+    margin: 0;
+    width: 98%;
+    margin-top: -8px;
+}
+.riskassessment .custom-tooltip{
+    background: white;
+    border-radius: 5px;
+    font-size: .8em;
+    display: flex;
+    flex-direction: column;
+    padding: 5px 10px;
+}
+.riskassessment .custom-tooltip .label{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+.riskassessment .custom-tooltip .values{
+    margin-left: 10%;
+    color: rgba(51, 51, 51, .75);
+}
+.riskassessment .custom-tooltip .label .dot{
+    width: 6px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #008540;
+}
+
+@media screen and (max-width: 1280px) {
+    .riskassessment .r-details .bottom .ra-title{
+        margin: 6px 0px;
+}
+    .riskassessment .r-details .bottom .ra-title h4{
+    margin: 0px;
+    font-size: .75em;
+}
+    .riskassessment .r-details .bottom p{
+    font-size: .7em;
+
+}
+.riskassessment .r-details .top{
+    height: 30%;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+.riskassessment .r-details .top .date{
+    height: 100%;
+    width: 50px;
+    border-radius: 20px;
+}
+}
+

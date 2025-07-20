@@ -1,0 +1,75 @@
+.p-overview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-bottom: 20px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Custom scrollbar styling */
+.p-overview::-webkit-scrollbar {
+  display: none;
+}
+
+
+.p-overview .grid-3 {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  gap: 1%;
+}
+.p-overview .chart {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--section);
+  border-radius: 10px;
+  display: flex;
+}
+.p-overview .grid-2 {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 67% 33%;
+  gap: 1%;
+  margin: 10px 0px;
+}
+.p-overview .grid-2 .chart.x2 {
+  width: 100%;
+  aspect-ratio: 1/0.49;
+  background: var(--section);
+  border-radius: 10px;
+  display: flex;
+}
+
+.p-overview .grid-2.reverse {
+  width: 100%;
+  height: 360px;
+  display: grid;
+  grid-template-columns: 33% 67%;
+  gap: 1%;
+  margin-top: 0px;
+  margin-bottom: 30px;
+}
+
+.p-overview .grid-2.reverse .chart.x2 .inner-grid {
+  width: calc(100% - 30px);
+  padding: 0px 15px;
+  display: grid;
+  grid-template-columns: 54% 44%;
+  gap: 2%;
+  margin: auto;
+}
+.p-overview .grid-2.reverse .chart.x2 .in-chart {
+  width: 100%;
+  margin: auto;
+  background: var(--section-darker);
+  border-radius: 5px;
+}
+.p-overview .grid-2.reverse .chart.x2 .in-chart.one {
+  aspect-ratio: 1/0.85;
+}
+.p-overview .grid-2.reverse .chart.x2 .in-chart.two {
+  aspect-ratio: 1/1.05;
+}

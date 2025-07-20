@@ -1,0 +1,16 @@
+.main-search {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    align-items: center; /* Keep centered */
+    gap: 10px;
+    width: calc(100% - 30px);
+    height: 10vh; /* Fixed height - no expansion */
+    border-bottom: 1px solid rgba(9, 9, 9, 0.09);
+    padding-right: 30px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 99;
+   
+  }

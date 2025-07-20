@@ -1,0 +1,70 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100&display=swap");
+
+.screening{
+    width: 100%;
+    height: 80vh;
+    margin: auto;
+    display: flex;
+}
+.screening .components{
+    width: 100%;
+    height: 90%;
+}
+
+.screening .components .tests{
+    width: 100%;
+    height:100%;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 20px;
+    font-weight: 100 !important;
+
+}
+
+.screening .components .tests .test {
+    width: 100%;
+    height:150px;
+    background: #008540;
+    border-radius: 11px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease; 
+
+}
+
+.screening .components .tests .test:hover {
+    transform: translateY(-5px);
+}
+
+
+.screening .components .tests .test .title{
+    margin: 20px 0px 0px 20px;
+    font-size: 2rem;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+
+}
+.screening .components .tests .test p{
+    margin: 20px 0px 0px 20px;
+    font-size: .8rem;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    width: 60%;
+}
+
+@media screen and (max-width: 900px) {
+    .screening{
+        height: auto;
+        padding-bottom: 4vh;
+    }
+    .screening .components .tests{
+        grid-template-columns: repeat(2,1fr);
+    }
+    
+}
+@media screen and (max-width: 500px) {
+    .screening .components .tests{
+        grid-template-columns: 100%;
+    }
+    
+}

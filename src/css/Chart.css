@@ -1,0 +1,475 @@
+.xchart {
+  width: 88%;
+  height: 92%;
+  margin: auto;
+  justify-content: center;
+}
+
+.xchart .title-block {
+  width: 100%;
+  height: 45px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.xchart .title-block h3 {
+  font-size: 1em;
+}
+.xchart .title-block .buttons {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  gap: 10px;
+}
+.xchart .title-block .small-btn {
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: #f8f4ef;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9em;
+  color: #666666;
+  position: relative;
+  cursor: pointer;
+}
+.xchart .title-block .small-btn span {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 20px;
+  aspect-ratio: 1;
+  background: #ff494f;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9em;
+}
+.xchart .title-block .small-btn img {
+  height: 50%;
+  margin: auto;
+}
+
+.select-menu {
+  position: relative;
+  left: -30px;
+  top: 0px;
+  font-size: 0.8em;
+  text-transform: capitalize;
+}
+
+.select-menu .select-btn {
+  display: flex;
+  height: 35px;
+  background: #fff;
+  padding: 0px 15px;
+  font-weight: 500;
+  border-radius: 5px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.8em;
+  justify-content: space-between;
+  /* box-shadow: 0 0 5px rgba(0,0,0,0.1); */
+}
+.select-btn i {
+  font-size: 0.8em;
+  transition: 0.3s;
+}
+.select-menu .select-btn .icon {
+  transition: transform 0.3s ease;
+}
+.select-menu.active .select-btn .icon {
+  transform: rotate(-180deg);
+}
+.select-menu .options {
+  position: absolute;
+  right: -28px;
+  z-index: 9999;
+  padding: 5px 8px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 0.8em;
+  background: #fff;
+  text-transform: capitalize;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.select-menu.active .options {
+  display: block;
+}
+.options .option {
+  display: flex;
+  height: 25px;
+  cursor: pointer;
+  padding: 3px 18px;
+  border-radius: 8px;
+  align-items: center;
+  background: #fff;
+}
+.options .option:hover {
+  background: #f2f2f2;
+}
+.option i {
+  margin-right: 12px;
+}
+.option .option-text {
+  color: #333;
+}
+.option .status-dot {
+  width: 8px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+/************************ Lab ******************************/
+
+.lab {
+  width: 100%;
+  height: calc(100% - 45px);
+  position: relative;
+}
+
+.lab .graph {
+  height: 80%;
+  width: 100%;
+}
+
+.lab .ai-text {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 15%;
+  width: 100%;
+  background: white;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  border-radius: 10px;
+  font-size: 0.8em;
+}
+.lab .ai-text .dot {
+  width: 8px;
+  margin-left: 20px;
+  aspect-ratio: 1;
+  background: #f6c597;
+  border-radius: 50%;
+}
+.lab .ai-text p {
+  width: 98%;
+}
+.lab .ai-text.active {
+  width: calc(100% - 20px);
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 15px 0px;
+  align-items: flex-start;
+  padding-left: 20px;
+}
+.lab .ai-text.active .icon {
+  width: 30px;
+  aspect-ratio: 1;
+  margin: 5px 0px;
+  border-radius: 50%;
+  display: flex;
+  background: rgba(239, 166, 92, 0.16);
+  justify-content: center;
+  align-items: center;
+  color: #ffc187;
+}
+.lab .ai-text .arrow {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.lab .ai-text.active p {
+  margin: 0;
+  width: 90%;
+}
+.lab .ai-text.active .arrow {
+  top: 15px;
+  transform: rotate(180deg);
+}
+
+/************************* Medication *******************************/
+
+.medication {
+  width: 100%;
+  height: calc(100% - 45px);
+  position: relative;
+}
+.medication .line-container {
+  width: 88%;
+  height: 80%;
+  margin: 10px auto 0px auto;
+  border-radius: 5px;
+  /* border: 1px solid rgba(109, 109, 109, 0.25); */
+  border-bottom: none;
+  display: flex;
+  flex-direction: column;
+}
+.medication .line-container .results {
+  display: flex;
+  width: calc(100% - 30px);
+  flex-direction: row;
+
+  gap: 10px;
+  padding: 10px 15px;
+  align-items: center;
+  background: white;
+  border-radius: 6px;
+  position: relative;
+  margin-bottom: 8px;
+}
+.medication .line-container .results:last-child {
+  border: none;
+}
+.medication .line-container .results .med-icon {
+  width: 40px;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+.medication .line-container .results .med-details {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-left: 5px;
+}
+.medication .line-container .results .med-details .med {
+  font-size: 0.9em;
+}
+.medication .line-container .results .med-details .dosage {
+  font-weight: normal;
+  font-size: 0.8em;
+  color: rgba(0, 0, 0, 0.61);
+}
+.medication .line-container .results .righty {
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.medication .line-container .results .med-info {
+  width: 15px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(109, 109, 109, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.4em;
+  color: rgba(109, 109, 109, 1);
+}
+.medication .no-medications {
+  width: 100%;
+  margin: 10px auto;
+  /* border-bottom: 1px solid red; */
+}
+.medication .button {
+  z-index: 999;
+  width: 100%;
+  position: absolute;
+  bottom: 15px;
+  margin: -2.5px auto;
+  height: 50px;
+  background: #ffc187;
+  border-radius: 5px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+/*********************** Symptoms  ************************ */
+
+.symptoms {
+  width: 95%;
+  border-top: 1px solid rgba(109, 109, 109, 0.16);
+  margin: auto;
+  overflow: hidden;
+}
+
+.symptoms .symptom {
+  width: 100%;
+  padding: 20px 0px;
+  border-bottom: 1px solid rgba(109, 109, 109, 0.16);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.9em;
+}
+.symptoms .symptom:last-child {
+  border: none;
+}
+.symptoms .symptom .flag {
+  height: 60%;
+}
+
+/********************** predisposition **************************/
+
+.predisposition {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.predisposition .icon {
+  width: 40px;
+  aspect-ratio: 1;
+  border-radius: 50%; /* makes it circular */
+  background: rgba(239, 166, 92, 0.16);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f6c597;
+  font-size: 1em;
+  margin: 5px 0;
+  box-sizing: border-box; /* safer sizing */
+}
+
+.predisposition .pred {
+  font-weight: 600;
+  width: 88%;
+  margin: 15px auto;
+  font-size: 0.92em;
+}
+.predisposition .line-container {
+  width: calc(95% - 20px);
+  height: auto;
+  margin: 5px auto 12px auto;
+  border-radius: 5px;
+  border-bottom: none;
+  display: flex;
+  padding: 0px 10px;
+  flex-direction: column;
+}
+.predisposition .line-container .results {
+  display: grid;
+  grid-template-columns: 15% 85%;
+  width: calc(100% - 30px);
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px 13px;
+  background: white;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  border-radius: 7px;
+}
+
+.predisposition .line-container .results .r-icon {
+  width: 35px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffc187;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: .8em;
+}
+.predisposition .line-container .results:first-child .r-icon {
+  background: #5bc48d;
+}
+.predisposition .line-container .results:last-child {
+  border-bottom: none;
+  margin-bottom: 3px;
+}
+.predisposition .line-container .results .r-details {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8em;
+}
+.predisposition .line-container .results .r-details .title {
+  color: rgba(0, 0, 0, 0.61);
+}
+.predisposition .line-container .results .value span {
+  text-transform: capitalize;
+  font-weight: 800;
+}
+.predisposition .button {
+  width: 100%;
+  margin: -2.5px auto;
+  height: 50px;
+  background: #ffc187;
+  border-radius: 5px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+@media screen and (max-width: 1280px) {
+  .xchart .title-block {
+    height: 39px;
+    margin: 15px auto;
+  }
+
+  /* symptoms */
+  .symptoms .symptom {
+    font-size: 0.8em;
+  }
+
+  /* predisposition */
+
+  .predisposition .pred {
+    margin: 5px auto;
+  }
+
+  .predisposition .line-container .results .r-icon {
+    width: 30px;
+    aspect-ratio: 1;
+  }
+  .predisposition .line-container .results {
+    padding: 12px 10px;
+  }
+  .predisposition .button {
+    height: 40px;
+    font-size: 0.8em;
+  }
+  .medication .line-container .results .med-icon {
+    width: 27px;
+    aspect-ratio: 1;
+    font-size: 0.7em;
+  }
+  .medication .line-container .results .med-details {
+    font-size: 0.8em;
+  }
+  .medication .button {
+    font-size: 0.8em;
+    height: 40px;
+  }
+  .medication .line-container .results .med-info {
+    width: 11px;
+  }
+  .predisposition .button {
+    display: none;
+  }
+
+}

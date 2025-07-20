@@ -1,0 +1,53 @@
+
+.otp-form{
+    display: flex;
+    flex-direction: column;
+}
+.otp-form h3{
+    text-align: center;
+    font-weight: 400;
+}
+.otp-form .otp-instructions{
+    text-align: center;
+    font-size: .9em;
+}
+.otp-form .otp-instructions span{
+    font-weight: 700;
+}
+.otp-resend-text{
+    text-align: center;
+    font-size: .9em;
+}
+.otp-error{
+    color: red;
+    text-align: center;
+    font-size: .9em;
+}
+.otp-form  .password-container {
+  margin: 20px auto;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.auth  .password-container .pin-input {
+  width: 60px;
+  height: 60px;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.auth  .password-container .pin-input input {
+  width: 60px;
+  height: 60px;
+  border: none;
+  background: transparent;
+  text-align: center;
+}
+.auth .password-container .pin-input input:focus {
+  border: none;
+  outline: none;
+}
