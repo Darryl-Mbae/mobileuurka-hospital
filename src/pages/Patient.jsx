@@ -44,22 +44,10 @@ const Patient = ({ id }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${SERVER}/patients/${patientId}`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch patient");
-      }
-
-      const patientData = await response.json();
+      const { apiGet } = await import('../config/api.js');
+      const patientData = await apiGet(`/patients/${patientId}`);
+      
       console.log(patientData);
-
       setPatient(patientData);
       console.log("Patient fetched:", patientData);
     } catch (err) {

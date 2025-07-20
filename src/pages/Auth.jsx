@@ -134,15 +134,15 @@ const Auth = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || "Invalid credentials");
       }
-  
+
       console.log(data);
-      
+
       // Check if user has default password BEFORE sending OTP
       if (data.user && data.user.default === true) {
         setUserHasDefaultPassword(true);
@@ -150,7 +150,7 @@ const Auth = () => {
         setLoading(false);
         return;
       }
-  
+
       // If not default password, proceed to send OTP
       await sendOTPToUser(email, password);
     } catch (error) {
@@ -278,7 +278,7 @@ const Auth = () => {
     const response = await fetch(`${SERVER}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      credentials: "include", // Important for cookies
       body: JSON.stringify({ email, password, rememberMe }),
     });
 
@@ -290,18 +290,20 @@ const Auth = () => {
     }
 
     const userData = await response.json();
-    console.log(userData);
+    console.log("Login successful:", userData);
 
- 
-   
-      // Normal login flow - redirect to dashboard
-      setLoginFormData({
-        email: "",
-        password: "",
-        rememberMe: false,
-      });
-      navigate("/");
-    
+    // Store token in localStorage as backup
+    if (userData.token) {
+      localStorage.setItem("access_token", userData.token);
+    }
+
+    // Normal login flow - redirect to dashboard
+    setLoginFormData({
+      email: "",
+      password: "",
+      rememberMe: false,
+    });
+    navigate("/");
 
     return userData;
   };

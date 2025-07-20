@@ -21,6 +21,7 @@ import Patient from "./pages/Patient.jsx";
 import PatientIntake from "./forms/PatientIntake.jsx";
 import UserForm from "./forms/UserForm.jsx";
 import { useParams } from 'react-router-dom';
+import { isAuthenticated } from './config/api.js';
 
 
 function App() {
@@ -45,34 +46,19 @@ function App() {
     }
   }, [page, id]);
 
-  // Centralized API fetch function
-  const fetchData = async (endpoint, options = {}) => {
-    try {
-      const response = await fetch(`${SERVER}${endpoint}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        ...options,
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || `Failed to fetch from ${endpoint}`);
-      }
-      return data;
-    } catch (error) {
-      console.error(`Error fetching ${endpoint}:`, error);
-      throw error;
-    }
-  };
-
-  // Get current user
+  // Get current user with secure API
   useEffect(() => {
     async function getUser() {
       try {
-        const data = await fetchData("/users");
+        // Check if user is authenticated first
+        if (!isAuthenticated()) {
+          navigate("/auth");
+          setLoading(false);
+          return;
+        }
+
+        const { fetchCurrentUser } = await import('./config/api.js');
+        const data = await fetchCurrentUser();
         dispatch(setUser(data));
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -105,19 +91,8 @@ function App() {
       if (!currentUser) return;
 
       try {
-        const response = await fetch(`${SERVER}/organisations/my`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch organizations");
-        }
-
-        const data = await response.json();
+        const { apiGet } = await import('./config/api.js');
+        const data = await apiGet('/organisations/my');
         console.log("Organizations fetched:", data);
         dispatch(setOrganisations(data));
       } catch (err) {
