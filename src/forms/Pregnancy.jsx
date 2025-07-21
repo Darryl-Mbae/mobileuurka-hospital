@@ -35,6 +35,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [patient, setPatient] = useState(null);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
@@ -63,6 +64,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
       if (response.ok) {
         const patient = await response.json();
+        setPatient(patient)
         setPatientName(patient.name || "Unknown Patient");
       } else {
         setPatientName("Patient not found");
@@ -74,6 +76,22 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       setFetchingPatient(false);
     }
   };
+
+  const calculateAge = (dob) => {
+    if (!dob) return 0;
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
+
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -102,6 +120,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const addData = async (formData) => {
     const newFormData = {
       ...formData,
+      patient_id:patient.patientId,
+      visit_id:"testing",
 
       // ─── Triage Data ───────────────────────────────────────────
       bmi: getLatest(patient?.triages, "bmi", "Unkown"),
@@ -113,33 +133,33 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       // ─── Medical History ───────────────────────────────────────
       GESTATIONALDIABETESHISTORY: getLatest(
         patient?.patientHistories,
-        "gestationaldiabeteshistory",
+        "gestationalDiabetesHistory",
         "Unkown"
       ),
       FAMHISTORYGESTATIONALDIABETES: getLatest(
         patient?.patientHistories,
-        "famhistorygestationaldiabetes",
+        "famHistoryGestationalDiabetes",
         "Unkown"
       ),
       FAMHISTORYDIABETES: getLatest(
         patient?.patientHistories,
-        "famhistorydiabetes",
+        "famHistoryDiabetes",
         "Unkown"
       ),
       firstpreeclampsiahistory: getLatest(
         patient?.patientHistories,
-        "firstpreeclampsiahistory",
+        "firstPreeclampsiaHistory",
         "Unkown"
       ),
       FAMOBESEHISTORY: "Unkown", // Not in schema
       DIABETESMELITUS: getLatest(
         patient?.patientHistories,
-        "diabetesmelitus",
+        "diabetesMelitus",
         "Unkown"
       ),
       PREVCHILDWEIGHT: getLatest(
         patient?.patientHistories,
-        "prevchildweight",
+        "prevChildWeight",
         "Unkown"
       ),
       ANEMIAHISTORY: getLatest(patient?.patientHistories, "anemia", "Unkown"),
@@ -150,22 +170,22 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       ),
       MISCARRIAGENUM: getLatest(
         patient?.patientHistories,
-        "miscarriage_num",
+        "miscarriageNum",
         "Unkown"
       ),
       FAMANEMIAHISTORY: getLatest(
         patient?.patientHistories,
-        "famhistoryanemia",
+        "famHistoryAnemia",
         "Unkown"
       ),
       FAM_SICKLE_CELL_HISTORY: getLatest(
         patient?.patientHistories,
-        "famsickle_cell",
+        "famSickleCell",
         "Unkown"
       ),
       FAM_THALASSEMIA_HISTORY: getLatest(
         patient?.patientHistories,
-        "famthalassemia",
+        "famThalassemia",
         "Unkown"
       ),
 
@@ -181,12 +201,12 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       ),
       PREG_HIST_ANEMIA: getLatest(
         patient?.patientHistories,
-        "pregnancyhistoryanemia",
+        "pregnancyHistoryAnemia",
         "Unkown"
       ),
       PREGNANCYHISTORYANEMIA: getLatest(
         patient?.patientHistories,
-        "pregnancyhistoryanemia",
+        "pregnancyHistoryAnemia",
         "Unkown"
       ),
       PARITY: getLatest(patient?.patientHistories, "parity", "Unkown"),
@@ -208,44 +228,44 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       // ─── Cardiovascular ────────────────────────────────────────
       FAMHYPERTENSIONHISTORY: getLatest(
         patient?.patientHistories,
-        "famhistoryhypertension",
+        "famHistoryHypertension",
         "Unkown"
       ),
       HYPERTENSIONHISTORY: getLatest(
         patient?.patientHistories,
-        "chronichypertension",
+        "chronicHypertension",
         "Unkown"
       ),
       GESTATIONALHYPERTENSIONHISTORY: getLatest(
         patient?.patientHistories,
-        "gestationalhypertensionhistory",
+        "gestationalHypertensionHistory",
         "Unkown"
       ),
       famhistorygestationalhypertension: getLatest(
         patient?.patientHistories,
-        "famhistorygestationalhypertension",
+        "famHistoryGestationalHypertension",
         "Unkown"
       ),
       CARDIACDISEASE: getLatest(
         patient?.patientHistories,
-        "cardiacdisease",
+        "cardiacDisease",
         "Unkown"
       ),
 
       // ─── Pregnancy Complications ───────────────────────────────
       FAMHISTORYPREECLAMPSIA: getLatest(
         patient?.patientHistories,
-        "famhistorypreeclampsia",
+        "famHistoryPreeclampsia",
         "Unkown"
       ),
       PREECLAMPSIAHISTORY: getLatest(
         patient?.patientHistories,
-        "preeclampsiahistory",
+        "preeclampsiaHistory",
         "Unkown"
       ),
       ECLAMPSIAHISTORY: getLatest(
         patient?.patientHistories,
-        "eclampsiahistory",
+        "eclampsiaHistory",
         "Unkown"
       ),
       PPH: getLatest(patient?.patientHistories, "pph", "Unkown"),
@@ -257,12 +277,12 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       LIVER: getLatest(patient?.patientHistories, "liver", "Unkown"),
       CHRONICRENALDISEASE: getLatest(
         patient?.patientHistories,
-        "chronicrenaldisease",
+        "chronicRenalDisease",
         "Unkown"
       ),
       RHEUMATOID_ARTHRITIS: getLatest(
         patient?.patientHistories,
-        "rheumatoid_arthritis",
+        "rheumatoidArthritis",
         "Unkown"
       ),
       THYROID: getLatest(patient?.patientHistories, "thyroid", "Unkown"),
@@ -275,31 +295,31 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Negative"),
       CHRONICHYPERTENSION: getLatest(
         patient?.patientHistories,
-        "chronichypertension",
+        "chronicHypertension",
         "Unkown"
       ),
 
       // ─── Obstetric History ─────────────────────────────────────
       PREVGYNASURGERY: getLatest(
         patient?.patientHistories,
-        "prevgynasurgery",
+        "prevGynaSurgery",
         "Unkown"
       ),
       PROLONGEDLABOUR: getLatest(
         patient?.patientHistories,
-        "prolongedlabour",
+        "prolongedLabour",
         "Unkown"
       ),
       CSECTION: getLatest(patient?.patientHistories, "csection", "Unkown"),
       CSECTIONNUM: getLatest(
         patient?.patientHistories,
-        "csection_num",
+        "csectionNum",
         "Unkown"
       ),
 
       // ─── Demographics ──────────────────────────────────────────
       AGE: calculateAge(patient?.dob) || "Unknown",
-      MALE_AGE: getLatest(patient?.patientHistories, "male_age", "Unkown"),
+      MALE_AGE: getLatest(patient?.patientHistories, "maleAge", "Unkown"),
       KIDNEY: getLatest(patient?.patientHistories, "kidney", "Unkown"),
     };
 
@@ -313,6 +333,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const submitData = async (submissionData) => {
     try {
       setLoading(true);
+      console.log(submissionData)
 
       // First API call
       const primaryURL =

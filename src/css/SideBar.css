@@ -125,6 +125,20 @@
 .sidebar .hamburger {
   display: none;
 }
+.sidebar .logout{
+  position: absolute;
+  width: calc(70% - 40px);
+  padding: 0px 20px;
+  bottom: 5vh;
+  left: 45%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+  font-size: .9em;
+  cursor: pointer;
+}
 
 @media screen and (max-width: 900px) {
   .sidebar {

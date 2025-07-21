@@ -440,10 +440,10 @@ const Patient = ({ id }) => {
                 </li>
               </ul>
               <div className="ai-buttons">
-                <div className="notification" onClick={() => handleShowAlert()}>
+                {/* <div className="notification" onClick={() => handleShowAlert()}>
                   <LuBell />
                   <span className="badge">{alerts?.length}</span>
-                </div>
+                </div> */}
                 <div
                   className="notification"
                   onClick={() => setChatActive((prev) => !prev)}
