@@ -44,13 +44,13 @@ const FetalGraph = ({ patient = [], selectedOption }) => {
   const normalizedData = normalizeFetalData(patient);
 
   const handleMouseMove = (e) => {
-    if (e && e.activePayload && e.activePayload.length) {
-      const relativeX = e.chartX;
-      const relativeY = e.chartY;
+    if (e && e.activePayload && e.activePayload.length > 0) {
       const payload = e.activePayload[0].payload;
-
       setHoveredPoint(payload);
-      setTooltipPos({ x: relativeX, y: relativeY });
+      setTooltipPos({ 
+        x: e.chartX || 0, 
+        y: e.chartY || 0 
+      });
     } else {
       setHoveredPoint(null);
     }
@@ -59,35 +59,31 @@ const FetalGraph = ({ patient = [], selectedOption }) => {
   const handleMouseLeave = () => setHoveredPoint(null);
 
   const CustomTooltip = ({ data, position }) => {
-    if (!data) return null;
+    if (!data || data.value === null || data.value === undefined) return null;
 
     return (
       <div
         style={{
           position: "absolute",
-          top: position.y + 10,
-          left: position.x - 70,
-          backgroundColor: "rgba(0,0,0,0.75)",
+          top: Math.max(0, position.y - 50),
+          left: Math.max(0, position.x - 60),
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
           color: "white",
-          padding: "8px",
-          borderRadius: "5px",
+          padding: "8px 12px",
+          borderRadius: "6px",
           pointerEvents: "none",
-          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
           fontSize: "0.85em",
-          zIndex: 1000,
+          zIndex: 10000,
           whiteSpace: "nowrap",
           textTransform: "capitalize",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
         }}
       >
         <div>
-          <strong>
-            {selectedOption}:{" "}
-            {data.value !== null && data.value !== undefined
-              ? data.value
-              : "No data"}
-          </strong>
+          <strong>{selectedOption}: {data.value}</strong>
         </div>
-        <div style={{ fontSize: "0.75em", opacity: 0.7 }}>{data.date}</div>
+        <div style={{ fontSize: "0.75em", opacity: 0.8 }}>Week {data.date}</div>
       </div>
     );
   };

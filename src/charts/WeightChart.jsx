@@ -23,44 +23,17 @@ const WeightChart = ({ data }) => {
   }
 
   const handleMouseMove = (e) => {
-  if (e && e.activePayload && e.activePayload.length) {
-    const containerRect = chartRef.current.getBoundingClientRect();
-    const relativeX = e.chartX;
-    const relativeY = e.chartY;
-    const payload = e.activePayload[0].payload;
-
-    setHoveredBar(payload);
-    setTooltipPos({
-      x: relativeX,
-      y: relativeY,
-    });
-  } else {
-    // Not hovering a bar
-    setHoveredBar(null);
-  }
-};
-
-  // Mouse enter handler to capture hovered bar data & tooltip position
-  const handleMouseEnter = (e) => {
-    if (e && chartRef.current) {
-      const containerRect = chartRef.current.getBoundingClientRect();
-
-      // Mouse coordinates relative to container
-      const relativeX = e.chartX;
-      const relativeY = e.chartY;
-
-      // Use e.activePayload to get hovered data item
-      const payload = e.activePayload?.[0]?.payload;
-
-      if (payload) {
-        setHoveredBar(payload);
-        setTooltipPos({
-          x: relativeX,
-          y: relativeY,
-        });
-      }
+    if (e && e.activePayload && e.activePayload.length > 0) {
+      const payload = e.activePayload[0].payload;
+      setHoveredBar(payload);
+      setTooltipPos({
+        x: e.chartX || 0,
+        y: e.chartY || 0,
+      });
     }
   };
+
+
 
   const handleMouseLeave = () => {
     setHoveredBar(null);
@@ -68,29 +41,30 @@ const WeightChart = ({ data }) => {
 
   // Custom tooltip component with absolute positioning inside chart container
   const CustomTooltip = ({ data, position }) => {
-    if (!data) return null;
+    if (!data || data.weight === null) return null;
 
     return (
       <div
         style={{
           position: "absolute",
-          top: position.y + 10, // offset a bit downward
-          left: position.x + 10, // offset a bit rightward
-          backgroundColor: "black",
+          top: Math.max(0, position.y - 40), // Position above the point
+          left: Math.max(0, position.x - 30), // Center horizontally
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
           color: "white",
-          padding: "8px",
-          borderRadius: "5px",
+          padding: "8px 12px",
+          borderRadius: "6px",
           pointerEvents: "none",
-          boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
           fontSize: "0.85em",
-          zIndex: 1000,
+          zIndex: 10000,
           whiteSpace: "nowrap",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
         }}
       >
-        {/* <div>{data.date}</div> */}
         <div>
-          <strong>{data.weight !== null ? `${data.weight} kg` : "No data"}</strong>
+          <strong>{data.weight} kg</strong>
         </div>
+        <div style={{ fontSize: "0.75em", opacity: 0.8 }}>{data.date}</div>
       </div>
     );
   };
@@ -101,7 +75,7 @@ const WeightChart = ({ data }) => {
         <BarChart
           data={normalizedData}
           margin={{ left: -30 }}
-          onMouseMove={handleMouseEnter}
+          onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
