@@ -8,28 +8,28 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationWeek: 0,
-    abnormalDoppler: "",
+    gestationweek: 0,
+    abnormaldoppler: "",
     anemia: "",
     bleeding: "",
     eclampsia: "",
     edema: "",
     malpresentation: "",
-    multifetalGestation: "",
+    multifetalgestation: "",
     pprom: "",
     prom: "",
     preeclampsia: "",
-    gestationalDiabetes: "",
-    gestHypertension: "",
-    placentaPrevia: "",
-    primiPaternity: "",
-    sexOfFetus: "",
+    gestationaldiabetes: "",
+    gesthypertension: "",
+    placentaprevia: "",
+    primipaternity: "",
+    sex_of_fetus: "",
     spe: 0,
     malaria: "",
     hookworm: "",
-    vitamindDeficiency: "",
-    severAnemia: "",
-    highHb: "",
+    vitamind_deficiency: "",
+    sever_anemia: "",
+    high_hb: "",
   });
 
   const [grid, setGrid] = useState(0);
@@ -46,7 +46,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       editor: currentUser?.name || "",
       patientId: selectedPatientId || "",
     }));
-    
+
     if (selectedPatientId) {
       fetchPatientName(selectedPatientId);
     }
@@ -54,13 +54,13 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
-    
+
     setFetchingPatient(true);
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
       });
-      
+
       if (response.ok) {
         const patient = await response.json();
         setPatientName(patient.name || "Unknown Patient");
@@ -81,7 +81,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       ...prev,
       [name]: type === "number" ? parseInt(value) || 0 : value,
     }));
-    
+
     if (name === "patientId" && value) {
       fetchPatientName(value);
     } else if (name === "patientId" && !value) {
@@ -93,26 +93,282 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     e.preventDefault();
     setLoading(true);
 
+    await addData(formData);
+  };
+
+  const addData = async (formData) => {
+    const newFormData = {
+      ...formData,
+
+      // ─── Triage Data ───────────────────────────────────────────
+      bmi: getLatest(patient?.triages, "bmi", "Unkown"),
+      systolic: getLatest(patient?.triages, "systolic", "Unkown"),
+      diastolic: getLatest(patient?.triages, "diastolic", "Unkown"),
+      MAP: getLatest(patient?.triages, "map", "Unkown"),
+      amniotic: getLatest(patient?.ultrasounds, "amniotic", "Unkown"),
+
+      // ─── Medical History ───────────────────────────────────────
+      GESTATIONALDIABETESHISTORY: getLatest(
+        patient?.patientHistories,
+        "gestationaldiabeteshistory",
+        "Unkown"
+      ),
+      FAMHISTORYGESTATIONALDIABETES: getLatest(
+        patient?.patientHistories,
+        "famhistorygestationaldiabetes",
+        "Unkown"
+      ),
+      FAMHISTORYDIABETES: getLatest(
+        patient?.patientHistories,
+        "famhistorydiabetes",
+        "Unkown"
+      ),
+      firstpreeclampsiahistory: getLatest(
+        patient?.patientHistories,
+        "firstpreeclampsiahistory",
+        "Unkown"
+      ),
+      FAMOBESEHISTORY: "Unkown", // Not in schema
+      DIABETESMELITUS: getLatest(
+        patient?.patientHistories,
+        "diabetesmelitus",
+        "Unkown"
+      ),
+      PREVCHILDWEIGHT: getLatest(
+        patient?.patientHistories,
+        "prevchildweight",
+        "Unkown"
+      ),
+      ANEMIAHISTORY: getLatest(patient?.patientHistories, "anemia", "Unkown"),
+      MISCARRIAGE: getLatest(
+        patient?.patientHistories,
+        "miscarriage",
+        "Unkown"
+      ),
+      MISCARRIAGENUM: getLatest(
+        patient?.patientHistories,
+        "miscarriage_num",
+        "Unkown"
+      ),
+      FAMANEMIAHISTORY: getLatest(
+        patient?.patientHistories,
+        "famhistoryanemia",
+        "Unkown"
+      ),
+      FAM_SICKLE_CELL_HISTORY: getLatest(
+        patient?.patientHistories,
+        "famsickle_cell",
+        "Unkown"
+      ),
+      FAM_THALASSEMIA_HISTORY: getLatest(
+        patient?.patientHistories,
+        "famthalassemia",
+        "Unkown"
+      ),
+
+      // ─── Lifestyle ─────────────────────────────────────────────
+      DIET: getLatest(patient?.patient_lifestyles, "diet", "Balanced"),
+      EXERCISE: getLatest(patient?.patient_lifestyles, "excercise", "Unkown"),
+
+      // ─── Gynecological History ────────────────────────────────
+      MENORRHAGIA: getLatest(
+        patient?.patientHistories,
+        "menorrhagia",
+        "Unkown"
+      ),
+      PREG_HIST_ANEMIA: getLatest(
+        patient?.patientHistories,
+        "pregnancyhistoryanemia",
+        "Unkown"
+      ),
+      PREGNANCYHISTORYANEMIA: getLatest(
+        patient?.patientHistories,
+        "pregnancyhistoryanemia",
+        "Unkown"
+      ),
+      PARITY: getLatest(patient?.patientHistories, "parity", "Unkown"),
+      RACE: patient?.race || "Unknown",
+      INTERVAL: getLatest(patient?.patientHistories, "interval", "Unkown"),
+      IVF: getLatest(patient?.patientHistories, "ivf", "Unkown"),
+      CONTRACEPETIVES: getLatest(
+        patient?.patientHistories,
+        "contraceptives",
+        "Unkown"
+      ),
+      PCOS: getLatest(patient?.patientHistories, "pcos", "Unkown"),
+      INFERTILITY: getLatest(
+        patient?.patientHistories,
+        "infertility",
+        "Unkown"
+      ),
+
+      // ─── Cardiovascular ────────────────────────────────────────
+      FAMHYPERTENSIONHISTORY: getLatest(
+        patient?.patientHistories,
+        "famhistoryhypertension",
+        "Unkown"
+      ),
+      HYPERTENSIONHISTORY: getLatest(
+        patient?.patientHistories,
+        "chronichypertension",
+        "Unkown"
+      ),
+      GESTATIONALHYPERTENSIONHISTORY: getLatest(
+        patient?.patientHistories,
+        "gestationalhypertensionhistory",
+        "Unkown"
+      ),
+      famhistorygestationalhypertension: getLatest(
+        patient?.patientHistories,
+        "famhistorygestationalhypertension",
+        "Unkown"
+      ),
+      CARDIACDISEASE: getLatest(
+        patient?.patientHistories,
+        "cardiacdisease",
+        "Unkown"
+      ),
+
+      // ─── Pregnancy Complications ───────────────────────────────
+      FAMHISTORYPREECLAMPSIA: getLatest(
+        patient?.patientHistories,
+        "famhistorypreeclampsia",
+        "Unkown"
+      ),
+      PREECLAMPSIAHISTORY: getLatest(
+        patient?.patientHistories,
+        "preeclampsiahistory",
+        "Unkown"
+      ),
+      ECLAMPSIAHISTORY: getLatest(
+        patient?.patientHistories,
+        "eclampsiahistory",
+        "Unkown"
+      ),
+      PPH: getLatest(patient?.patientHistories, "pph", "Unkown"),
+      STILLBIRTH: getLatest(patient?.patientHistories, "stillbirth", "Unkown"),
+
+      // ─── Other Medical Conditions ──────────────────────────────
+      AUTOIMMUNE: getLatest(patient?.patientHistories, "autoimmune", "Unkown"),
+      FAMHISTORYAUTOIMMUNE: "Unkown", // Not in schema
+      LIVER: getLatest(patient?.patientHistories, "liver", "Unkown"),
+      CHRONICRENALDISEASE: getLatest(
+        patient?.patientHistories,
+        "chronicrenaldisease",
+        "Unkown"
+      ),
+      RHEUMATOID_ARTHRITIS: getLatest(
+        patient?.patientHistories,
+        "rheumatoid_arthritis",
+        "Unkown"
+      ),
+      THYROID: getLatest(patient?.patientHistories, "thyroid", "Unkown"),
+
+      // ─── Lab Results ───────────────────────────────────────────
+      BLOODGROUP: patient?.bloodgroup || "Unknown",
+      RH: patient?.rh || "Unknown",
+      HAEMOGLOBIN: getLatest(patient?.labworks, "haemoglobin", "Unkown"),
+      URINE_GLUCOSE: getLatest(patient?.labworks, "urine_glucose", "Negative"),
+      URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Negative"),
+      CHRONICHYPERTENSION: getLatest(
+        patient?.patientHistories,
+        "chronichypertension",
+        "Unkown"
+      ),
+
+      // ─── Obstetric History ─────────────────────────────────────
+      PREVGYNASURGERY: getLatest(
+        patient?.patientHistories,
+        "prevgynasurgery",
+        "Unkown"
+      ),
+      PROLONGEDLABOUR: getLatest(
+        patient?.patientHistories,
+        "prolongedlabour",
+        "Unkown"
+      ),
+      CSECTION: getLatest(patient?.patientHistories, "csection", "Unkown"),
+      CSECTIONNUM: getLatest(
+        patient?.patientHistories,
+        "csection_num",
+        "Unkown"
+      ),
+
+      // ─── Demographics ──────────────────────────────────────────
+      AGE: calculateAge(patient?.dob) || "Unknown",
+      MALE_AGE: getLatest(patient?.patientHistories, "male_age", "Unkown"),
+      KIDNEY: getLatest(patient?.patientHistories, "kidney", "Unkown"),
+    };
+
+    submitData({
+      data: newFormData,
+      user_id: currentUser?.id,
+      schema_name: "public",
+    });
+  };
+
+  const submitData = async (submissionData) => {
     try {
-      const response = await fetch(`${SERVER}/patients/medical/currentPregnancyInfo`, {
+      setLoading(true);
+
+      // First API call
+      const primaryURL =
+        "https://prediction-api-864851114868.europe-west4.run.app";
+
+      const primaryResponse = await fetch(primaryURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Submission failed");
+      if (!primaryResponse.ok) {
+        const errorText = await primaryResponse.text();
+        throw new Error(`Primary submission failed: ${errorText}`);
       }
 
-      const result = await response.json();
-      console.log("Current pregnancy info created:", result);
-      setSuccess(true);
+      const primaryResult = await primaryResponse.json();
+      console.log("✅ Primary submission successful:", primaryResult);
+
+
+      try {
+        const secondaryResponse = await fetch(
+          "https://diagnosis-factors-864851114868.europe-west4.run.app",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              data: submissionData.data,
+              user_id: currentUser?.id,
+              schema_name: "public",
+            }),
+          }
+        );
+
+        if (!secondaryResponse?.ok) {
+          const errorText = await secondaryResponse.text();
+          console.warn("⚠️ Secondary submission warning:", errorText);
+          // Don't throw error here - we'll continue with success
+        } else {
+          const secondaryResult = await secondaryResponse.json();
+          console.log("✅ Secondary submission successful:", secondaryResult);
+        }
+      } catch (secondaryError) {
+        console.warn(
+          "⚠️ Secondary submission error (non-critical):",
+          secondaryError
+        );
+        // Continue despite this error
+      }
+
+     
+      // Only show success if we get here
+      alert("Form submitted successfully!");
+      setLoading(false);
+      setFormData([]);
     } catch (error) {
-      console.error("Error submitting form:", error);
-      alert(error.message || "Failed to submit form. Please try again.");
-    } finally {
+      console.error("❌ Critical submission error:", error);
+      alert(`Submission failed: ${error.message}`);
       setLoading(false);
     }
   };
@@ -173,8 +429,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Gestation Week *</label>
                   <input
                     type="number"
-                    name="gestationWeek"
-                    value={formData.gestationWeek}
+                    name="gestationweek"
+                    value={formData.gestationweek}
                     onChange={handleChange}
                     min="0"
                     max="42"
@@ -202,8 +458,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Gestational Diabetes</label>
                   <div className="select-container">
                     <select
-                      name="gestationalDiabetes"
-                      value={formData.gestationalDiabetes}
+                      name="gestationaldiabetes"
+                      value={formData.gestationaldiabetes}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -234,9 +490,15 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                     value={fetchingPatient ? "Fetching..." : patientName}
                     readOnly
                     className="read-only-field"
-                    style={{ 
-                      background: patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
-                      color: patientName === "Patient not found" ? "#d32f2f" : "inherit"
+                    style={{
+                      background:
+                        patientName === "Patient not found"
+                          ? "#ffe6e6"
+                          : "#f8f9fa",
+                      color:
+                        patientName === "Patient not found"
+                          ? "#d32f2f"
+                          : "inherit",
                     }}
                   />
                 </div>
@@ -244,8 +506,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Gestational Hypertension</label>
                   <div className="select-container">
                     <select
-                      name="gestHypertension"
-                      value={formData.gestHypertension}
+                      name="gesthypertension"
+                      value={formData.gesthypertension}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -278,8 +540,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Placenta Previa</label>
                   <div className="select-container">
                     <select
-                      name="placentaPrevia"
-                      value={formData.placentaPrevia}
+                      name="placentaprevia"
+                      value={formData.placentaprevia}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -371,8 +633,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Abnormal Doppler</label>
                   <div className="select-container">
                     <select
-                      name="abnormalDoppler"
-                      value={formData.abnormalDoppler}
+                      name="abnormaldoppler"
+                      value={formData.abnormaldoppler}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -407,8 +669,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Multiple Gestation</label>
                   <div className="select-container">
                     <select
-                      name="multifetalGestation"
-                      value={formData.multifetalGestation}
+                      name="multifetalgestation"
+                      value={formData.multifetalgestation}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -424,8 +686,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Sex of Fetus</label>
                   <div className="select-container">
                     <select
-                      name="sexOfFetus"
-                      value={formData.sexOfFetus}
+                      name="sex_of_fetus"
+                      value={formData.sex_of_fetus}
                       onChange={handleChange}
                     >
                       {sexOptions.map((option) => (
@@ -441,8 +703,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Primi Paternity</label>
                   <div className="select-container">
                     <select
-                      name="primiPaternity"
-                      value={formData.primiPaternity}
+                      name="primipaternity"
+                      value={formData.primipaternity}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -494,8 +756,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Severe Anemia</label>
                   <div className="select-container">
                     <select
-                      name="severAnemia"
-                      value={formData.severAnemia}
+                      name="sever_anemia"
+                      value={formData.sever_anemia}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -511,8 +773,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>High Hemoglobin</label>
                   <div className="select-container">
                     <select
-                      name="highHb"
-                      value={formData.highHb}
+                      name="high_hb"
+                      value={formData.high_hb}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -560,13 +822,12 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                 </div>
               </div>
               <div className="column-2">
-
                 <div className="form-group">
                   <label>Vitamin D Deficiency</label>
                   <div className="select-container">
                     <select
-                      name="vitamindDeficiency"
-                      value={formData.vitamindDeficiency}
+                      name="vitamind_deficiency"
+                      value={formData.vitamind_deficiency}
                       onChange={handleChange}
                     >
                       {yesNoOptions.map((option) => (
@@ -595,11 +856,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
             </div>
           )}
           {grid === 2 && (
-            <button
-              type="submit"
-              className="button primary"
-              disabled={loading}
-            >
+            <button type="submit" className="button primary" disabled={loading}>
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}

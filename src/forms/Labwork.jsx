@@ -8,8 +8,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationWeek: 0,
-    diagnosisId: "",
+    gestationweek: 0,
+    diagnosis_id: "",
 
     // Blood work
     alp: 0,
@@ -29,14 +29,14 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     leukocyte: 0,
     haemoglobin: 0,
     hba1c: "",
-    hba1cValue: 0,
+    hba1c_value: 0,
     mch: 0,
     mchc: 0,
     mcv: 0,
     platelets: 0,
     potassium: 0,
     rbc: 0,
-    randomBloodSugar: 0,
+    randombloodsugar: 0,
     sodium: 0,
     t3: 0,
     t4: 0,
@@ -47,11 +47,11 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
 
     // Urine analysis
     ketones: "",
-    urineColor: "",
-    urineGlucose: "",
-    urineNitrite: "",
-    urineOdor: "",
-    urineProtein: "",
+    urine_color: "",
+    urine_glucose: "",
+    urine_nitrite: "",
+    urine_odor: "",
+    urine_protein: "",
     clarity: "",
     sg: 0,
     ph: 0,
@@ -120,28 +120,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await fetch(`${SERVER}/patients/medical/labwork`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Submission failed");
-      }
-
-      const result = await response.json();
-      console.log("Labwork created:", result);
-      setSuccess(true);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert(error.message || "Failed to submit form. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    await addData(formData);
   };
 
   const fbsOptions = [
@@ -168,6 +147,61 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     { value: "4+", label: "4+" },
   ];
 
+  const addData = async (formData) => {
+    const newFormData = {
+      ...formData,
+      edema:
+        patient?.currentPregnancies[patient?.currentPregnancies.length - 1]?.edema || "Unknow",
+      systolic: patient?.triages?.length
+        ? patient?.triages[patient?.triages.length - 1]?.systolic
+        : "unknown",
+      diastolic: patient?.triages?.length
+        ? patient?.triages[patient?.triages.length - 1]?.diastolic
+        : "unknown",
+      amniotic:
+        patient?.ultrasounds[patient?.ultrasounds.length - 1]?.amniotic ||
+        "unknown",
+    };
+
+    submitData({
+      data: newFormData,
+      user_id: currentUser?.id,
+      schema_name: "public",
+    });
+  };
+
+  const submitData = async (submissionData) => {
+    try {
+      setLoading(true);
+
+      // First API call
+      const primaryURL = "https://diagnosis-864851114868.europe-west4.run.app";
+
+      const primaryResponse = await fetch(primaryURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submissionData),
+      });
+
+      if (!primaryResponse.ok) {
+        const errorText = await primaryResponse.text();
+        throw new Error(`Primary submission failed: ${errorText}`);
+      }
+
+      const primaryResult = await primaryResponse.json();
+      console.log("✅ Primary submission successful:", primaryResult);
+
+
+      // Only show success if we get here
+      alert("Form submitted successfully!");
+      setLoading(false);
+      setFormData({});
+    } catch (error) {
+      console.error("❌ Critical submission error:", error);
+      alert(`Submission failed: ${error.message}`);
+      setLoading(false);
+    }
+  };
   return (
     <div className="form">
       <form onSubmit={handleSubmit} className="form-container">
@@ -202,8 +236,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Gestation Week</label>
                   <input
                     type="number"
-                    name="gestationWeek"
-                    value={formData.gestationWeek}
+                    name="gestationweek"
+                    value={formData.gestationweek}
                     onChange={handleChange}
                     min="0"
                     max="42"
@@ -272,8 +306,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Random Blood Sugar (mg/dL)</label>
                   <input
                     type="number"
-                    name="randomBloodSugar"
-                    value={formData.randomBloodSugar}
+                    name="randomsloodsugar"
+                    value={formData.randombloodsugar}
                     onChange={handleChange}
                     min="0"
                     placeholder="e.g., 120"
@@ -420,8 +454,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>HbA1c Value (%)</label>
                   <input
                     type="number"
-                    name="hba1cValue"
-                    value={formData.hba1cValue}
+                    name="hba1c_value"
+                    value={formData.hba1c_value}
                     onChange={handleChange}
                     min="0"
                     step="0.1"
@@ -656,8 +690,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Urine Color</label>
                   <input
                     type="text"
-                    name="urineColor"
-                    value={formData.urineColor}
+                    name="urine_color"
+                    value={formData.urine_color}
                     onChange={handleChange}
                     placeholder="e.g., Yellow, Clear"
                   />
@@ -700,8 +734,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Urine Protein</label>
                   <div className="select-container">
                     <select
-                      name="urineProtein"
-                      value={formData.urineProtein}
+                      name="urine_protein"
+                      value={formData.urine_protein}
                       onChange={handleChange}
                     >
                       {urineOptions.map((option) => (
@@ -719,8 +753,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Urine Glucose</label>
                   <div className="select-container">
                     <select
-                      name="urineGlucose"
-                      value={formData.urineGlucose}
+                      name="urine_glucose"
+                      value={formData.urine_glucose}
                       onChange={handleChange}
                     >
                       {urineOptions.map((option) => (
@@ -753,8 +787,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Nitrites</label>
                   <div className="select-container">
                     <select
-                      name="urineNitrite"
-                      value={formData.urineNitrite}
+                      name="urine-nitrite"
+                      value={formData.urine_nitrite}
                       onChange={handleChange}
                     >
                       <option value="">Select</option>
