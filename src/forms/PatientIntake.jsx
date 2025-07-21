@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import useSuccessMessage from "../hooks/useSuccessMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 const PatientIntake = ({ setInternalTab }) => {
   // Initialize form state to match your desired output structure
@@ -29,6 +31,8 @@ const PatientIntake = ({ setInternalTab }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [hospitals, setHospitals] = useState([]);
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
@@ -106,6 +110,20 @@ const PatientIntake = ({ setInternalTab }) => {
 
       if (!response.ok) throw new Error("Submission failed");
 
+      // Show success message
+      showSuccessMessage({
+        title: "Reegistration Completed Successfully!",
+        message: `Vital signs recorded for ${formData.name || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -117,6 +135,8 @@ const PatientIntake = ({ setInternalTab }) => {
 
   return (
     <div className="form">
+             {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form action={handleSubmit} className="form-container">
         <h2>Patient Registration</h2>
 

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
+import SuccessMessage from "../components/SuccessMessage";
+import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -20,6 +22,8 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
   const [imagePreview, setImagePreview] = useState("");
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -143,6 +147,20 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Ultrasound record created:", result);
+      // Show success message
+      showSuccessMessage({
+        title: "Ultrasound Completed Successfully!",
+        message: `Vitals recorded for ${patientName || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -165,6 +183,8 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+             {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Ultrasound Examination</h2>
 

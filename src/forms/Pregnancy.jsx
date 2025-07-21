@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import useSuccessMessage from "../hooks/useSuccessMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -40,6 +42,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -387,7 +391,21 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
      
       // Only show success if we get here
-      alert("Form submitted successfully!");
+      showSuccessMessage({
+        title: "Pregnancy Information Completed Successfully!",
+        message: `Vital signs recorded for ${patientName || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
+      setSuccess(true);
+
       setLoading(false);
       setFormData([]);
     } catch (error) {
@@ -421,6 +439,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+             {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Current Pregnancy Information</h2>
 

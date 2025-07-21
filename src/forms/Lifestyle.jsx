@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import useSuccessMessage from "../hooks/useSuccessMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -25,6 +27,8 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -32,7 +36,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
       editor: currentUser?.name || "",
       patientId: selectedPatientId || "",
     }));
-    
+
     if (selectedPatientId) {
       fetchPatientName(selectedPatientId);
     }
@@ -40,13 +44,13 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
 
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
-    
+
     setFetchingPatient(true);
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
       });
-      
+
       if (response.ok) {
         const patient = await response.json();
         setPatientName(patient.name || "Unknown Patient");
@@ -67,7 +71,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
       ...prev,
       [name]: type === "number" ? parseInt(value) || 0 : value,
     }));
-    
+
     if (name === "patientId" && value) {
       fetchPatientName(value);
     } else if (name === "patientId" && !value) {
@@ -78,12 +82,12 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
   const handleCaffeineSourceChange = (source) => {
     setFormData((prev) => {
       const updatedSources = prev.caffeineSources.includes(source)
-        ? prev.caffeineSources.filter(s => s !== source)
+        ? prev.caffeineSources.filter((s) => s !== source)
         : [...prev.caffeineSources, source];
-      
+
       return {
         ...prev,
-        caffeineSources: updatedSources
+        caffeineSources: updatedSources,
       };
     });
   };
@@ -93,12 +97,15 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${SERVER}/patients/medical/patientLifestyle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${SERVER}/patients/medical/patientLifestyle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -107,6 +114,20 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Lifestyle record created:", result);
+       // Show success message
+       showSuccessMessage({
+        title: "Lifestyle Completed Successfully!",
+        message: `Vital signs recorded for ${patientName || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -152,11 +173,18 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
   ];
 
   const caffeineSources = [
-    "Coffee", "Tea", "Soda", "Energy Drinks", "Chocolate", "Supplements"
+    "Coffee",
+    "Tea",
+    "Soda",
+    "Energy Drinks",
+    "Chocolate",
+    "Supplements",
   ];
 
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Patient Lifestyle Assessment</h2>
 
@@ -248,9 +276,15 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
                   value={fetchingPatient ? "Fetching..." : patientName}
                   readOnly
                   className="read-only-field"
-                  style={{ 
-                    background: patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
-                    color: patientName === "Patient not found" ? "#d32f2f" : "inherit"
+                  style={{
+                    background:
+                      patientName === "Patient not found"
+                        ? "#ffe6e6"
+                        : "#f8f9fa",
+                    color:
+                      patientName === "Patient not found"
+                        ? "#d32f2f"
+                        : "inherit",
                   }}
                 />
               </div>
@@ -369,11 +403,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
           <div className="button" onClick={() => setInternalTab(0)}>
             Cancel
           </div>
-          <button
-            type="submit"
-            className="button primary"
-            disabled={loading}
-          >
+          <button type="submit" className="button primary" disabled={loading}>
             {loading ? <div className="spinner"></div> : "Submit"}
           </button>
           {success && (

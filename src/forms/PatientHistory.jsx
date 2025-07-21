@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import useSuccessMessage from "../hooks/useSuccessMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
   // Initialize form state to match PatientHistory model
@@ -84,6 +86,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -179,6 +183,20 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("PatientHistory created:", result);
+      // Show success message
+      showSuccessMessage({
+        title: "History Completed Successfully!",
+        message: `Vital signs recorded for ${patientName || "the patient"}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId,
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -197,6 +215,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Patient History</h2>
 
@@ -1181,7 +1201,6 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
               </div>
             </div>
           )}
-
         </div>
 
         <div className="form-navigation">

@@ -33,7 +33,8 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
     setPatientName("");
   };
 
-  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+  const { showSuccess, successConfig, showSuccessMessage } =
+    useSuccessMessage(clearForm);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
@@ -43,7 +44,7 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
       editor: currentUser?.name || "",
       patientId: selectedPatientId || "",
     }));
-    
+
     if (selectedPatientId) {
       fetchPatientName(selectedPatientId);
     }
@@ -51,13 +52,13 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
 
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
-    
+
     setFetchingPatient(true);
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
       });
-      
+
       if (response.ok) {
         const patient = await response.json();
         setPatientName(patient.name || "Unknown Patient");
@@ -78,7 +79,7 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
       ...prev,
       [name]: type === "number" ? parseInt(value) || 0 : value,
     }));
-    
+
     if (name === "patientId" && value) {
       fetchPatientName(value);
     } else if (name === "patientId" && !value) {
@@ -107,7 +108,9 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
       console.log("Fetal info created:", result);
       showSuccessMessage({
         title: "Fetal Completed Successfully!",
-        message: `Fetal information recorded for ${patientName || 'the patient'}.`,
+        message: `Fetal information recorded for ${
+          patientName || "the patient"
+        }.`,
         showRedoButton: true,
         showScreeningButton: true,
         showNextButton: true,
@@ -116,7 +119,7 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
         nextButtonAction: () => {
           clearForm();
         },
-        patientId: formData.patientId
+        patientId: formData.patientId,
       });
       setSuccess(true);
     } catch (error) {
@@ -145,6 +148,8 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Fetal Assessment</h2>
 
@@ -194,11 +199,15 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
                 required
               />
               {fhrAssessment && (
-                <small style={{ 
-                  color: fhrAssessment.includes('Normal') ? '#27ae60' : '#e74c3c',
-                  fontSize: '12px',
-                  fontWeight: '500'
-                }}>
+                <small
+                  style={{
+                    color: fhrAssessment.includes("Normal")
+                      ? "#27ae60"
+                      : "#e74c3c",
+                    fontSize: "12px",
+                    fontWeight: "500",
+                  }}
+                >
                   Assessment: {fhrAssessment}
                 </small>
               )}
@@ -233,9 +242,11 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
                 value={fetchingPatient ? "Fetching..." : patientName}
                 readOnly
                 className="read-only-field"
-                style={{ 
-                  background: patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
-                  color: patientName === "Patient not found" ? "#d32f2f" : "inherit"
+                style={{
+                  background:
+                    patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
+                  color:
+                    patientName === "Patient not found" ? "#d32f2f" : "inherit",
                 }}
               />
             </div>
@@ -289,11 +300,7 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
           <div className="button" onClick={() => setInternalTab(0)}>
             Cancel
           </div>
-          <button
-            type="submit"
-            className="button primary"
-            disabled={loading}
-          >
+          <button type="submit" className="button primary" disabled={loading}>
             {loading ? <div className="spinner"></div> : "Submit"}
           </button>
           {success && (

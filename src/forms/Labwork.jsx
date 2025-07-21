@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import SuccessMessage from "../components/SuccessMessage";
+import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const Labwork = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -66,6 +68,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const { showSuccess, successConfig, showSuccessMessage } =
+    useSuccessMessage(clearForm);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -151,7 +155,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     const newFormData = {
       ...formData,
       edema:
-        patient?.currentPregnancies[patient?.currentPregnancies.length - 1]?.edema || "Unknow",
+        patient?.currentPregnancies[patient?.currentPregnancies.length - 1]
+          ?.edema || "Unknow",
       systolic: patient?.triages?.length
         ? patient?.triages[patient?.triages.length - 1]?.systolic
         : "unknown",
@@ -191,9 +196,23 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
       const primaryResult = await primaryResponse.json();
       console.log("✅ Primary submission successful:", primaryResult);
 
-
+      // Show success message
+      showSuccessMessage({
+        title: "Labwork Completed Successfully!",
+        message: `Vital signs recorded for ${formData.name || "the patient"}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId,
+      });
       // Only show success if we get here
       alert("Form submitted successfully!");
+
       setLoading(false);
       setFormData({});
     } catch (error) {
@@ -204,6 +223,8 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   };
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Laboratory Work</h2>
 
