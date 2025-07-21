@@ -95,6 +95,9 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
     await addData(formData);
   };
+  const getLatest = (array, property, defaultValue) => {
+    return array?.length ? array[array.length - 1][property] : defaultValue;
+  };
 
   const addData = async (formData) => {
     const newFormData = {
