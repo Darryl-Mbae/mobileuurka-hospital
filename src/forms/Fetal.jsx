@@ -15,6 +15,7 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
     headCircumference: 0,
   });
 
+  
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);

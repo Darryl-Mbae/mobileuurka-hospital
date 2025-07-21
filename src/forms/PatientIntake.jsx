@@ -31,6 +31,9 @@ const PatientIntake = ({ setInternalTab }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [hospitals, setHospitals] = useState([]);
+  const clearForm = () => {
+    setFormData({});
+  };
   const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
 
   const currentUser = useSelector((s) => s.user.currentUser);

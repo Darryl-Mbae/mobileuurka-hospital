@@ -34,6 +34,10 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     high_hb: "",
   });
 
+  const clearForm = () => {
+    setFormData({});
+  }
+
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);

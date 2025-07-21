@@ -14,6 +14,10 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
     imageUrl: "",
   });
 
+  const clearForm = () => {
+    setFormData({});
+  }
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");

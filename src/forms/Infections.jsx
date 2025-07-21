@@ -18,6 +18,10 @@ const Infections = ({ setInternalTab, selectedPatientId }) => {
     hepC: "",
   });
 
+  const clearForm = () => {
+    setFormData({});
+  }
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");

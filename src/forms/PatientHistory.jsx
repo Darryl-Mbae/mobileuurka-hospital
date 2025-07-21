@@ -78,6 +78,9 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
     contraceptives: "",
     pregnancyHistoryAnemia: "",
   });
+  const clearForm = () => {
+    setFormData({});
+  }
 
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -126,6 +129,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
     }
   };
 
+  
   const calculateDueDate = (lmpDate) => {
     if (!lmpDate) return "";
 
@@ -212,6 +216,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
     { value: "No", label: "No" },
     { value: "Unknown", label: "Unknown" },
   ];
+
+  
 
   return (
     <div className="form">

@@ -14,6 +14,9 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
     allergies: "",
   });
 
+  const clearForm = () => {
+    setFormData({});
+  }
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { showSuccess, successConfig, showSuccessMessage } =

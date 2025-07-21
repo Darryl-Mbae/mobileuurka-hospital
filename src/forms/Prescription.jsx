@@ -20,6 +20,8 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
     medicationPurpose: "",
   });
 
+  
+
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
