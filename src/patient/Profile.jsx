@@ -175,7 +175,7 @@ const Profile = ({ patient }) => {
     { label: "Date of Birth", value: patientInfo?.dob || "-" },
     {
       label: "Age",
-      value: patientInfo?.age ? `${patientInfo.age} years` : "-",
+      value: patientInfo?.age ? `${patientInfo.age} years` : `${getAge(patientInfo.dob)} Years`,
     },
     {
       label: "Race",
@@ -203,7 +203,7 @@ const Profile = ({ patient }) => {
 
   const healthSummary = [
     //   { label: "User ID", value: patientInfo?.user_id || "-" },
-    { label: "Org ", value: patientInfo?.organization?.name || "-" },
+    { label: "Address ", value: patientInfo?.address || "-" },
     { label: "Date Registered", value: patientInfo?.createdAt || "-" },
   ];
 

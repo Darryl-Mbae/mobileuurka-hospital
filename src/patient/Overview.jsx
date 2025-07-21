@@ -8,12 +8,13 @@ import Fetal from "../charts/Fetal";
 import Riskassessment from "../components/Riskassessment";
 import Weight from "../charts/Weight";
 import BloodPressure from "../charts/BloodPressure";
+import { Tooltip } from "react-tooltip";
 
 const Overview = ({ patient,setActiveTab }) => {
   return (
     <div className="p-overview">
       <div className="grid-3">
-        <div className="chart" style={{ overflow: "hidden" }}>
+        <div className="chart" style={{ overflow: "visible" }}>
           <Weight patient={patient?.triages} />
         </div>
         <div className="chart">
@@ -46,6 +47,12 @@ const Overview = ({ patient,setActiveTab }) => {
           </div>
         </div>
       </div>
+      
+      {/* Global tooltip container for overview charts */}
+      <Tooltip
+        id="overview-tooltip"
+        style={{ fontSize: ".8em", zIndex: "99999" }}
+      />
     </div>
   );
 };

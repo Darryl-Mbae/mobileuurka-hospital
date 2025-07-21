@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { IoFlagSharp } from "react-icons/io5";
-import { Tooltip as TooltipProvider } from "react-tooltip";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import {
   AreaChart,
   Area,
@@ -170,7 +170,7 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
                   marginLeft: "5px",
                   marginBottom: "-2px",
                 }}
-                data-tooltip-id="my-lab-tooltip"
+                data-tooltip-id="bp-tooltip"
                 data-tooltip-content={data.abnormalMessage}
                 color="red"
               />
@@ -192,7 +192,7 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
       }}
       ref={chartRef}
     >
-      <TooltipProvider id="my-lab-tooltip" style={{ fontSize: ".8em", zIndex: "9999" }} />
+      <ReactTooltip id="bp-tooltip" style={{ fontSize: ".8em", zIndex: "99999" }} />
       <ResponsiveContainer>
         <AreaChart
           data={normalizedData}

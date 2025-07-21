@@ -186,7 +186,7 @@ const Weight = ({ patient }) => {
                 </p>
                 {showFlag && (
                   <IoFlagSharp
-                    data-tooltip-id="my-weight-tooltip"
+                    data-tooltip-id="weight-tooltip"
                     data-tooltip-content={flagMessage}
                     color="red"
                   />
@@ -196,8 +196,8 @@ const Weight = ({ patient }) => {
           })()}
       </div>
       <Tooltip
-        id="my-weight-tooltip"
-        style={{ fontSize: ".8em", zIndex: "9999" }}
+        id="weight-tooltip"
+        style={{ fontSize: ".8em", zIndex: "99999" }}
       />
     </div>
   );

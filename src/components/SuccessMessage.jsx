@@ -11,6 +11,7 @@ const SuccessMessage = ({
   showNextButton = false,
   nextButtonText = "Next",
   nextButtonAction = null,
+  setInternalTab =  null,
   onRedo = null,
   clearForm = null,
   showScreeningButton = false,
@@ -38,12 +39,8 @@ const SuccessMessage = ({
   };
 
   const handleGoToScreening = () => {
-    navigate('/Screening', { 
-      state: { 
-        patientId: patientId,
-        returnTo: 'patient'
-      } 
-    });
+    navigate(`/Screening`);
+    window.location.reload();
   };
 
   const handleNext = () => {

@@ -68,12 +68,12 @@ const Medications = ({ patient, setActiveTab }) => {
                     <div className="med-flag righty">
                       <IoFlagSharp
                         color={colors.red.color}
-                        data-tooltip-id="allergy-tooltip"
+                        data-tooltip-id="med-allergy-tooltip"
                         data-tooltip-content="Patient has an allergic reaction to medication"
                       />
                       <Tooltip
-                        id="allergy-tooltip"
-                        style={{ fontSize: ".8em", zIndex: "9999" }}
+                        id="med-allergy-tooltip"
+                        style={{ fontSize: ".8em", zIndex: "99999" }}
                       />
                     </div>
                   ) : (

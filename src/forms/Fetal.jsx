@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
+import SuccessMessage from "../components/SuccessMessage";
+import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const Fetal = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -14,9 +16,24 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);
+
+  const clearForm = () => {
+    setFormData({
+      patientId: selectedPatientId || "",
+      editor: currentUser?.name || "",
+      date: new Date().toISOString().split("T")[0],
+      gestationWeek: 0,
+      fetalHeartRate: 0,
+      fetalMovement: "",
+      fetalPosition: "",
+      estimatedFetalWeight: 0,
+    });
+    setPatientName("");
+  };
+
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 

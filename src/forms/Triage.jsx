@@ -147,17 +147,22 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
 
 
       const result = await response.json();
-      showSuccessMessage({
-        title: "Triage Registered Successfully!",
-        message: `UUU`,
-        showRedoButton: true,
-        showNextButton: true,
-        nextButtonText: "Reg",
-        nextButtonAction: clearForm,
-        patientId: result.patientId,
-        showScreeningButton: true
-      });        
       console.log("Triage created:", result);
+      
+      // Show success message
+      showSuccessMessage({
+        title: "Triage Completed Successfully!",
+        message: `Vital signs recorded for ${patientName || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -360,11 +365,7 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}
-          {success && (
-            <div className="button primary" onClick={() => setInternalTab(0)}>
-              Back to Patient
-            </div>
-          )}
+
         </div>
       </form>
     </div>

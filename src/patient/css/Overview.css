@@ -27,6 +27,8 @@
   background: var(--section);
   border-radius: 10px;
   display: flex;
+  position: relative;
+  overflow: visible;
 }
 .p-overview .grid-2 {
   width: 100%;

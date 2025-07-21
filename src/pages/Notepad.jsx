@@ -1,14 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import SuccessMessage from "../components/SuccessMessage";
+import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const Notepad = ({ patient, user }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const [loading, setLoading] = useState(false);
 
+  // Clear form function
+  const clearForm = () => {
+    setFormData({
+      nurseDoctor: user ? user.name : "",
+      patient_id: patient ? patient.patient_id : "",
+      patientName: patient ? patient.name : "",
+      visitNumber: patient?.notes?.length
+        ? patient.notes[patient.notes.length]
+        : "1",
+      notes: "",
+      gestationweek: "",
+      date: new Date().toISOString().split("T")[0],
+      visit_id: "",
+      user_id: user ? user.user_id : "",
+      title: "",
+    });
+  };
+
+  // Use success message hook
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
   // State for storing form data
   const [formData, setFormData] = useState({
     nurseDoctor: user ? user.name : "",
-    patient_id: patient ? patient.patient_id : "",
+    patient_id: patient ? patient.id : "",
     patientName: patient ? patient.name : "",
     visitNumber: patient?.notes?.length
       ? patient.notes[patient.notes.length]
@@ -42,28 +65,25 @@ const Notepad = ({ patient, user }) => {
     setLoading(true);
     e.preventDefault();
     const payload = {
-      patient_id: formData.patient_id,
-      user_id: user?.user_id,
+      patientId: formData.patient_id,
+      editor:user.name,
       date: new Date().toISOString().split("T")[0], // or use formData.date if already set
-      visit_id: formData.visit_id,
-      gestationweek: Number(formData.gestationweek) || undefined,
+      gestationWeek: Number(formData.gestationweek) || undefined,
       notes: formData.notes,
       title: formData.title,
     };
+    console.log("Form Data:", payload);
     sendToDB(payload);
   };
 
   async function sendToDB(formData) {
-    const response = await fetch(`${SERVER}/patient/${patient?.patient_id}`, {
+    const response = await fetch(`${SERVER}/patients/medical/note`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({
-        data: formData,
-        title: "notes",
-      }),
+      body: JSON.stringify(formData),
     });
 
     if (!response.ok) {
@@ -75,10 +95,34 @@ const Notepad = ({ patient, user }) => {
     }
     const data = await response.json();
     console.log("Form submitted successfully:", data);
-    alert("Form submitted successfully!");
-    setFormData({}); // Reset form data on error
+    // Show success message
+    showSuccessMessage({
+      title: "Note Saved Successfully!",
+      message: `Note "${formData.title}" has been saved for ${formData.patientName}.`,
+      showRedoButton: true,
+      showNextButton: true,
+      nextButtonText: "Add Another Note",
+      nextButtonAction: () => {
+        clearForm();
+      },
+      patientId: formData.patient_id
+    });
 
     setLoading(false);
+    setFormData({
+      nurseDoctor: user ? user.name : "",
+      patient_id: patient ? patient.patient_id : "",
+      patientName: patient ? patient.name : "",
+      visitNumber: patient?.notes?.length
+        ? patient.notes[patient.notes.length]
+        : "1",
+      notes: "",
+      gestationweek: "",
+      date: new Date().toISOString().split("T")[0],
+      visit_id: "",
+      user_id: user ? user.user_id : "",
+      title: "",
+    });
   }
 
   return (
@@ -91,11 +135,18 @@ const Notepad = ({ patient, user }) => {
           display: "grid",
           gridTemplateColumns: "45% 45%",
           gap: "10%",
-          width: "100%",
+          maxWidth:"100% !important",
+          width: "100% !important",
+          margin:'0px auto !important'
         }}
       >
         {/* Left Side Form Fields */}
-        <div className="grid1">
+        <div className="grid1"
+        style={{
+          width:'100%',
+          margin:'0px auto'
+        }}
+        >
           <h3>Patient Information</h3>
           <div className="form-group">
             <label htmlFor="nurseDoctor">Nurse | Doctor</label>
@@ -113,7 +164,7 @@ const Notepad = ({ patient, user }) => {
             <label htmlFor="patientId">Patient's ID Number</label>
             <input
               className="sname"
-              type="number"
+              type="text"
               id="patient_id"
               name="patient_id"
               required

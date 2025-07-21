@@ -6,14 +6,19 @@ import FetalGraph from './FetalGraph';
 const Fetal = ({ patient }) => {
   const [selectedOption, setSelectedOption] = useState("fhr");
 
-
+  const data = [
+    { value: "fhr", label: "FHR" },
+    { value: "femurHeight", label: "Femur Height" },
+    { value: "headCircumference", label: "Head Circumference" },
+  ];
+  
 
   return (
     <div className='fetal-chart'>
       <div className="title">
         Fetal
         <DropdownMenu
-          data={["fhr","femur_height","head_circumference"]}
+          data={data}
           selected={selectedOption}
           length={"150px"}
           onChange={(value) => setSelectedOption(value)}

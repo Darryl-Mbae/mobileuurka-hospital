@@ -127,7 +127,6 @@ const Auth = () => {
 
   // Function to check credentials and determine next step
   const sendOTP = async (email, password) => {
-    console.log(email, password); // Fixed typo: consolee -> console
     try {
       const response = await fetch(`${SERVER}/auth/check-credentials`, {
         method: "POST",
