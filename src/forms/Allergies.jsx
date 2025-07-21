@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
+import useSuccessMessage from "../hooks/useSuccessMessage";
+import SuccessMessage from "../components/SuccessMessage";
 
 const Allergies = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -14,6 +16,8 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { showSuccess, successConfig, showSuccessMessage } =
+    useSuccessMessage(clearForm);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
@@ -25,7 +29,7 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
       editor: currentUser?.name || "",
       patientId: selectedPatientId || "",
     }));
-    
+
     if (selectedPatientId) {
       fetchPatientName(selectedPatientId);
     }
@@ -33,13 +37,13 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
 
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
-    
+
     setFetchingPatient(true);
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
       });
-      
+
       if (response.ok) {
         const patient = await response.json();
         setPatientName(patient.name || "Unknown Patient");
@@ -60,7 +64,7 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
       ...prev,
       [name]: value,
     }));
-    
+
     if (name === "patientId" && value) {
       fetchPatientName(value);
     } else if (name === "patientId" && !value) {
@@ -87,6 +91,21 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Allergy created:", result);
+
+      // Show success message
+      showSuccessMessage({
+        title: "Patient Allergy Registered Successfully!",
+        message: `Allergies recorded for ${patientName || "the patient"}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId,
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -106,6 +125,8 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
+      {showSuccess && <SuccessMessage {...successConfig} />}
+
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Patient Allergies</h2>
 
@@ -179,9 +200,11 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
                 value={fetchingPatient ? "Fetching..." : patientName}
                 readOnly
                 className="read-only-field"
-                style={{ 
-                  background: patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
-                  color: patientName === "Patient not found" ? "#d32f2f" : "inherit"
+                style={{
+                  background:
+                    patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
+                  color:
+                    patientName === "Patient not found" ? "#d32f2f" : "inherit",
                 }}
               />
             </div>
@@ -192,11 +215,7 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
           <div className="button" onClick={() => setInternalTab(0)}>
             Cancel
           </div>
-          <button
-            type="submit"
-            className="button primary"
-            disabled={loading}
-          >
+          <button type="submit" className="button primary" disabled={loading}>
             {loading ? <div className="spinner"></div> : "Submit"}
           </button>
           {success && (

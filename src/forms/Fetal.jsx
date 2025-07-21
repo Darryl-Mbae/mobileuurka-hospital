@@ -105,6 +105,19 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Fetal info created:", result);
+      showSuccessMessage({
+        title: "Fetal Completed Successfully!",
+        message: `Fetal information recorded for ${patientName || 'the patient'}.`,
+        showRedoButton: true,
+        showScreeningButton: true,
+        showNextButton: true,
+        setInternalTab: setInternalTab,
+        nextButtonText: "Add Another Triage",
+        nextButtonAction: () => {
+          clearForm();
+        },
+        patientId: formData.patientId
+      });
       setSuccess(true);
     } catch (error) {
       console.error("Error submitting form:", error);
