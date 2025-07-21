@@ -115,7 +115,7 @@ const PatientIntake = ({ setInternalTab }) => {
 
       // Show success message
       showSuccessMessage({
-        title: "Reegistration Completed Successfully!",
+        title: "Registration Completed Successfully!",
         message: `Vital signs recorded for ${formData.name || 'the patient'}.`,
         showRedoButton: true,
         showScreeningButton: true,
