@@ -350,7 +350,9 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       const primaryResponse = await fetch(primaryURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials:"include",
         body: JSON.stringify(submissionData),
+        
       });
 
       if (!primaryResponse.ok) {
