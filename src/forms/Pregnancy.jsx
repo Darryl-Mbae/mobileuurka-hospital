@@ -10,7 +10,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationweek: 0,
+    gestationweek: "",
     abnormaldoppler: "",
     anemia: "",
     bleeding: "",
@@ -26,7 +26,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     placentaprevia: "",
     primipaternity: "",
     sex_of_fetus: "",
-    spe: 0,
+    spe: "",
     malaria: "",
     hookworm: "",
     vitamind_deficiency: "",
@@ -482,6 +482,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                     name="gestationweek"
                     value={formData.gestationweek}
                     onChange={handleChange}
+                    placeholder="e.g 12"
                     min="0"
                     max="42"
                     required
