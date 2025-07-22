@@ -10,7 +10,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
   const id = cuid();
   const [formData, setFormData] = useState({
-    patientId: selectedPatientId || "",
+    patient_id: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
     gestationweek: "",
@@ -57,7 +57,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     setFormData((prev) => ({
       ...prev,
       editor: currentUser?.name || "",
-      patientId: selectedPatientId || "",
+      patient_id: selectedPatientId || "",
     }));
 
     if (selectedPatientId) {
@@ -132,7 +132,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const addData = async (formData) => {
     const newFormData = {
       ...formData,
-      patient_id:patient.patientId,
       visit_id:"testing",
 
       // ─── Triage Data ───────────────────────────────────────────
