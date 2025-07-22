@@ -174,6 +174,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
         "unknown",
     };
 
+
     submitData({
       data: newFormData,
       user_id: currentUser?.id,
@@ -184,6 +185,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   const submitData = async (submissionData) => {
     try {
       setLoading(true);
+      console.log(submissionData)
 
       // First API call
       const primaryURL = "https://diagnosis-864851114868.europe-west4.run.app";
@@ -824,7 +826,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Nitrites</label>
                   <div className="select-container">
                     <select
-                      name="urine-nitrite"
+                      name="urine_nitrite"
                       value={formData.urine_nitrite}
                       onChange={handleChange}
                     >
