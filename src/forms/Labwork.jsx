@@ -31,7 +31,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     leukocyte: "",
     haemoglobin: "",
     hba1c: "",
-    hba1c_value: 0,
+    hba1c_value: "",
     mch: "",
     mchc: "",
     mcv: "",

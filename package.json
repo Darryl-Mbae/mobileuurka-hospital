@@ -12,6 +12,7 @@
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.14.3",
     "@reduxjs/toolkit": "^2.8.2",
+    "cuid": "^3.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-google-recaptcha-v3": "^1.11.0",

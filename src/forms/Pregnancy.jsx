@@ -4,8 +4,11 @@ import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
+import cuid from 'cuid';
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
+
+  const id = cuid();
   const [formData, setFormData] = useState({
     patientId: selectedPatientId || "",
     editor: "",
@@ -32,6 +35,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     vitamind_deficiency: "",
     sever_anemia: "",
     high_hb: "",
+    id:id
   });
 
   const clearForm = () => {
