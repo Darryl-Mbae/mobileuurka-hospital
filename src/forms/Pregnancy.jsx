@@ -296,24 +296,26 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       ),
       THYROID: getLatest(patient?.patientHistories, "thyroid", "Unkown"),
 
-      // ─── Lab Results ───────────────────────────────────────────
       BLOODGROUP: patient?.bloodgroup || "Unknown",
       RH: patient?.rh || "Unknown",
+      // ─── Lab Results ───────────────────────────────────────────
+
       HAEMOGLOBIN: getLatest(patient?.labworks, "haemoglobin", "Unkown"),
       URINE_GLUCOSE: getLatest(patient?.labworks, "urine_glucose", "Negative"),
       URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Negative"),
-      CHRONICHYPERTENSION: getLatest(
-        patient?.patientHistories,
-        "chronicHypertension",
-        "Unkown"
-      ),
-
+     
       // ─── Obstetric History ─────────────────────────────────────
       PREVGYNASURGERY: getLatest(
         patient?.patientHistories,
         "prevGynaSurgery",
         "Unkown"
       ),
+      CHRONICHYPERTENSION: getLatest(
+        patient?.patientHistories,
+        "chronicHypertension",
+        "Unkown"
+      ),
+
       PROLONGEDLABOUR: getLatest(
         patient?.patientHistories,
         "prolongedLabour",

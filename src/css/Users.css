@@ -24,7 +24,14 @@
 .users-page .toolbar .count span {
   color: #a7a18e;
 }
-
+.users-page .message{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px; /* or whatever width you need */
+  display: inline-block; /* or block depending on your layout */
+  vertical-align: middle;
+}
 
 
 .users-page .lists {

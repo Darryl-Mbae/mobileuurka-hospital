@@ -26,7 +26,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     fbs: "",
     fbs1: "",
     fbs2: "",
-    glutamyl: '',
+    glutamyl: "",
     ht: "",
     leukocyte: "",
     haemoglobin: "",
@@ -55,7 +55,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     urine_odor: "",
     urine_protein: "",
     clarity: "",
-    sg: '',
+    sg: "",
     ph: "",
 
     diagnosis: "",
@@ -63,7 +63,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
 
   const clearForm = () => {
     setFormData({});
-  }
+  };
 
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -72,6 +72,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const [patient, setPatient] = useState(false);
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
 
@@ -98,6 +99,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
 
       if (response.ok) {
         const patient = await response.json();
+        setPatient(patient);
         setPatientName(patient.name || "Unknown Patient");
       } else {
         setPatientName("Patient not found");
@@ -114,7 +116,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseInt(value) || 0 : value,
+      [name]: type === "number" ? parseFloat(value) || 0 : value,
     }));
 
     if (name === "patientId" && value) {
@@ -332,7 +334,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <label>Random Blood Sugar (mg/dL)</label>
                   <input
                     type="number"
-                    name="randomsloodsugar"
+                    name="randombloodsugar"
                     value={formData.randombloodsugar}
                     onChange={handleChange}
                     min="0"
@@ -383,6 +385,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.wbc}
                     onChange={handleChange}
                     min="0"
+                    step="any"
                     placeholder="e.g., 7"
                   />
                 </div>
@@ -394,6 +397,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.rbc}
                     onChange={handleChange}
                     min="0"
+                    step="0.1"
                     placeholder="e.g., 4.5"
                   />
                 </div>
@@ -402,6 +406,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <input
                     type="number"
                     name="mch"
+                    step="any"
                     value={formData.mch}
                     onChange={handleChange}
                     min="0"
@@ -413,6 +418,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <input
                     type="number"
                     name="mchc"
+                    step="any"
                     value={formData.mchc}
                     onChange={handleChange}
                     min="0"
@@ -424,6 +430,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   <input
                     type="number"
                     name="mcv"
+                    step="any"
                     value={formData.mcv}
                     onChange={handleChange}
                     min="0"
@@ -440,6 +447,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.ht}
                     onChange={handleChange}
                     min="0"
+                    step="any"
                     placeholder="e.g., 38"
                   />
                 </div>
@@ -451,6 +459,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.leukocyte}
                     onChange={handleChange}
                     min="0"
+                    step="any"
                     placeholder="e.g., 6000"
                   />
                 </div>
@@ -462,6 +471,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.fbs1}
                     onChange={handleChange}
                     min="0"
+                    step="any"
                     placeholder="e.g., 90"
                   />
                 </div>
@@ -473,6 +483,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.fbs2}
                     onChange={handleChange}
                     min="0"
+                    step="any"
                     placeholder="e.g., 95"
                   />
                 </div>
@@ -823,16 +834,6 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     </select>
                     <FiChevronDown className="select-icon" />
                   </div>
-                </div>
-                <div className="form-group">
-                  <label>Diagnosis</label>
-                  <textarea
-                    name="diagnosis"
-                    value={formData.diagnosis}
-                    onChange={handleChange}
-                    placeholder="Laboratory findings and clinical interpretation..."
-                    rows="3"
-                  />
                 </div>
               </div>
             </div>
