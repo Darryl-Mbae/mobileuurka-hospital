@@ -33,7 +33,7 @@ const Predisposition = ({ patient, setActiveTab }) => {
       : "No diagnosis data found";
   }
   const checkPredisposition = (riskAssessment) => {
-    if (!riskAssessment) return "no risk assessment available";
+    if (!riskAssessment) return "";
 
     try {
       let assessment = riskAssessment;
@@ -88,7 +88,8 @@ const Predisposition = ({ patient, setActiveTab }) => {
           <IoIosWarning />
         </div>
         <p className="pred">
-          Patient exhibits{" "}
+          {!patient?.riskAssessments?.[patient?.riskAssessments?.length - 1]?.risk_assessment ? "No risk assessment records available":  "Patient exhibits"}
+         
           {checkPredisposition(
             patient?.riskAssessments?.[patient?.riskAssessments?.length - 1]
               ?.risk_assessment

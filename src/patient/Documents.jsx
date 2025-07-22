@@ -141,6 +141,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const buildRecord = (array, title) =>
     array?.map((item) => {
       let result = "";
+      console.log(item)
 
       if (title === "Lab Work") {
         result = item.diagnosis || "No diagnosis";
@@ -169,7 +170,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
         title,
         // visit_id: item.id || "-",
         date_of_visit: item.date || item.timestamp || "N/A",
-        editor: getUserName(item.user_id),
+        editor: item.editor || getUserName(item.user_id),
         source: item,
         result,
       };
@@ -179,7 +180,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const realRecords = [
     ...buildRecord(patient?.triages, "Triage"),
     ...buildRecord(patient?.labworks, "Lab Work"),
-    ...buildRecord(patient?.pregnancies, "Pregnancy Journey"),
+    ...buildRecord(patient?.currentPregnancies, "Pregnancy Journey"),
     ...buildRecord(patient?.infections, "Infections"),
   ];
 

@@ -65,14 +65,9 @@ const Document = ({ document, title }) => {
 
   // Step 1: Format values
   const transformed = { ...document };
+  
   // Replace user_id with editor name
-  const matchedUser = users.find((u) => u.user_id === transformed.user_id);
-  if (matchedUser) {
-    transformed.editor = matchedUser.name;
-  } else {
-    transformed.editor = "Unknown";
-  }
-
+ 
   // Format date
   if (transformed.date) {
     transformed.date = formatDate(transformed.date);

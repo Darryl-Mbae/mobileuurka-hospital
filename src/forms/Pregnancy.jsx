@@ -35,7 +35,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     vitamind_deficiency: "",
     sever_anemia: "",
     high_hb: "",
-    id:id
   });
 
   const clearForm = () => {
@@ -112,9 +111,9 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       [name]: type === "number" ? parseInt(value) || 0 : value,
     }));
 
-    if (name === "patientId" && value) {
+    if (name === "patient_id" && value) {
       fetchPatientName(value);
-    } else if (name === "patientId" && !value) {
+    } else if (name === "patient_id" && !value) {
       setPatientName("");
     }
   };
@@ -132,7 +131,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const addData = async (formData) => {
     const newFormData = {
       ...formData,
-      visit_id:"testing",
 
       // ─── Triage Data ───────────────────────────────────────────
       bmi: getLatest(patient?.triages, "bmi", "Unkown"),
@@ -411,7 +409,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         nextButtonAction: () => {
           clearForm();
         },
-        patientId: formData.patientId
+        patientId: formData.patient_id
       });
       setSuccess(true);
 
@@ -471,8 +469,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
                   <label>Patient ID *</label>
                   <input
                     type="text"
-                    name="patientId"
-                    value={formData.patientId}
+                    name="patient_id"
+                    value={formData.patient_id}
                     onChange={handleChange}
                     placeholder="Enter Patient ID"
                     required
