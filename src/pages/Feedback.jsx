@@ -77,9 +77,7 @@ const Feedback = ({ setActiveItem }) => {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const endpoint = currentUser.email.endsWith("@mobileuurka.com")
-          ? `${SERVER}/feedback/all`
-          : `${SERVER}/feedback`;
+        const endpoint = `${SERVER}/feedback`;
         
         const response = await fetch(endpoint, {
           credentials: "include",

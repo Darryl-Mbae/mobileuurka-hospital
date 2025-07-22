@@ -39,7 +39,7 @@
   - Include operating system and offer details for search engines
   - _Requirements: 2.1, 2.4, 5.4_
 
-- [ ] 6. Optimize viewport and mobile meta tags
+- [x] 6. Optimize viewport and mobile meta tags
 
   - Verify viewport meta tag is properly configured for responsive design
   - Add mobile-web-app-capable meta tags if needed
@@ -54,9 +54,16 @@
   - Test bookmark creation shows proper Mobileuurka branding
   - _Requirements: 1.1, 1.2, 1.4, 3.1, 3.2, 3.3, 2.4_
 
-- [ ] 8. Optimize and enhance existing implementation
-  - Review and optimize meta tag content for better search engine performance
-  - Ensure all URLs in meta tags are environment-aware (development vs production)
-  - Add additional healthcare-specific keywords if needed
-  - Verify structured data includes all relevant healthcare application features
-  - _Requirements: 2.1, 2.4, 5.1, 5.2, 5.3, 5.4_
+- [ ] 8. Implement environment-aware URL configuration
+  - Create environment variable configuration for dynamic URLs in meta tags
+  - Replace hardcoded URLs with environment-aware alternatives
+  - Ensure proper URL handling for development vs production environments
+  - Test URL generation across different deployment environments
+  - _Requirements: 2.1, 2.4, 4.1_
+
+- [ ] 9. Enhance structured data with additional healthcare features
+  - Add more specific healthcare application features to structured data
+  - Include accessibility and compliance information in schema markup
+  - Add organization schema for healthcare provider context
+  - Verify structured data completeness for healthcare domain
+  - _Requirements: 2.4, 5.4_
