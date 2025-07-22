@@ -18,7 +18,7 @@ import { useParams } from "react-router-dom";
 import { isAuthenticated } from "./config/api.js";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import Terms from "./components/Terms.jsx";
-import pdfurl from "./assets/Terms-Of-Use.pdf";
+import pdfurl from "./assets/Terms-of-Use.pdf";
 import Feedback from "./pages/Feedback.jsx";
 import FeedbackForm from "./forms/FeedbackForm.jsx";
 
