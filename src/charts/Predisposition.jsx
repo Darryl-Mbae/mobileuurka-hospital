@@ -120,7 +120,7 @@ const Predisposition = ({ patient, setActiveTab }) => {
                 <span style={{ textTransform: "capitalize" }}>
                   {[
                     patient?.explanations?.[patient?.explanations?.length - 1]
-                      ?.risk_level || "unavailable",
+                      ?.risklevel || "unavailable",
                   ]}
                 </span>
               </div>

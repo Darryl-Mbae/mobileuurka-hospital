@@ -13,13 +13,13 @@ const Riskassessment = ({ patient }) => {
     if (patient) {
       // Extract dates from explanations and visits
       const explanationDates =
-        patient?.riskAssessments?.map((exp) => exp.date.split("T")[0]) || [];
+        patient?.explanations?.map((exp) => exp.date.split("T")[0]) || [];
 
       // Get visit dates and next visit if available
       const visitDates =
         patient?.visits?.map((visit) => visit.date.split("T")[0]) || [];
       const nextVisitDate =
-        patient?.visits?.[patient?.visits?.length - 1]?.next_visit;
+        patient?.visits?.[patient?.visits?.length - 1]?.nextVisit;
 
       // Combine and deduplicate dates
       const allDates = [...new Set([...explanationDates, nextVisitDate])].sort(
@@ -116,7 +116,7 @@ const Riskassessment = ({ patient }) => {
             {visibleDates.map((date, index) => {
               const formatted = formatDateDisplay(date);
               const isFutureVisit =
-                patient?.visits?.[patient?.visits?.length - 1]?.next_visit ===
+                patient?.visits?.[patient?.visits?.length - 1]?.nextVisit ===
                 date;
 
               return (
@@ -144,7 +144,7 @@ const Riskassessment = ({ patient }) => {
             {Array.from({ length: 5 - visibleDates.length }).map((_, index) => {
               // Get the last visit's next_visit date
               const nextVisitDate =
-                patient?.visits?.[patient?.visits?.length - 1]?.next_visit;
+                patient?.visits?.[patient?.visits?.length - 1]?.nextVisit;
 
               // If we have a next visit date, calculate consecutive dates
               if (nextVisitDate) {
@@ -198,12 +198,12 @@ const Riskassessment = ({ patient }) => {
               {(() => {
                 // Check if this is the next visit date
                 const isNextVisit =
-                  patient?.visits?.[patient?.visits?.length - 1]?.next_visit ===
+                  patient?.visits?.[patient?.visits?.length - 1]?.nextVisit ===
                   selectedDate;
 
                 // Check if this is a future date (after next visit)
                 const nextVisitDate =
-                  patient?.visits?.[patient?.visits?.length - 1]?.next_visit;
+                  patient?.visits?.[patient?.visits?.length - 1]?.nextVisit;
 
                 const isFutureDate =
                   nextVisitDate &&
@@ -229,7 +229,7 @@ const Riskassessment = ({ patient }) => {
                   );
                 } else if (currentVisit) {
                   return (
-                    currentVisit.visit_explanation ||
+                    currentVisit.visitExplanation ||
                     "Visit recorded but no detailed assessment available."
                   );
                 } else {

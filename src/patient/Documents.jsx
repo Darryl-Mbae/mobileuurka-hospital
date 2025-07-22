@@ -161,7 +161,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
         // Join risk_levels found
         result = relatedExplanations?.length
           ? relatedExplanations
-              .map((exp) => exp.risk_level || "No risk level")
+              .map((exp) => exp.risklevel || "No risk level")
               .join(", ")
           : "No explanations";
       }
