@@ -10,7 +10,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationWeek: 0,
+    gestationWeek: "",
     trimester: 1,
     medicine: "",
     prescription: "",
@@ -238,7 +238,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
                     name="medicine"
                     value={formData.medicine}
                     onChange={handleChange}
-                    placeholder="e.g., Paracetamol, Folic Acid, Iron Tablets"
+                    placeholder="e.g., Paracetamol"
                     required
                   />
                 </div>

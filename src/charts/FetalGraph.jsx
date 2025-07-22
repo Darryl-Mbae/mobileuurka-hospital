@@ -47,10 +47,15 @@ const FetalGraph = ({ patient = [], selectedOption }) => {
     if (e && e.activePayload && e.activePayload.length > 0) {
       const payload = e.activePayload[0].payload;
       setHoveredPoint(payload);
-      setTooltipPos({ 
-        x: e.chartX || 0, 
-        y: e.chartY || 0 
-      });
+      
+      // Get better positioning relative to chart container
+      const chartContainer = chartRef.current;
+      if (chartContainer) {
+        setTooltipPos({ 
+          x: e.chartX || 0, 
+          y: e.chartY || 0 
+        });
+      }
     } else {
       setHoveredPoint(null);
     }

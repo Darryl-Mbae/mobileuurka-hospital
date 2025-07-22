@@ -1,0 +1,53 @@
+dialog{
+    height: 80vh;
+}
+.terms-dialog {
+  border: none;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  background: white;
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); */
+  overflow: hidden;
+  border: none;
+  outline: none;
+}
+
+.terms-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.terms-pdf-scroll {
+  overflow-y: auto;
+  height: 85%;
+  margin: 15px 0;
+  border:none;
+}
+
+.terms-actions {
+  text-align: right;
+}
+
+.terms-actions button {
+  padding: 10px 20px;
+  background-color: #008540;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.terms-actions button:hover {
+  background-color: #008540;
+}
+.react-pdf__Page {
+  display: flex;
+  justify-content: center;
+}
+
+.react-pdf__Page__canvas {
+  max-width: 100% !important;
+  height: auto !important;
+}

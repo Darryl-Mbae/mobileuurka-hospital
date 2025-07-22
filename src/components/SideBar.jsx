@@ -10,6 +10,8 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { FiBell } from "react-icons/fi";
 import { RiBubbleChartLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
+import { BsChatDots } from "react-icons/bs";
+
 
 const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -41,6 +43,7 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
 
   const activityItems = [
     { name: "Settings", icon: <IoSettingsOutline /> },
+    { name: "Feedback", icon: <BsChatDots />},
     { name: "Alerts", icon: <FiBell />, showBadge: true },
   ];
 

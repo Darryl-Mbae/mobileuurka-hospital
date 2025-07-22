@@ -54,10 +54,17 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
   const [filteredPatients, setFilteredPatients] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
   const navigate = useNavigate();
+  
+
 
   useEffect(() => {
-    fetchPatients();
+    // Only fetch initially if we don't have patients data
+    if (!patients || patients.length === 0) {
+      fetchPatients();
+    }
   }, []);
+
+
 
 
 
@@ -109,6 +116,10 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
     setActiveItem("PatientIntake");
   };
 
+  const handleRefresh = () => {
+    
+  };
+
 
   return (
     <div className="patients-page">
@@ -124,6 +135,8 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
             addButtonText="Add Patient"
             searchValue={searchTerm}
             onSearchChange={setSearchTerm}
+            onRefresh={handleRefresh}
+            showRefresh={true}
           />
         </div>
       </div>

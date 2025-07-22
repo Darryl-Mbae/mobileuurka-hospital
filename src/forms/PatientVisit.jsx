@@ -11,7 +11,7 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
     editor: "",
     date: new Date().toISOString().split("T")[0],
     visitNumber: 1,
-    gestationWeek: 0,
+    gestationWeek: "",
     visitReason: "",
     visitExplanation: "",
     nextVisit: "",
@@ -64,6 +64,10 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
 
       if (response.ok) {
         const patient = await response.json();
+        setFormData((prev) => ({
+          ...prev,
+          visitNumber: patient?.visits.length + 1,
+        }));
         setPatientName(patient.name || "Unknown Patient");
       } else {
         setPatientName("Patient not found");
@@ -189,6 +193,7 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
                 name="gestationWeek"
                 value={formData.gestationWeek}
                 onChange={handleChange}
+                placeholder="e.g 12"
                 min="0"
                 max="42"
               />

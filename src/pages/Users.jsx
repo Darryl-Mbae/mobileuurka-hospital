@@ -73,7 +73,6 @@ const Users = ({ setActiveItem }) => {
   const onlineUsers = useSelector((s) => s.user.onlineUsers);
   const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
-  console.log(organisations);
 
   useEffect(() => {
     if (organisations && organisations.length > 0) {

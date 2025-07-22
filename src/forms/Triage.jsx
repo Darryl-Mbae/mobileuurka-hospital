@@ -9,15 +9,15 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationWeek: 0,
-    height: 0,
-    heartRate: 0,
-    diastolic: 0,
-    systolic: 0,
-    map: 0,
-    temperature: 0.0,
-    weight: 0,
-    bmi: 0,
+    gestationWeek: "",
+    height: "",
+    heartRate: "",
+    diastolic: "",
+    systolic: "",
+    map: "",
+    temperature:"",
+    weight: "",
+    bmi: "",
   });
 
 
@@ -210,6 +210,7 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
                     name="gestationWeek"
                     value={formData.gestationWeek}
                     onChange={handleChange}
+                    placeholder="e.g., 28"
                     min="0"
                     max="42"
                   />

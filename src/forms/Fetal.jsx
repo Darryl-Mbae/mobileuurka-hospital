@@ -9,15 +9,16 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationWeek: 0,
-    fhr: 0, // Fetal Heart Rate
-    femurHeight: 0,
-    headCircumference: 0,
+    gestationWeek: "",
+    fhr: "", // Fetal Heart Rate
+    femurHeight: "",
+    headCircumference: "",
   });
 
   
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
+  const [success,setSuccess] =useState(false)
   const [fetchingPatient, setFetchingPatient] = useState(false);
 
   const clearForm = () => {
@@ -25,11 +26,10 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
       patientId: selectedPatientId || "",
       editor: currentUser?.name || "",
       date: new Date().toISOString().split("T")[0],
-      gestationWeek: 0,
-      fetalHeartRate: 0,
-      fetalMovement: "",
-      fetalPosition: "",
-      estimatedFetalWeight: 0,
+      gestationWeek: "",
+      fhr: "",
+      femurHeight: "",
+      headCircumference:""
     });
     setPatientName("");
   };
@@ -183,6 +183,7 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
                 name="gestationWeek"
                 value={formData.gestationWeek}
                 onChange={handleChange}
+                placeholder="e.g., 28"
                 min="0"
                 max="42"
                 required

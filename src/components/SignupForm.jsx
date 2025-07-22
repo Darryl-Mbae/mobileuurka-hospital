@@ -125,10 +125,7 @@ const SignupForm = memo(({
         {loading ? "Loading..." : "Sign Up"}
       </button>
 
-      <button type="button" className="google-btn">
-        <img src={google} alt="Google Logo" />
-        Sign up with Google
-      </button>
+     
 
       <p className="switch-auth">
         Already have an account? <span onClick={onSwitch}>Login</span>

@@ -26,10 +26,16 @@ const WeightChart = ({ data }) => {
     if (e && e.activePayload && e.activePayload.length > 0) {
       const payload = e.activePayload[0].payload;
       setHoveredBar(payload);
-      setTooltipPos({
-        x: e.chartX || 0,
-        y: e.chartY || 0,
-      });
+      
+      // Get the chart container bounds for better positioning
+      const chartContainer = chartRef.current;
+      if (chartContainer) {
+        const rect = chartContainer.getBoundingClientRect();
+        setTooltipPos({
+          x: (e.chartX || 0),
+          y: (e.chartY || 0),
+        });
+      }
     }
   };
 
@@ -47,34 +53,45 @@ const WeightChart = ({ data }) => {
       <div
         style={{
           position: "absolute",
-          top: Math.max(0, position.y - 40), // Position above the point
-          left: Math.max(0, position.x - 30), // Center horizontally
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          top: Math.max(10, position.y - 60), // Position above the point with more space
+          left: Math.max(10, Math.min(position.x - 40, window.innerWidth - 120)), // Better horizontal positioning
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
           color: "white",
-          padding: "8px 12px",
-          borderRadius: "6px",
+          padding: "10px 14px",
+          borderRadius: "8px",
           pointerEvents: "none",
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
-          fontSize: "0.85em",
-          zIndex: 10000,
+          boxShadow: "0px 6px 20px rgba(0, 0, 0, 0.4)",
+          fontSize: "0.9em",
+          zIndex: 99999,
           whiteSpace: "nowrap",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
+          border: "1px solid rgba(255, 255, 255, 0.3)",
+          transform: "translateZ(0)", // Force hardware acceleration
+          backdropFilter: "blur(4px)",
         }}
       >
-        <div>
-          <strong>{data.weight} kg</strong>
+        <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+          {data.weight} kg
         </div>
-        <div style={{ fontSize: "0.75em", opacity: 0.8 }}>{data.date}</div>
+        <div style={{ fontSize: "0.8em", opacity: 0.9 }}>{data.date}</div>
       </div>
     );
   };
 
   return (
-    <div style={{ width: "100%", height: "90%", paddingTop: "10px", position: "relative" }} ref={chartRef}>
+    <div 
+      style={{ 
+        width: "100%", 
+        height: "90%", 
+        paddingTop: "10px", 
+        position: "relative",
+        overflow: "visible" // Allow tooltip to show outside container
+      }} 
+      ref={chartRef}
+    >
       <ResponsiveContainer>
         <BarChart
           data={normalizedData}
-          margin={{ left: -30 }}
+          margin={{ left: -30, top: 20, right: 20, bottom: 5 }} // Add top margin for tooltip space
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
@@ -92,17 +109,18 @@ const WeightChart = ({ data }) => {
             fontSize={".8em"}
             tickMargin={5}
           />
-          {/* Remove default Tooltip */}
           <Bar
             dataKey="weight"
             fill="#79B49A"
             radius={20}
-            // isAnimationActive={false} // optional: avoid animation jitter
+            cursor="pointer"
           />
         </BarChart>
+        <CustomTooltip data={hoveredBar} position={tooltipPos} />
+
       </ResponsiveContainer>
+      
       {/* Custom Tooltip */}
-      <CustomTooltip data={hoveredBar} position={tooltipPos} />
     </div>
   );
 };

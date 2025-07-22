@@ -64,6 +64,35 @@
   font-size: 16px;
 }
 
+.search-container .buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-container .refresh-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid rgba(167, 161, 142, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-container .refresh-button:hover {
+  background: #e9ecef;
+  color: #333;
+  transform: translateY(-1px);
+}
+
+.search-container .refresh-button .refresh-icon {
+  font-size: 16px;
+}
+
 /* Responsive Design */
 @media screen and (max-width: 768px) {
   .search-container {
@@ -76,8 +105,14 @@
     width: 100%;
   }
 
+  .search-container .buttons-container {
+    flex-direction: row;
+    justify-content: center;
+  }
+
   .search-container .add-button {
     justify-content: center;
+    flex: 1;
   }
 }
 

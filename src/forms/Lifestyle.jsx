@@ -12,7 +12,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
     date: new Date().toISOString().split("T")[0],
     smoking: "",
     diet: "",
-    exercise: 0,
+    exercise: "",
     alcoholConsumption: "",
     caffeine: "",
     caffeineSources: [],

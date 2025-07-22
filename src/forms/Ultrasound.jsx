@@ -9,8 +9,8 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
     patientId: selectedPatientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
-    gestationWeek: 0,
-    amniotic: 0, // Amniotic fluid level
+    gestationWeek: "",
+    amniotic: "", // Amniotic fluid level
     imageUrl: "",
   });
 
@@ -221,6 +221,7 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
                 name="gestationWeek"
                 value={formData.gestationWeek}
                 onChange={handleChange}
+                placeholder="e.g. 22"
                 min="0"
                 max="42"
                 required

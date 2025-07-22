@@ -54,11 +54,11 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
     });
   };
 
+
   const filteredNotes = patient?.notes.filter((note) =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log(filteredNotes)
 
   const handleAddNote = () => {
     // Switch to notepad page instead of showing inline form

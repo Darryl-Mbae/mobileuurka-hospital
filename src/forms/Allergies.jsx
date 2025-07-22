@@ -19,10 +19,9 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
   }
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { showSuccess, successConfig, showSuccessMessage } =
-    useSuccessMessage(clearForm);
   const [patientName, setPatientName] = useState("");
   const [fetchingPatient, setFetchingPatient] = useState(false);
+  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
@@ -180,7 +179,7 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
                 name="allergies"
                 value={formData.allergies}
                 onChange={handleChange}
-                placeholder="e.g., Peanuts, Penicillin, Shellfish"
+                placeholder="e.g., Peanuts"
                 required
               />
             </div>

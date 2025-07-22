@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { FiSearch, FiPlus } from 'react-icons/fi'
+import { FiSearch, FiPlus, FiRefreshCw } from 'react-icons/fi'
 import '../css/SearchContainer.css'
 
 const SearchContainer = ({ 
@@ -8,7 +8,9 @@ const SearchContainer = ({
   onAdd, 
   addButtonText = "Add",
   searchValue = "",
-  onSearchChange 
+  onSearchChange,
+  onRefresh,
+  showRefresh = false
 }) => {
   const [localSearchValue, setLocalSearchValue] = useState(searchValue)
 
@@ -31,6 +33,12 @@ const SearchContainer = ({
     }
   }
 
+  const handleRefreshClick = () => {
+    if (onRefresh) {
+      onRefresh()
+    }
+  }
+
   return (
     <div className="search-container">
       <div className="input-container">
@@ -42,9 +50,16 @@ const SearchContainer = ({
           onChange={handleSearchChange}
         />
       </div>
-      <div className="add-button" onClick={handleAddClick}>
-        <FiPlus className="add-icon" />
-        <span>{addButtonText}</span>
+      <div className="buttons-container">
+        {showRefresh && (
+          <div className="refresh-button" onClick={handleRefreshClick}>
+            <FiRefreshCw className="refresh-icon" />
+          </div>
+        )}
+        <div className="add-button" onClick={handleAddClick}>
+          <FiPlus className="add-icon" />
+          <span>{addButtonText}</span>
+        </div>
       </div>
     </div>
   )

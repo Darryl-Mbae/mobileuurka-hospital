@@ -17,8 +17,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
     gestationalDiabetesHistory: "",
     gestationalHypertensionHistory: "",
     eclampsiaHistory: "",
-    gravida: 0,
-    parity: 0,
+    gravida: "",
+    parity: "",
 
     // Critical Medical History
     chronicHypertension: "",
@@ -38,11 +38,11 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
     lastPeriodDate: "",
     estimatedDueDate: "",
     miscarriage: "",
-    miscarriageNum: 0,
+    miscarriageNum: "",
     csection: "",
-    csectionNum: 0,
+    csectionNum: "",
     stillbirth: "",
-    stillbirthNum: 0,
+    stillbirthNum: "",
     pph: "",
 
     // Additional Medical History
@@ -65,16 +65,16 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
     famThalassemia: "",
 
     // Other Details
-    maleAge: 0,
+    maleAge: "",
     malePreeclampsiaPrevHistory: "",
-    interval: 0,
+    interval: "",
     infertility: "",
     ivf: "",
     firstPreeclampsiaHistory: "null",
-    prevChildWeight: 0,
+    prevChildWeight: "",
     prevGynaSurgery: "",
     prolongedLabour: "",
-    prolongedLabourHours: 0,
+    prolongedLabourHours: "",
     contraceptives: "",
     pregnancyHistoryAnemia: "",
   });
@@ -356,6 +356,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="gravida"
                     value={formData.gravida}
                     onChange={handleChange}
+                    placeholder="e.g 2"
                     min="0"
                   />
                 </div>
@@ -365,6 +366,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     type="number"
                     name="parity"
                     value={formData.parity}
+                    placeholder="e.g 2"
                     onChange={handleChange}
                     min="0"
                   />
@@ -582,6 +584,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                       name="miscarriage"
                       value={formData.miscarriage}
                       onChange={handleChange}
+
                     >
                       {yesNoOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -599,6 +602,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="miscarriageNum"
                     value={formData.miscarriageNum}
                     onChange={handleChange}
+                    placeholder="e.g 0"
+
                     min="0"
                   />
                 </div>
@@ -628,6 +633,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="csectionNum"
                     value={formData.csectionNum}
                     onChange={handleChange}
+                    placeholder="e.g 0"
+
                     min="0"
                   />
                 </div>
@@ -655,6 +662,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="stillbirthNum"
                     value={formData.stillbirthNum}
                     onChange={handleChange}
+                    placeholder="e.g 0"
                     min="0"
                   />
                 </div>
@@ -682,6 +690,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="prevChildWeight"
                     value={formData.prevChildWeight}
                     onChange={handleChange}
+                    placeholder="e.g 3800"
                     min="0"
                   />
                 </div>
@@ -1001,6 +1010,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="maleAge"
                     value={formData.maleAge}
                     onChange={handleChange}
+                    placeholder="e.g 35"
+
                     min="0"
                   />
                 </div>
@@ -1028,6 +1039,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="interval"
                     value={formData.interval}
                     onChange={handleChange}
+                    placeholder="e.g 12"
                     min="0"
                   />
                 </div>
@@ -1080,6 +1092,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     name="prolongedLabourHours"
                     value={formData.prolongedLabourHours}
                     onChange={handleChange}
+                    placeholder="e.g 4"
                     min="0"
                   />
                 </div>
@@ -1153,57 +1166,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     <FiChevronDown className="select-icon" />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>Prolonged Labour History</label>
-                  <div className="select-container">
-                    <select
-                      name="prolongedLabour"
-                      value={formData.prolongedLabour}
-                      onChange={handleChange}
-                    >
-                      {yesNoOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <FiChevronDown className="select-icon" />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Contraceptive Use</label>
-                  <div className="select-container">
-                    <select
-                      name="contraceptives"
-                      value={formData.contraceptives}
-                      onChange={handleChange}
-                    >
-                      {yesNoOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <FiChevronDown className="select-icon" />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Previous Gynecological Surgery</label>
-                  <div className="select-container">
-                    <select
-                      name="prevGynaSurgery"
-                      value={formData.prevGynaSurgery}
-                      onChange={handleChange}
-                    >
-                      {yesNoOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <FiChevronDown className="select-icon" />
-                  </div>
-                </div>
+                
+              
               </div>
             </div>
           )}

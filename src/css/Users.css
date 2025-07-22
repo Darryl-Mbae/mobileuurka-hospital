@@ -63,7 +63,17 @@
   font-size: 1em;
   color: rgb(131, 131, 131);
 }
+.feedback .lists .title {
+  grid-template-columns: 15% 18% 10% 30% 18% 10%;
 
+}
+.feedback .lists .list {
+  grid-template-columns: 15% 18% 10% 30% 18% 10%;
+
+}
+.feedback .lists .list .category{
+  text-transform: capitalize;
+}
 .users-page .lists .list:hover {
   transform: translateX(5px);
 }
@@ -154,7 +164,65 @@
 .users-page .title .status {
   text-align: center;
 }
+.feedback{
+  .nothing{
 
+  }
+  .status-badge {
+    padding: 9px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+    border: 1px solid transparent;
+  }
+  
+  /* Pending - Amber */
+  .status-badge.pending {
+    background-color: rgba(255, 193, 7, 0.1); /* Amber with 15% opacity */
+    color: #FFA000; /* Darker amber for text */
+  }
+  
+  /* Resolved - Green */
+  .status-badge.resolved {
+    background-color: rgba(76, 175, 80, 0.1); /* Green with 15% opacity */
+    color: #2E7D32; /* Darker green for text */
+    border-color: rgba(76, 175, 80, 0.3);
+  }
+  
+  /* Rejected - Red */
+  .status-badge.rejected {
+    background-color: rgba(244, 67, 54, 0.1); /* Red with 15% opacity */
+    color: #C62828; /* Darker red for text */
+    border-color: rgba(244, 67, 54, 0.3);
+  }
+  
+  /* Optional: Add a dot before the status text */
+  .status-badge::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  .status-badge.pending::before {
+    background-color: #FFA000;
+  }
+  
+  .status-badge.resolved::before {
+    background-color: #2E7D32;
+  }
+  
+  .status-badge.rejected::before {
+    background-color: #C62828;
+  }
+}
 /* .users-page .toolbar .search {
   display: flex;
   align-items: center;
@@ -336,6 +404,7 @@
 .users-page .lists::-webkit-scrollbar-thumb:hover {
   background: rgba(109, 109, 109, 0.5);
 }
+
 
 /* Responsive Design */
 @media screen and (max-width: 1280px) {
