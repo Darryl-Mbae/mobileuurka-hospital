@@ -154,10 +154,13 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
 
       if (title === "Pregnancy Journey") {
         // Match explanations by visit_id
-        const relatedExplanations = patient?.explanations?.filter(
-          (exp) => exp.visit_id === item.visit_id
-        );
-
+        const relatedExplanations = patient?.explanations?.filter((exp) => {
+          const expDate = new Date(exp.date).toISOString().split("T")[0];
+          const itemDate = new Date(item.date).toISOString().split("T")[0];
+          return expDate === itemDate;
+        });
+        
+        
         // Join risk_levels found
         result = relatedExplanations?.length
           ? relatedExplanations

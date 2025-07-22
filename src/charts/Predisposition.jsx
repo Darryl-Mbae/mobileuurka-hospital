@@ -88,11 +88,11 @@ const Predisposition = ({ patient, setActiveTab }) => {
           <IoIosWarning />
         </div>
         <p className="pred">
-          {!patient?.riskAssessments?.[patient?.riskAssessments?.length - 1]?.risk_assessment ? "No risk assessment records available":  "Patient exhibits"}
+          {!patient?.riskAssessments?.[patient?.riskAssessments?.length - 1]?.riskassessment ? "No risk assessment records available":  "Patient exhibits"}
          
           {checkPredisposition(
             patient?.riskAssessments?.[patient?.riskAssessments?.length - 1]
-              ?.risk_assessment
+              ?.riskassessment
           )}
         </p>
         <div className="line-container">
