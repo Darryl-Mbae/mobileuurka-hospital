@@ -736,6 +736,16 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                   />
                 </div>
                 <div className="form-group">
+                  <label>Urine  Odor</label>
+                  <input
+                    type="text"
+                    name="urine_odor"
+                    value={formData.urine_odor}
+                    onChange={handleChange}
+                    placeholder="e.g., Ammonia-like"
+                  />
+                </div>
+                <div className="form-group">
                   <label>Urine Clarity</label>
                   <input
                     type="text"
