@@ -7,31 +7,36 @@ import { FaChartSimple } from "react-icons/fa6";
 const Predisposition = ({ patient, setActiveTab }) => {
   function parseDiagnosis(raw) {
     if (!raw) return "No diagnosis records";
-
-    // Helper to parse PostgreSQL array-style strings
+  
     const parsePostgresArray = (str) => {
       return str
         .replace(/^{|}$/g, "") // remove surrounding braces
         .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) // split on commas outside quotes
         .map((item) => item.replace(/^"(.*)"$/, "$1").trim()); // remove surrounding quotes
     };
-
+  
     const parsed = parsePostgresArray(raw);
-
+  
     const cleaned = parsed
       .filter((x) => x && x !== "NULL")
       .map((entry) =>
         entry
-          .replace(/Highly\s+/i, "") // remove "Highly"
-          .replace(/Suspected to have\s+/i, "") // remove leading phrase
-          .replace(/\.$/, "") // remove trailing period
+          .replace(/Highly\s+/i, "")
+          .replace(/Suspected to have\s+/i, "")
+          .replace(/\.$/, "")
           .trim()
       );
-
-    return cleaned.length > 0
-      ? `Suspected to have ${cleaned.join(" & ")}`
-      : "No diagnosis data found";
+  
+    if (cleaned.length === 0) return "No diagnosis data found";
+  
+    // 🧠 Check for "No specific conditions detected" as first item
+    if (/^no specific conditions detected/i.test(cleaned[0])) {
+      return cleaned[0];
+    }
+  
+    return `Suspected to have ${cleaned.join(" & ")}`;
   }
+  
   const checkPredisposition = (riskAssessment) => {
     if (!riskAssessment) return "";
 
