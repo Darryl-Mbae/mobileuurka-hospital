@@ -6,7 +6,7 @@
   width: 70vw !important;
   display: grid;
   margin: 10px;
-  grid-template-columns: 40% 30% 30% ;
+  grid-template-columns: 25% 30% 30% ;
   font-size: 0.9em;
   color: #333;
   margin-bottom: 15px;
@@ -23,7 +23,7 @@
   padding: 20px 10px;
   width: 70vw;
   display: grid;
-  grid-template-columns: 40% 30% 30% ;
+  grid-template-columns: 25% 30% 30% ;
   font-size: 0.9em;
   color: #333;
   align-items: center;

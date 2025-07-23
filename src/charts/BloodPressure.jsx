@@ -13,7 +13,7 @@ const BloodPressure = ({ patient }) => {
       <div className="title">
         Triage
         <DropdownMenu
-          data={["systolic", "diastolic", "temperature", "bmi","heart_rate"]}
+          data={["systolic", "diastolic", "temperature", "bmi","heartRate"]}
           selected={selectedOption}
           length={"90px"}
           onChange={(value) => setSelectedOption(value)}

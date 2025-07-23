@@ -42,7 +42,7 @@ const Overview = ({ patient,setActiveTab }) => {
               <BloodPressure patient={patient?.triages} />
             </div>
             <div className="in-chart two">
-              <Symptom patient={patient} />
+              <Symptom patient={patient} setActiveTab={setActiveTab} />
             </div>
           </div>
         </div>

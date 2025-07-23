@@ -13,7 +13,6 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const users = useSelector((s) => s.user.users);
   const navigate = useNavigate();
 
-  console.log(document.title);
 
   const riskLevelColors = {
     high: "#FF3B30",
@@ -141,7 +140,6 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const buildRecord = (array, title) =>
     array?.map((item) => {
       let result = "";
-      console.log(item)
 
       if (title === "Lab Work") {
         result = item.diagnosis || "No diagnosis";

@@ -47,7 +47,7 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
         Math.max(80, Math.floor(minValue - padding)),
         Math.min(200, Math.ceil(maxValue + padding)),
       ];
-    } else if (selectedOption === "heart_rate") {
+    } else if (selectedOption === "heartRate") {
       return [
         Math.max(40, Math.floor(minValue - padding)),
         Math.min(120, Math.ceil(maxValue + padding)),
@@ -65,7 +65,7 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
         return value >= 140 || value < 90;
       case "diastolic":
         return value >= 90 || value < 60;
-      case "heart_rate":
+      case "heartRate":
         return value < 60 || value > 100;
       default:
         return false;
@@ -82,7 +82,7 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
         if (value >= 90) return "Diastolic hypertension (≥90 mmHg)";
         if (value < 60) return "Diastolic hypotension (<60 mmHg)";
         break;
-      case "heart_rate":
+      case "heartRate":
         if (value < 60) return "Bradycardia (<60 bpm)";
         if (value > 100) return "Tachycardia (>100 bpm)";
         break;

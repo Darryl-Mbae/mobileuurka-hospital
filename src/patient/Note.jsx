@@ -121,10 +121,9 @@ const Note = ({ note, user }) => {
           {isEditing ? <MdSave /> : <MdEdit />}
           {isEditing ? "Save" : "Edit"}
         </div> */}
-
+        <p> ~ {note.editor}</p>
         <div className="realtime">
-          {getUserName(note.user_id)}
-            <span> </span>
+          <span> </span>
           {formatTime(note.date)}
         </div>
       </div>

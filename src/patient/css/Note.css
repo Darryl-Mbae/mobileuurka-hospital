@@ -1,7 +1,7 @@
 #notes .picker2 {
     width: 75%;
     padding: 20px;
-    background: #F7F1EB;
+    background: var(--section);
     margin-bottom: 20px;
     border-radius: 7px;
     position: relative;
@@ -72,12 +72,11 @@
 
 #notes .picker2 p, #notes .picker2 textarea{
     margin: 0px;
-    line-height: 0px;
     width: 95%;
     color: rgba(79, 69, 53, 0.85);
     margin-left: 28px;
     font-size: 0.9em;
-    padding-bottom: 20px;
+    padding-bottom: 40px;
     background: transparent;
     border: none;
     outline: none;

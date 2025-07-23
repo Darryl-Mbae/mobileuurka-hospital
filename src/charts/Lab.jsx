@@ -87,7 +87,7 @@ const intKeys = data
         <div className="graph">
           <LabChart patient={patient} selectedOption={selectedOption} />
         </div>
-        <div className={active ? "ai-text active" : "ai-text"}>
+        {/* <div className={active ? "ai-text active" : "ai-text"}>
           {active ? (
             <>
               <div className="icon">
@@ -104,7 +104,7 @@ const intKeys = data
           <div className="arrow" onClick={() => setActive((prev) => !prev)}>
             <FaAngleUp />
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

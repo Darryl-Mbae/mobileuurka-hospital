@@ -476,7 +476,7 @@ const Patient = ({ id }) => {
                   />
                 )}
                 {activeTab === "document" && <Document document={document} />}
-                {activeTab === "note" && <Note note={note} user={user} />}
+                {activeTab === "note" && <Note note={note} user={currentUser} />}
                 {activeTab === "notepad" && (
                   <Notepad patient={patient} user={currentUser} />
                 )}
