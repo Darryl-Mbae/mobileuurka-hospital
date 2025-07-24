@@ -24,13 +24,22 @@
 .users-page .toolbar .count span {
   color: #a7a18e;
 }
-.users-page .message{
+.users-page .messages{
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px; /* or whatever width you need */
-  display: inline-block; /* or block depending on your layout */
-  vertical-align: middle;
+overflow: hidden;
+text-overflow: ellipsis;
+max-width: 200px; /* or whatever width you need */
+display: inline-block; /* or block depending on your layout */
+vertical-align: middle;
+}
+
+.users-page .titler{
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+max-width: 170px; /* or whatever width you need */
+display: inline-block; /* or block depending on your layout */
+vertical-align: middle;
 }
 
 
@@ -46,6 +55,7 @@
   margin-top: -10px;
   /* overflow-y: scroll; */
 }
+
 
 .users-page .lists .title {
   width: calc(100% - 40px);

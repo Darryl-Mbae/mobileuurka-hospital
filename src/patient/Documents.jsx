@@ -21,36 +21,37 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     default: "#AEAEB2",
   };
 
-  const formatDiagnosis = (raw) => {
-    if (!raw || typeof raw !== "string") return "No diagnosis";
-
-    // Extract quoted parts: "..." only
-    const matches = raw.match(/"([^"]+)"/g);
-    const diagnoses = matches?.map((m) => m.replace(/"/g, "")) || [];
-
-    if (diagnoses.length === 0) return "No diagnosis";
-
-    // Remove duplicates & trim
-    const cleaned = [...new Set(diagnoses.map((d) => d.trim()))];
-
-    // Normalize prefix if all start with "Suspected to have" or similar
-    const prefix = "Suspected to have ";
-    const prefixPattern = /^((Highly )?suspected to have\s)/i;
-
-    const diseases = cleaned.map((d) =>
-      d.replace(prefixPattern, "").replace(/\.$/, "").trim()
-    );
-
-    // Join disease names
-    const joinedDiseases =
-      diseases.length > 1
-        ? diseases.slice(0, -1).join(", ") +
-          " and " +
-          diseases[diseases.length - 1]
-        : diseases[0];
-
-    return prefix + joinedDiseases;
-  };
+  function formatDiagnosis(raw) {
+    if (!raw) return "No diagnosis records";
+  
+    const parsePostgresArray = (str) => {
+      return str
+        .replace(/^{|}$/g, "") // remove surrounding braces
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) // split on commas outside quotes
+        .map((item) => item.replace(/^"(.*)"$/, "$1").trim()); // remove surrounding quotes
+    };
+  
+    const parsed = parsePostgresArray(raw);
+  
+    const cleaned = parsed
+      .filter((x) => x && x !== "NULL")
+      .map((entry) =>
+        entry
+          .replace(/Highly\s+/i, "")
+          .replace(/Suspected to have\s+/i, "")
+          .replace(/\.$/, "")
+          .trim()
+      );
+  
+    if (cleaned.length === 0) return "No diagnosis data found";
+  
+    // 🧠 Check for "No specific conditions detected" as first item
+    if (/^no specific conditions detected/i.test(cleaned[0])) {
+      return cleaned[0];
+    }
+  
+    return `Suspected to have ${cleaned.join(" & ")}`;
+  }
 
   const renderRiskLevel = (risk) => {
     const key = risk?.toLowerCase();

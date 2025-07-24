@@ -31,10 +31,13 @@ const PatientIntake = ({ setInternalTab }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [hospitals, setHospitals] = useState([]);
+  const [ids, setIds] = useState([]);
   const clearForm = () => {
     setFormData({});
   };
   const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
+
 
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -48,7 +51,21 @@ const PatientIntake = ({ setInternalTab }) => {
 
   useEffect(() => {
     fetchHospitals();
+    getIds();
   }, []);
+
+  const getIds = async ()=>{
+    try {
+      const response = await fetch(`${SERVER}/patients/ids`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      console.log(data);
+      setIds(data);
+    } catch (error) {
+      console.error("Error fetching hospitals:", error);
+  } 
+}
 
   const fetchHospitals = async () => {
     try {
@@ -135,6 +152,7 @@ const PatientIntake = ({ setInternalTab }) => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="form">
