@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "../css/Patients.css";
-import { setPatients } from "../realtime/Slices/patientsSlice";
+import { setPatients } from "../reducers/Slices/patientsSlice";
 import SearchContainer from "../components/SearchContainer";
 import { useNavigate } from "react-router-dom";
 
@@ -56,18 +56,6 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
   const navigate = useNavigate();
   
 
-
-  useEffect(() => {
-    // Only fetch initially if we don't have patients data
-    if (!patients || patients.length === 0) {
-      fetchPatients();
-    }
-  }, []);
-
-
-
-
-
   useEffect(() => {
     if (patients) {
       const filtered = patients.filter(patient => 
@@ -80,26 +68,7 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
     }
   }, [patients, searchTerm]);
 
-  async function fetchPatients() {
-    try {
-      const res = await fetch(`${SERVER}/patients/my`, {
-        credentials: "include",
-      });
 
-      const data = await res.json();
-      console.log(data);
-
-
-      // Optional: transform or normalize data
-      const transformed = data.map((p) => ({
-        ...p,
-      }));
-
-      dispatch(setPatients(transformed));
-    } catch (err) {
-      console.error("Failed to fetch patients:", err);
-    }
-  }
 
   const handleClick = (patientId) => {
     

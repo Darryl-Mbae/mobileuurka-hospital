@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "../css/Users.css";
-import { setUsers } from "../realtime/Slices/userSlice";
+import { setUsers } from "../reducers/Slices/userSlice";
 import SearchContainer from "../components/SearchContainer";
 
 const columns = [

@@ -7,10 +7,10 @@ import Patients from "./pages/Patients";
 import Settings from "./pages/Settings";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "./realtime/Slices/userSlice";
+import { setUser } from "./reducers/Slices/userSlice.js";
 import Users from "./pages/Users.jsx";
 import Screening from "./pages/Screening.jsx";
-import { setOrganisations } from "./realtime/Slices/organizationSlice.js";
+import { setOrganisations } from "./reducers/Slices/organizationSlice.js";
 import Patient from "./pages/Patient.jsx";
 import PatientIntake from "./forms/PatientIntake.jsx";
 import UserForm from "./forms/UserForm.jsx";
@@ -21,6 +21,8 @@ import Terms from "./components/Terms.jsx";
 import pdfurl from "./assets/Terms-of-Use.pdf";
 import Feedback from "./pages/Feedback.jsx";
 import FeedbackForm from "./forms/FeedbackForm.jsx";
+import { setPatients } from "./reducers/Slices/patientsSlice.js";
+import useSocket from "./hooks/useSocket.js";
 
 function App() {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -36,6 +38,10 @@ function App() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // Initialize socket connection
+  const { isConnected, connectionStatus } = useSocket();
+
 
   useEffect(() => {
     if (page) {
@@ -120,6 +126,30 @@ function App() {
     };
 
     fetchOrganizations();
+  }, [currentUser, dispatch]);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchPatients();
+    }
+    async function fetchPatients() {
+      try {
+        const res = await fetch(`${SERVER}/patients/my`, {
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        // Optional: transform or normalize data
+        const transformed = data.map((p) => ({
+          ...p,
+        }));
+
+        dispatch(setPatients(transformed));
+      } catch (err) {
+        console.error("Failed to fetch patients:", err);
+      }
+    }
   }, [currentUser, dispatch]);
 
   const renderContent = () => {

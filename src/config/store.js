@@ -1,10 +1,10 @@
 
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "../realtime/Slices/userSlice.js";
-import organisationReducer from "../realtime/Slices/organizationSlice";
-import patientReducer from "../realtime/Slices/patientsSlice";
-import socketReducer from "../realtime/Slices/socketSlice";
-import chatsReducer from "../realtime/Slices/chatSlice";
+import userReducer from "../reducers/Slices/userSlice.js";
+import organisationReducer from "../reducers/Slices/organizationSlice.js";
+import patientReducer from "../reducers/Slices/patientsSlice.js";
+import socketReducer from "../reducers/Slices/socketSlice.js";
+import chatsReducer from "../reducers/Slices/chatSlice.js";
 
 
 export const store = configureStore({

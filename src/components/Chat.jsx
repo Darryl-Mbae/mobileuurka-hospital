@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { setChats } from "../realtime/Slices/chatSlice";
+import { setChats } from "../reducers/Slices/chatSlice";
 
 const Chat = ({ patient, user }) => {
   const [messages, setMessages] = useState([]);

@@ -19,6 +19,17 @@ const chunkArray = (arr, chunkSize) => {
   return chunks;
 };
 
+// Helper function to format values, converting -1 to "Unknown"
+const formatValue = (value) => {
+  if (value === -1 || value === "-1") {
+    return "Unknown";
+  }
+  if (value === null || value === "" || value === undefined) {
+    return "Not provided";
+  }
+  return String(value);
+};
+
 // Format ISO date into readable string
 const formatDate = (iso) => {
   if (!iso) return "Not provided";
@@ -35,12 +46,12 @@ const formatDate = (iso) => {
 
 const Document = ({ document, title }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
-
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
     getUsers();
   });
+
   async function getUsers() {
     try {
       const response = await fetch(`${SERVER}/user/all`, {
@@ -50,10 +61,8 @@ const Document = ({ document, title }) => {
         },
         credentials: "include",
       });
-
       if (!response.ok)
         throw new Error(`HTTP error! Status: ${response.status}`);
-
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -65,9 +74,8 @@ const Document = ({ document, title }) => {
 
   // Step 1: Format values
   const transformed = { ...document };
-  
+
   // Replace user_id with editor name
- 
   // Format date
   if (transformed.date) {
     transformed.date = formatDate(transformed.date);
@@ -97,12 +105,7 @@ const Document = ({ document, title }) => {
 
   const allItems = Object.entries(reordered).map(([key, value]) => ({
     label: formatKey(key),
-    value:
-      value === null || value === "" ? (
-        <span className="placeholder">Not provided</span>
-      ) : (
-        <span>{String(value)}</span>
-      ),
+    value: formatValue(value), // Apply formatValue to the raw value
   }));
 
   // Step 3: Chunk into groups of 15
@@ -112,25 +115,18 @@ const Document = ({ document, title }) => {
   return (
     <div className="doc-main">
       <h3>{title}</h3>
-      {/* <div className="row" style={{ marginTop: "30px" }}>
-        <div className="label">Patient Id</div>
-        <div className="value">{document?.patient_id}</div>
-      </div>
-      <div className="row">
-        <div className="label">Editor</div>
-        <div className="value">{document?.user_id}</div>
-      </div>
-      <div className="row">
-        <div className="label">Timestamp</div>
-        <div className="value">{formatDate(document.date)}</div>
-      </div> */}
-
       <section>
         <div className="container">
           {allItems.map((item, index) => (
             <div className="list" key={index}>
               <div className="label">{item.label}</div>
-              <div className="value">{item.value}</div>
+              <div className="value">
+                {item.value === "Not provided" ? (
+                  <span className="placeholder">{item.value}</span>
+                ) : (
+                  <span>{item.value}</span>
+                )}
+              </div>
             </div>
           ))}
         </div>

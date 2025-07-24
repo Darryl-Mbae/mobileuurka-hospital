@@ -148,7 +148,6 @@ export const apiDelete = async (endpoint, options = {}) => {
 export const fetchCurrentUser = async () => {
   try {
     const userData = await apiGet('/users');
-    console.log('User data:', userData);
     return userData;
   } catch (error) {
     console.error('Failed to fetch user:', error);
