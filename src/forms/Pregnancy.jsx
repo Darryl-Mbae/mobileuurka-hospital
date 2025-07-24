@@ -133,174 +133,174 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       ...formData,
 
       // ─── Triage Data ───────────────────────────────────────────
-      bmi: getLatest(patient?.triages, "bmi", "Unkown"),
-      systolic: getLatest(patient?.triages, "systolic", "Unkown"),
-      diastolic: getLatest(patient?.triages, "diastolic", "Unkown"),
-      MAP: getLatest(patient?.triages, "map", "Unkown"),
-      amniotic: getLatest(patient?.ultrasounds, "amniotic", "Unkown"),
+      bmi: getLatest(patient?.triages, "bmi", "unknown"),
+      systolic: getLatest(patient?.triages, "systolic", "unknown"),
+      diastolic: getLatest(patient?.triages, "diastolic", "unknown"),
+      MAP: getLatest(patient?.triages, "map", "unknown"),
+      amniotic: getLatest(patient?.ultrasounds, "amniotic", "unknown"),
 
       // ─── Medical History ───────────────────────────────────────
       GESTATIONALDIABETESHISTORY: getLatest(
         patient?.patientHistories,
         "gestationalDiabetesHistory",
-        "Unkown"
+        "unknown"
       ),
       FAMHISTORYGESTATIONALDIABETES: getLatest(
         patient?.patientHistories,
         "famHistoryGestationalDiabetes",
-        "Unkown"
+        "unknown"
       ),
       FAMHISTORYDIABETES: getLatest(
         patient?.patientHistories,
         "famHistoryDiabetes",
-        "Unkown"
+        "unknown"
       ),
       firstpreeclampsiahistory: getLatest(
         patient?.patientHistories,
         "firstPreeclampsiaHistory",
-        "Unkown"
+        "unknown"
       ),
-      FAMOBESEHISTORY: "Unkown", // Not in schema
+      FAMOBESEHISTORY: "unknown", // Not in schema
       DIABETESMELITUS: getLatest(
         patient?.patientHistories,
         "diabetesMelitus",
-        "Unkown"
+        "unknown"
       ),
       PREVCHILDWEIGHT: getLatest(
         patient?.patientHistories,
         "prevChildWeight",
-        "Unkown"
+        "unknown"
       ),
-      ANEMIAHISTORY: getLatest(patient?.patientHistories, "anemia", "Unkown"),
+      ANEMIAHISTORY: getLatest(patient?.patientHistories, "anemia", "unknown"),
       MISCARRIAGE: getLatest(
         patient?.patientHistories,
         "miscarriage",
-        "Unkown"
+        "unknown"
       ),
       MISCARRIAGENUM: getLatest(
         patient?.patientHistories,
         "miscarriageNum",
-        "Unkown"
+        "unknown"
       ),
       FAMANEMIAHISTORY: getLatest(
         patient?.patientHistories,
         "famHistoryAnemia",
-        "Unkown"
+        "unknown"
       ),
       FAM_SICKLE_CELL_HISTORY: getLatest(
         patient?.patientHistories,
         "famSickleCell",
-        "Unkown"
+        "unknown"
       ),
       FAM_THALASSEMIA_HISTORY: getLatest(
         patient?.patientHistories,
         "famThalassemia",
-        "Unkown"
+        "unknown"
       ),
 
       // ─── Lifestyle ─────────────────────────────────────────────
       DIET: getLatest(patient?.patient_lifestyles, "diet", "Balanced"),
-      EXERCISE: getLatest(patient?.patient_lifestyles, "excercise", "Unkown"),
+      EXERCISE: getLatest(patient?.patient_lifestyles, "excercise", "unknown"),
 
       // ─── Gynecological History ────────────────────────────────
       MENORRHAGIA: getLatest(
         patient?.patientHistories,
         "menorrhagia",
-        "Unkown"
+        "unknown"
       ),
       PREG_HIST_ANEMIA: getLatest(
         patient?.patientHistories,
         "pregnancyHistoryAnemia",
-        "Unkown"
+        "unknown"
       ),
       PREGNANCYHISTORYANEMIA: getLatest(
         patient?.patientHistories,
         "pregnancyHistoryAnemia",
-        "Unkown"
+        "unknown"
       ),
-      PARITY: getLatest(patient?.patientHistories, "parity", "Unkown"),
+      PARITY: getLatest(patient?.patientHistories, "parity", "unknown"),
       RACE: patient?.race || "Unknown",
-      INTERVAL: getLatest(patient?.patientHistories, "interval", "Unkown"),
-      IVF: getLatest(patient?.patientHistories, "ivf", "Unkown"),
+      INTERVAL: getLatest(patient?.patientHistories, "interval", "unknown"),
+      IVF: getLatest(patient?.patientHistories, "ivf", "unknown"),
       CONTRACEPETIVES: getLatest(
         patient?.patientHistories,
         "contraceptives",
-        "Unkown"
+        "unknown"
       ),
-      PCOS: getLatest(patient?.patientHistories, "pcos", "Unkown"),
+      PCOS: getLatest(patient?.patientHistories, "pcos", "unknown"),
       INFERTILITY: getLatest(
         patient?.patientHistories,
         "infertility",
-        "Unkown"
+        "unknown"
       ),
 
       // ─── Cardiovascular ────────────────────────────────────────
       FAMHYPERTENSIONHISTORY: getLatest(
         patient?.patientHistories,
         "famHistoryHypertension",
-        "Unkown"
+        "unknown"
       ),
       HYPERTENSIONHISTORY: getLatest(
         patient?.patientHistories,
         "chronicHypertension",
-        "Unkown"
+        "unknown"
       ),
       GESTATIONALHYPERTENSIONHISTORY: getLatest(
         patient?.patientHistories,
         "gestationalHypertensionHistory",
-        "Unkown"
+        "unknown"
       ),
       famhistorygestationalhypertension: getLatest(
         patient?.patientHistories,
         "famHistoryGestationalHypertension",
-        "Unkown"
+        "unknown"
       ),
       CARDIACDISEASE: getLatest(
         patient?.patientHistories,
         "cardiacDisease",
-        "Unkown"
+        "unknown"
       ),
 
       // ─── Pregnancy Complications ───────────────────────────────
       FAMHISTORYPREECLAMPSIA: getLatest(
         patient?.patientHistories,
         "famHistoryPreeclampsia",
-        "Unkown"
+        "unknown"
       ),
       PREECLAMPSIAHISTORY: getLatest(
         patient?.patientHistories,
         "preeclampsiaHistory",
-        "Unkown"
+        "unknown"
       ),
       ECLAMPSIAHISTORY: getLatest(
         patient?.patientHistories,
         "eclampsiaHistory",
-        "Unkown"
+        "unknown"
       ),
-      PPH: getLatest(patient?.patientHistories, "pph", "Unkown"),
-      STILLBIRTH: getLatest(patient?.patientHistories, "stillbirth", "Unkown"),
+      PPH: getLatest(patient?.patientHistories, "pph", "unknown"),
+      STILLBIRTH: getLatest(patient?.patientHistories, "stillbirth", "unknown"),
 
       // ─── Other Medical Conditions ──────────────────────────────
-      AUTOIMMUNE: getLatest(patient?.patientHistories, "autoimmune", "Unkown"),
-      FAMHISTORYAUTOIMMUNE: "Unkown", // Not in schema
-      LIVER: getLatest(patient?.patientHistories, "liver", "Unkown"),
+      AUTOIMMUNE: getLatest(patient?.patientHistories, "autoimmune", "unknown"),
+      FAMHISTORYAUTOIMMUNE: "unknown", // Not in schema
+      LIVER: getLatest(patient?.patientHistories, "liver", "unknown"),
       CHRONICRENALDISEASE: getLatest(
         patient?.patientHistories,
         "chronicRenalDisease",
-        "Unkown"
+        "unknown"
       ),
       RHEUMATOID_ARTHRITIS: getLatest(
         patient?.patientHistories,
         "rheumatoidArthritis",
-        "Unkown"
+        "unknown"
       ),
-      THYROID: getLatest(patient?.patientHistories, "thyroid", "Unkown"),
+      THYROID: getLatest(patient?.patientHistories, "thyroid", "unknown"),
 
       BLOODGROUP: patient?.bloodgroup || "Unknown",
       RH: patient?.rh || "Unknown",
       // ─── Lab Results ───────────────────────────────────────────
 
-      HAEMOGLOBIN: getLatest(patient?.labworks, "haemoglobin", "Unkown"),
+      HAEMOGLOBIN: getLatest(patient?.labworks, "haemoglobin", "unknown"),
       URINE_GLUCOSE: getLatest(patient?.labworks, "urine_glucose", "Negative"),
       URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Negative"),
      
@@ -308,30 +308,30 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       PREVGYNASURGERY: getLatest(
         patient?.patientHistories,
         "prevGynaSurgery",
-        "Unkown"
+        "unknown"
       ),
       CHRONICHYPERTENSION: getLatest(
         patient?.patientHistories,
         "chronicHypertension",
-        "Unkown"
+        "unknown"
       ),
 
       PROLONGEDLABOUR: getLatest(
         patient?.patientHistories,
         "prolongedLabour",
-        "Unkown"
+        "unknown"
       ),
-      CSECTION: getLatest(patient?.patientHistories, "csection", "Unkown"),
+      CSECTION: getLatest(patient?.patientHistories, "csection", "unknown"),
       CSECTIONNUM: getLatest(
         patient?.patientHistories,
         "csectionNum",
-        "Unkown"
+        "unknown"
       ),
 
       // ─── Demographics ──────────────────────────────────────────
       AGE: calculateAge(patient?.dob) || "Unknown",
-      MALE_AGE: getLatest(patient?.patientHistories, "maleAge", "Unkown"),
-      KIDNEY: getLatest(patient?.patientHistories, "kidney", "Unkown"),
+      MALE_AGE: getLatest(patient?.patientHistories, "maleAge", "unknown"),
+      KIDNEY: getLatest(patient?.patientHistories, "kidney", "unknown"),
     };
 
     submitData({
