@@ -48,7 +48,6 @@ const Patient = ({ id }) => {
       const { apiGet } = await import("../config/api.js");
       const patientData = await apiGet(`/patients/${patientId}`);
 
-      console.log(patientData);
       setPatient(patientData);
       console.log("Patient fetched:", patientData);
     } catch (err) {

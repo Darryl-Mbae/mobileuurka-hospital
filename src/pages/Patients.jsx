@@ -151,7 +151,6 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
   const [filteredPatients, setFilteredPatients] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
   const navigate = useNavigate();
-  console.log(patients);
   
 
   useEffect(() => {

@@ -2,83 +2,61 @@
 
 ## Introduction
 
-This feature aims to modernize the existing client-side socket management system to align with the enhanced server-side socket handler you've provided. The current implementation needs improvements in connection reliability, tenant-aware functionality, performance monitoring, and real-time status management to match the sophisticated server-side capabilities.
+You have an enhanced backend socket handler that supports organization-aware events, online presence tracking, and comprehensive real-time updates. The frontend socket management needs to be updated to properly handle all the events and features that your backend now supports.
 
 ## Requirements
 
 ### Requirement 1
 
-**User Story:** As a developer, I want improved socket connection reliability and error handling, so that the application maintains stable real-time communication even under network instability.
+**User Story:** As a user, I want better socket connection reliability, so that I don't lose real-time updates when my internet connection is unstable.
 
 #### Acceptance Criteria
 
-1. WHEN the socket connection fails THEN the system SHALL implement exponential backoff reconnection strategy
-2. WHEN network connectivity is restored THEN the system SHALL automatically reconnect and restore all subscriptions
-3. WHEN connection errors occur THEN the system SHALL provide detailed error information and recovery suggestions
-4. WHEN the socket is disconnected THEN the system SHALL maintain a queue of pending events and replay them upon reconnection
+1. WHEN the socket disconnects THEN the system SHALL automatically try to reconnect
+2. WHEN reconnecting fails THEN the system SHALL wait longer before trying again (exponential backoff)
+3. WHEN the connection is restored THEN the system SHALL work normally again
+4. WHEN I'm offline THEN the system SHALL show me that I'm disconnected
 
 ### Requirement 2
 
-**User Story:** As a user, I want real-time updates to be organization-aware, so that I only receive relevant information for my organization memberships.
+**User Story:** As a user, I want to only see updates relevant to my organizations, so that I don't get notifications about things I shouldn't see.
 
 #### Acceptance Criteria
 
-1. WHEN a user connects THEN the system SHALL filter all real-time events based on user's organization memberships
-2. WHEN organization membership changes THEN the system SHALL update event subscriptions accordingly
-3. WHEN receiving online user updates THEN the system SHALL only show users from shared organizations
-4. WHEN broadcasting events THEN the system SHALL validate tenant permissions before processing
+1. WHEN I receive real-time updates THEN the system SHALL only show me updates from my organizations
+2. WHEN I see online users THEN the system SHALL only show users from organizations I belong to
+3. WHEN patients are updated THEN the system SHALL only notify me if I have access to that patient
+4. WHEN users are added/removed from organizations THEN the system SHALL update what I can see
 
 ### Requirement 3
 
-**User Story:** As a developer, I want comprehensive socket event management, so that all real-time features work consistently across the application.
+**User Story:** As a user, I want to see real-time updates for all the new features, so that I stay informed about changes.
 
 #### Acceptance Criteria
 
-1. WHEN medical records are created or updated THEN the system SHALL broadcast updates to relevant organization members
-2. WHEN feedback is submitted THEN the system SHALL notify appropriate organization administrators
-3. WHEN user roles change THEN the system SHALL update permissions and subscriptions in real-time
-4. WHEN patients are managed THEN the system SHALL broadcast updates to authorized organization members only
+1. WHEN medical records are created or updated THEN the system SHALL show me real-time notifications
+2. WHEN feedback is submitted THEN the system SHALL notify relevant people immediately
+3. WHEN user roles change THEN the system SHALL update the interface immediately
+4. WHEN organization settings change THEN the system SHALL reflect changes immediately
 
 ### Requirement 4
 
-**User Story:** As a user, I want accurate online presence indicators, so that I can see who is currently available in my organizations.
+**User Story:** As a user, I want to see who's online in my organizations, so that I know who I can collaborate with.
 
 #### Acceptance Criteria
 
-1. WHEN users come online THEN the system SHALL update presence indicators for shared organization members
-2. WHEN users go offline THEN the system SHALL remove them from online lists after appropriate timeout
-3. WHEN requesting online users THEN the system SHALL return organization-filtered results
-4. WHEN displaying online counts THEN the system SHALL show accurate numbers per organization
+1. WHEN users come online THEN the system SHALL show them as online immediately
+2. WHEN users go offline THEN the system SHALL remove them from online lists
+3. WHEN I request online users THEN the system SHALL show accurate counts per organization
+4. WHEN I look at online status THEN the system SHALL only show users from my organizations
 
 ### Requirement 5
 
-**User Story:** As a developer, I want performance monitoring and debugging capabilities, so that socket-related issues can be quickly identified and resolved.
+**User Story:** As a developer, I want the socket system to handle all the new backend events, so that the frontend works with the enhanced backend.
 
 #### Acceptance Criteria
 
-1. WHEN socket events occur THEN the system SHALL log performance metrics and timing information
-2. WHEN errors happen THEN the system SHALL capture detailed context for debugging
-3. WHEN connection quality degrades THEN the system SHALL provide diagnostic information
-4. WHEN events are processed THEN the system SHALL track success/failure rates and response times
-
-### Requirement 6
-
-**User Story:** As a developer, I want consistent socket event handling with runtime validation, so that errors are caught early and development experience is improved.
-
-#### Acceptance Criteria
-
-1. WHEN defining socket events THEN the system SHALL use JSDoc comments and consistent patterns for all event payloads
-2. WHEN emitting events THEN the system SHALL validate payload structure at runtime
-3. WHEN handling responses THEN the system SHALL provide consistent access to event data with validation
-4. WHEN adding new events THEN the system SHALL enforce consistent naming and structure patterns
-
-### Requirement 7
-
-**User Story:** As a user, I want seamless socket state management integration, so that real-time updates are reflected consistently across all UI components.
-
-#### Acceptance Criteria
-
-1. WHEN socket events are received THEN the system SHALL update Redux state atomically
-2. WHEN multiple related events occur THEN the system SHALL batch state updates to prevent UI flickering
-3. WHEN components subscribe to socket events THEN the system SHALL provide React hooks for easy integration
-4. WHEN socket state changes THEN the system SHALL trigger appropriate UI re-renders efficiently
+1. WHEN the backend sends new event types THEN the frontend SHALL handle them properly
+2. WHEN events have organization context THEN the frontend SHALL respect organization boundaries
+3. WHEN the backend sends online user updates THEN the frontend SHALL update the UI correctly
+4. WHEN the backend sends error responses THEN the frontend SHALL handle them gracefully

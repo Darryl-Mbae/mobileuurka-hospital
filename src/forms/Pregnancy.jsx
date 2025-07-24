@@ -4,10 +4,9 @@ import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
-import cuid from 'cuid';
+import cuid from "cuid";
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
-
   const id = cuid();
   const [formData, setFormData] = useState({
     patient_id: selectedPatientId || "",
@@ -39,7 +38,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
   const clearForm = () => {
     setFormData({});
-  }
+  };
 
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -49,8 +48,9 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const [fetchingPatient, setFetchingPatient] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
-  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
-
+  const { showSuccess, successConfig, showSuccessMessage } =
+    useSuccessMessage(clearForm);
+  const [notSet, setNotSet] = useState(null);
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -64,6 +64,76 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     }
   }, [currentUser, selectedPatientId]);
 
+  useEffect(() => {
+      
+    if (!patient) return;
+
+    const missing = [];
+
+    if (!patient?.patientHistories || patient.patientHistories.length === 0) {
+      missing.push("Patient History");
+    }
+
+    if (!patient?.triages || patient.triages.length === 0) {
+      missing.push("Triage");
+    }
+    setNotSet(missing.length ? missing : null);
+  }, [patient]);
+
+  useEffect(() => {
+    if (!notSet) return;
+  
+    const hasMissing = Array.isArray(notSet) && notSet.length > 0;
+  
+    console.log(notSet[0])
+    const formatMissingItems = (items) => {
+      if (items.length === 1) return items[0];
+      return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+    };
+  
+    const missingItems = hasMissing ? formatMissingItems(notSet) : "";
+  
+    // Dynamic button label
+    let nextButtonText = "Add Another Triage";
+    if (hasMissing) {
+      if (notSet.length > 0 ) {
+        nextButtonText =
+          notSet[0] === "Patient History" ? "Add Patient History" : "Add Triage";
+      } else {
+        nextButtonText = "Complete Missing Inf";
+      }
+    }
+  
+    showSuccessMessage({
+      title: hasMissing ? "Action Needed" : "Success",
+      message: hasMissing
+        ? `${missingItems} ${
+            patientName ? `for ${patientName}` : "for the patient"
+          } still need to be completed.`
+        : `Vital signs recorded for ${patientName || "the patient"}.`,
+      setInternalTab,
+      showNextButton: true,
+      nextButtonText,
+      nextButtonAction: () => {
+       changeScreening()
+      },
+      patientId: formData.patient_id,
+    });
+  
+    setSuccess(true);
+  }, [notSet]);
+  
+  
+  function changeScreening(){
+    if (notSet[0] === "Patient History") {
+      setInternalTab(2.2);
+    } else if (notSet[0] === "Triage") {
+      setInternalTab(2.6);
+    } else {
+      setInternalTab(0);
+    }
+  }
+
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
 
@@ -75,7 +145,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
       if (response.ok) {
         const patient = await response.json();
-        setPatient(patient)
+        setPatient(patient);
         setPatientName(patient.name || "Unknown Patient");
       } else {
         setPatientName("Patient not found");
@@ -102,7 +172,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     }
     return age;
   };
-
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -303,7 +372,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       HAEMOGLOBIN: getLatest(patient?.labworks, "haemoglobin", "Unknown"),
       URINE_GLUCOSE: getLatest(patient?.labworks, "urine_glucose", "Negative"),
       URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Negative"),
-     
+
       // ─── Obstetric History ─────────────────────────────────────
       PREVGYNASURGERY: getLatest(
         patient?.patientHistories,
@@ -344,7 +413,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const submitData = async (submissionData) => {
     try {
       setLoading(true);
-      console.log(submissionData)
+      console.log(submissionData);
 
       // First API call
       const primaryURL =
@@ -353,9 +422,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       const primaryResponse = await fetch(primaryURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials:"include",
+        credentials: "include",
         body: JSON.stringify(submissionData),
-        
       });
 
       if (!primaryResponse.ok) {
@@ -365,7 +433,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
       const primaryResult = await primaryResponse.json();
       console.log("✅ Primary submission successful:", primaryResult);
-
 
       try {
         const secondaryResponse = await fetch(
@@ -398,11 +465,10 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         // Continue despite this error
       }
 
-     
       // Only show success if we get here
       showSuccessMessage({
         title: "Pregnancy Information Completed Successfully!",
-        message: `Vital signs recorded for ${patientName || 'the patient'}.`,
+        message: `Vital signs recorded for ${patientName || "the patient"}.`,
         showRedoButton: true,
         showScreeningButton: true,
         showNextButton: true,
@@ -411,7 +477,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         nextButtonAction: () => {
           clearForm();
         },
-        patientId: formData.patient_id
+        patientId: formData.patient_id,
       });
       setSuccess(true);
 
@@ -448,7 +514,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
-             {showSuccess && <SuccessMessage {...successConfig} />}
+      {showSuccess && <SuccessMessage {...successConfig} />}
 
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Current Pregnancy Information</h2>
@@ -913,11 +979,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
             <button type="submit" className="button primary" disabled={loading}>
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
-          )}
-          {success && (
-            <div className="button primary" onClick={() => setInternalTab(0)}>
-              Back to Patient
-            </div>
           )}
         </div>
       </form>

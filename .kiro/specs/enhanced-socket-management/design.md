@@ -2,456 +2,163 @@
 
 ## Overview
 
-The enhanced socket management system will modernize the client-side socket implementation to match the sophisticated server-side capabilities shown in your EnhancedSocketHandler. The design focuses on reliability, tenant-awareness, performance monitoring, and runtime validation while maintaining backward compatibility with existing components.
+Your backend socket handler is already enhanced and working. The frontend just needs to be updated to handle all the new events and features properly. This is about updating your existing `src/config/socket.js` and `src/hooks/useSocket.js` to work with your enhanced backend.
 
-## Architecture
+## What Needs to Change
 
-### Core Components
+### Current Frontend Issues
+Looking at your current frontend socket code, it needs updates to handle:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Enhanced Socket Manager                   │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │ Connection      │  │ Event Handler   │  │ State        │ │
-│  │ Manager         │  │ Registry        │  │ Synchronizer │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │ Tenant Filter   │  │ Performance     │  │ Error        │ │
-│  │ Manager         │  │ Monitor         │  │ Handler      │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Redux Integration                       │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │ Socket Slice    │  │ Presence Slice  │  │ Event Queue  │ │
-│  │ (Enhanced)      │  │ (New)           │  │ Slice (New)  │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      React Hooks Layer                     │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
-│  │ useSocket       │  │ usePresence     │  │ useSocketEvent│ │
-│  │ (Enhanced)      │  │ (New)           │  │ (New)        │ │
-│  └─────────────────┘  └─────────────────┘  └──────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **New Event Types**: Your backend sends many events your frontend doesn't handle yet
+2. **Organization Filtering**: Your backend filters by organization, frontend should respect this
+3. **Better Reconnection**: Your current reconnection is basic, can be improved
+4. **Online Users**: Your backend has sophisticated online user tracking, frontend should use it
+5. **Error Handling**: Better error handling for the new backend responses
 
-### Connection Management Strategy
-
-The connection manager will implement a sophisticated reconnection strategy matching your server-side approach:
-
-1. **Exponential Backoff**: Start with 1s delay, increase exponentially up to 30s maximum
-2. **Connection Health Monitoring**: Track latency, packet loss, and error rates
-3. **Graceful Degradation**: Queue events during disconnection, replay on reconnection
-4. **Network Change Detection**: Automatically reconnect when network conditions improve
-
-### Event Processing Pipeline
+### Simple Architecture
 
 ```
-Incoming Event → Tenant Validation → Runtime Validation → State Update → UI Notification
-                      ↓                    ↓               ↓            ↓
-                 Organization        Event Structure   Redux Store   Component
-                 Membership          Validation        Updates       Re-renders
-                 Check
+Your Enhanced Backend Socket Handler
+                ↓
+        Frontend Socket Manager (update existing)
+                ↓
+        Redux Store (update existing slices)
+                ↓
+        React Components (update to use new events)
 ```
 
-## Components and Interfaces
+## What We'll Update
 
-### Enhanced Socket Manager
+### 1. Update `src/config/socket.js`
 
-```javascript
-/**
- * Enhanced Socket Manager for reliable, tenant-aware socket communication
- * @class EnhancedSocketManager
- */
-class EnhancedSocketManager {
-  /**
-   * Connect to socket server with authentication
-   * @param {string} token - Authentication token
-   * @param {Object} options - Connection options
-   * @returns {Promise<void>}
-   */
-  async connect(token, options = {}) {}
-  
-  /**
-   * Disconnect from socket server
-   */
-  disconnect() {}
-  
-  /**
-   * Reconnect with exponential backoff
-   * @returns {Promise<void>}
-   */
-  async reconnect() {}
-  
-  /**
-   * Emit event with validation
-   * @param {string} eventType - Event type
-   * @param {Object} data - Event payload
-   */
-  emit(eventType, data) {}
-  
-  /**
-   * Subscribe to event with handler
-   * @param {string} eventType - Event type
-   * @param {Function} handler - Event handler
-   */
-  on(eventType, handler) {}
-  
-  /**
-   * Unsubscribe from event
-   * @param {string} eventType - Event type
-   * @param {Function} handler - Event handler
-   */
-  off(eventType, handler) {}
-  
-  /**
-   * Get current connection status
-   * @returns {Object} Connection status
-   */
-  getConnectionStatus() {}
-  
-  /**
-   * Get performance metrics
-   * @returns {Object} Performance metrics
-   */
-  getPerformanceMetrics() {}
-}
-```
+**Add Missing Event Handlers:**
+Your backend sends these events that your frontend doesn't handle:
+- `online_count_updated` - Organization-specific online counts
+- `get_online_users_response` - Response to online user requests
+- `get_online_counts_response` - Response to online count requests
+- All the new medical record events
+- All the new feedback events
 
-### Tenant Filter Manager
+**Improve Reconnection:**
+- Add exponential backoff (wait longer between retries)
+- Better error handling
+- Show connection status to user
 
-```javascript
-/**
- * Manages organization-based event filtering
- * @class TenantFilterManager
- */
-class TenantFilterManager {
-  /**
-   * Filter events based on user's organizations
-   * @param {Object} event - Socket event
-   * @param {Array} userOrganizations - User's organization IDs
-   * @returns {boolean} Whether event should be processed
-   */
-  filterEventsByOrganization(event, userOrganizations) {}
-  
-  /**
-   * Update user's organization memberships
-   * @param {Array} organizations - Organization objects
-   */
-  updateUserOrganizations(organizations) {}
-  
-  /**
-   * Validate event permission for user
-   * @param {Object} event - Socket event
-   * @param {string} userId - User ID
-   * @returns {boolean} Whether user has permission
-   */
-  validateEventPermission(event, userId) {}
-  
-  /**
-   * Update event subscriptions based on organizations
-   * @param {Array} organizationIds - Organization IDs
-   */
-  updateSubscriptions(organizationIds) {}
-}
-```
+**Add Organization Awareness:**
+- Filter events based on user's organizations
+- Handle organization-specific online users
 
-### Performance Monitor
+### 2. Update `src/hooks/useSocket.js`
 
-```javascript
-/**
- * Monitors socket performance and health
- * @class PerformanceMonitor
- */
-class PerformanceMonitor {
-  /**
-   * Record event processing latency
-   * @param {string} eventType - Event type
-   * @param {number} latency - Latency in milliseconds
-   */
-  recordEventLatency(eventType, latency) {}
-  
-  /**
-   * Record connection metrics
-   * @param {Object} metrics - Connection metrics
-   */
-  recordConnectionMetrics(metrics) {}
-  
-  /**
-   * Get connection health status
-   * @returns {Object} Health status
-   */
-  getConnectionHealth() {}
-  
-  /**
-   * Get event processing statistics
-   * @returns {Object} Event statistics
-   */
-  getEventProcessingStats() {}
-  
-  /**
-   * Set performance degradation callback
-   * @param {Function} callback - Callback function
-   */
-  onPerformanceDegradation(callback) {}
-}
-```
+**Add New Methods:**
+Your backend supports these but your hook doesn't expose them:
+- Request online users for organizations
+- Request online counts for organizations
+- Handle medical record events properly
+- Handle feedback events properly
 
-## Data Models
+**Improve Connection Management:**
+- Better connection status tracking
+- Automatic reconnection handling
+- Error state management
 
-### Socket Event Structures
+### 3. Update Redux Slices
 
-Based on your server-side handler, here are the key event structures:
+**Enhance `socketSlice.js`:**
+- Add connection health tracking
+- Add reconnection attempt counting
+- Better error state management
 
-```javascript
-/**
- * Base socket event structure
- * @typedef {Object} BaseSocketEvent
- * @property {string} type - Event type
- * @property {string} timestamp - ISO timestamp
- * @property {string} [organizationId] - Organization ID
- */
+**Update Other Slices:**
+- Handle new event types in existing slices
+- Add organization filtering where needed
 
-/**
- * User updated event
- * @typedef {Object} UserUpdatedEvent
- * @property {string} type - 'user_updated'
- * @property {Object} user - User data
- * @property {string} organizationId - Organization ID
- * @property {string} timestamp - ISO timestamp
- */
+### 4. Add New React Hooks (Optional)
 
-/**
- * User online event
- * @typedef {Object} UserOnlineEvent
- * @property {string} type - 'user_online'
- * @property {string} userId - User ID
- * @property {Object} user - User presence data
- * @property {string} organizationId - Organization ID
- * @property {string} timestamp - ISO timestamp
- */
+**`useOnlineUsers` Hook:**
+- Get online users for current user's organizations
+- Real-time updates when users come online/offline
 
-/**
- * Patient updated event
- * @typedef {Object} PatientUpdatedEvent
- * @property {string} type - 'patient_updated'
- * @property {Object} patient - Patient data
- * @property {string} organizationId - Organization ID
- * @property {string} timestamp - ISO timestamp
- */
+**`useSocketHealth` Hook:**
+- Monitor connection health
+- Show connection status to users
 
-/**
- * Organization updated event
- * @typedef {Object} OrganizationUpdatedEvent
- * @property {string} type - 'organization_updated'
- * @property {Object} organization - Organization data
- * @property {string} organizationId - Organization ID
- * @property {string} timestamp - ISO timestamp
- */
-```
+## Key Backend Events to Handle
 
-### Connection State
+Based on your backend code, these are the main events your frontend should handle:
 
-```javascript
-/**
- * Socket connection state
- * @typedef {Object} ConnectionState
- * @property {'disconnected'|'connecting'|'connected'|'reconnecting'|'error'} status - Connection status
- * @property {Date|null} lastConnected - Last connection time
- * @property {number} reconnectAttempts - Number of reconnection attempts
- * @property {number} latency - Current latency in ms
- * @property {Object|null} error - Last error
- * @property {Array} queuedEvents - Events queued during disconnection
- */
+### Organization Events
+- `organization_updated`
+- `organization_created` 
+- `organization_deleted`
+- `organizations_updated`
 
-/**
- * Queued event structure
- * @typedef {Object} QueuedEvent
- * @property {string} id - Unique event ID
- * @property {string} type - Event type
- * @property {Object} payload - Event payload
- * @property {Date} timestamp - Event timestamp
- * @property {number} retryCount - Number of retry attempts
- */
-```
+### User Management Events
+- `user_added_to_organization`
+- `user_created_for_organization`
+- `user_removed_from_organization`
+- `user_role_updated`
 
-### Presence State
+### Patient Events
+- `patient_created`
+- `patient_updated`
+- `patient_deleted`
+- `patients_updated`
 
-```javascript
-/**
- * User presence state
- * @typedef {Object} PresenceState
- * @property {Object} onlineUsers - Online users by organization ID
- * @property {Object} onlineCounts - Online counts by organization ID
- * @property {Date} lastUpdated - Last update timestamp
- * @property {Array} userOrganizations - Current user's organization IDs
- */
+### Medical Record Events
+- `medical_record_created`
+- `medical_record_updated`
 
-/**
- * User presence data
- * @typedef {Object} UserPresence
- * @property {string} userId - User ID
- * @property {Object} user - User basic info
- * @property {string} user.id - User ID
- * @property {string} user.name - User name
- * @property {string} user.email - User email
- * @property {string} user.firstName - User first name
- * @property {string} lastSeen - Last seen timestamp
- * @property {number} socketCount - Number of active connections
- * @property {Array} organizations - User's organization IDs
- */
-```
+### Online Presence Events
+- `user_online`
+- `user_offline`
+- `online_users_updated`
+- `online_count_updated`
 
-## Error Handling
+### Feedback Events
+- `feedback_created`
+- `feedback_status_updated`
 
-### Error Classification
+### Request-Response Events
+- `get_online_users_response`
+- `get_online_counts_response`
 
-1. **Connection Errors**: Network issues, authentication failures
-2. **Permission Errors**: Tenant access violations, unauthorized events
-3. **Validation Errors**: Malformed event data, schema violations
-4. **Performance Errors**: Timeout issues, high latency warnings
+## Implementation Approach
 
-### Error Recovery Strategies
+### Phase 1: Fix Basic Connection
+1. Update socket.js to handle reconnection better
+2. Add missing event listeners
+3. Improve error handling
 
-```javascript
-/**
- * Error recovery strategy manager
- * @class ErrorRecoveryStrategy
- */
-class ErrorRecoveryStrategy {
-  /**
-   * Handle connection errors
-   * @param {Object} error - Connection error
-   * @returns {Promise<void>}
-   */
-  async handleConnectionError(error) {}
-  
-  /**
-   * Handle event processing errors
-   * @param {Object} event - Socket event
-   * @param {Object} error - Event error
-   */
-  handleEventError(event, error) {}
-  
-  /**
-   * Handle state corruption
-   * @param {Object} corruptedState - Corrupted state
-   */
-  handleStateCorruption(corruptedState) {}
-  
-  /**
-   * Enable offline mode
-   */
-  enableOfflineMode() {}
-  
-  /**
-   * Sync when back online
-   * @returns {Promise<void>}
-   */
-  async syncWhenOnline() {}
-}
-```
+### Phase 2: Add Organization Awareness
+1. Filter events by user's organizations
+2. Update online user handling
+3. Add organization-specific features
 
-## Testing Strategy
+### Phase 3: Add New Features
+1. Handle medical record events
+2. Handle feedback events
+3. Add new React hooks if needed
 
-### Unit Testing
+### Phase 4: Polish
+1. Add better error messages
+2. Add connection status indicators
+3. Test everything works
 
-1. **Connection Manager Tests**
-   - Reconnection logic validation
-   - Error handling scenarios
-   - Event queuing and replay
+## Simple Changes Needed
 
-2. **Event Handler Tests**
-   - Runtime validation
-   - Tenant filtering
-   - State synchronization
+### In `socket.js`:
+- Add listeners for all the new events from your backend
+- Improve the reconnection logic
+- Add organization filtering
 
-3. **Performance Monitor Tests**
-   - Metrics collection accuracy
-   - Health assessment logic
-   - Alert triggering conditions
+### In `useSocket.js`:
+- Add methods to request online users/counts
+- Add methods for medical records and feedback
+- Improve connection status handling
 
-### Integration Testing
+### In Redux slices:
+- Handle the new events properly
+- Add organization filtering where needed
 
-1. **Socket-Redux Integration**
-   - State update consistency
-   - Event processing pipeline
-   - Error propagation
-
-2. **React Hook Integration**
-   - Component re-rendering behavior
-   - Hook cleanup on unmount
-   - Multiple hook instances
-
-### End-to-End Testing
-
-1. **Real-time Communication**
-   - Multi-user scenarios
-   - Organization isolation
-   - Network interruption recovery
-
-2. **Performance Testing**
-   - High event volume handling
-   - Memory leak detection
-   - Connection stability under load
-
-## Implementation Phases
-
-### Phase 1: Core Infrastructure
-- Enhanced socket manager implementation
-- Connection reliability improvements
-- Basic error handling and logging
-
-### Phase 2: Tenant-Aware Features
-- Organization-based event filtering
-- Permission validation system
-- Enhanced presence management
-
-### Phase 3: Performance and Monitoring
-- Performance metrics collection
-- Health monitoring capabilities
-- Advanced error recovery
-
-### Phase 4: Integration and Testing
-- React hooks enhancement
-- Redux integration improvements
-- Comprehensive testing suite
-
-## Migration Strategy
-
-### Backward Compatibility
-- Maintain existing API surface
-- Gradual feature rollout
-- Fallback to current implementation
-
-### Rollout Plan
-1. Deploy enhanced backend socket handler (already done)
-2. Update client-side socket manager
-3. Migrate components incrementally
-4. Remove deprecated code after validation
-
-## Security Considerations
-
-### Authentication and Authorization
-- Token-based authentication validation
-- Organization membership verification
-- Event permission checking
-
-### Data Privacy
-- Organization data isolation
-- Sensitive data filtering
-- Audit logging for compliance
-
-### Attack Prevention
-- Rate limiting on event emission
-- Input validation and sanitization
-- Connection abuse detection
+This is much simpler than building everything from scratch - we're just updating your existing code to work with your enhanced backend!
