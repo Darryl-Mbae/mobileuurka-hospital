@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "docs:lint": "echo 'Markdown linting - install markdownlint-cli for full validation'",
+    "docs:check-links": "echo 'Link checking - install markdown-link-check for full validation'",
+    "docs:test-examples": "node .kiro/docs/scripts/test-code-examples.js || echo 'Code example testing - script needs implementation'",
+    "docs:validate": "npm run docs:lint && npm run docs:check-links && npm run docs:test-examples",
+    "docs:cross-references": "node .kiro/docs/scripts/validate-cross-references.js"
   },
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.14.3",

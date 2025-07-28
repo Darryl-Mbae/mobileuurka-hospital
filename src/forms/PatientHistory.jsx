@@ -191,13 +191,12 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
       showSuccessMessage({
         title: "History Completed Successfully!",
         message: `Vital signs recorded for ${patientName || "the patient"}.`,
-        showRedoButton: true,
-        showScreeningButton: true,
         showNextButton: true,
         setInternalTab: setInternalTab,
-        nextButtonText: "Add Another Triage",
+        nextButtonText: "Add Visit",
         nextButtonAction: () => {
           clearForm();
+          setInternalTab(2.4)
         },
         patientId: formData.patientId,
       });

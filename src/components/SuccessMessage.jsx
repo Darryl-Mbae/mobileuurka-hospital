@@ -62,7 +62,7 @@ const SuccessMessage = ({
   return (
     <div className="success-overlay">
       <div className="success-container">
-        {nextButtonText === "Triages" || "Patient History" ? (
+        {nextButtonText === "Triages" || nextButtonText ===  "Patient History" ? (
           <div>
             <div className="success-icon">
             <IoMdInformationCircle />
@@ -89,13 +89,13 @@ const SuccessMessage = ({
           )}
 
           {showNextButton === "Triages" ||
-            ("Patient History" && nextButtonAction && (
+            showNextButton === "Patient History" && nextButtonAction && (
               <button className="success-btn primary" onClick={handleNext}>
                 {nextButtonText}
               </button>
-            ))}
+            )}
 
-          {onClose && (
+          {onClose &&  nextButtonText !== "Triages" && nextButtonText !== "Patient History" && (
             <div className="close" onClick={onClose}>
               <FaTimes />
             </div>

@@ -119,11 +119,11 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
         title: "Visit Recorded Successfully!",
         message: `Visit ${formData.visitNumber} for ${patientName || 'the patient'} has been recorded.`,
         showRedoButton: true,
-        showScreeningButton: true,
         showNextButton: true,
-        nextButtonText: "Add Another Visit",
+        nextButtonText: "Add Triage",
         nextButtonAction: () => {
           clearForm();
+          setInternalTab(2.6)
         },
         patientId: formData.patientId
       });

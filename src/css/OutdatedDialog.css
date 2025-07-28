@@ -1,0 +1,148 @@
+/* Outdated Dialog Styles */
+.outdated-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.outdated-container {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: outdatedSlideIn 0.3s ease-out;
+}
+
+@keyframes outdatedSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.outdated-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.outdated-icon svg {
+  font-size: 2rem;
+  color: #ff9800;
+}
+
+.outdated-title {
+  text-align: center;
+  color: #333;
+  margin-bottom: 3rem;
+  font-size: 1rem !important;
+  font-weight: 600;
+}
+
+.outdated-message {
+  text-align: center;
+  color: #666;
+  margin: auto;
+  margin-bottom: 2rem;
+  font-size: .9em !important;
+  line-height: 1.6;
+  width: 80%;
+  
+}
+
+.outdated-message p {
+  margin: 0.5rem 0;
+}
+
+.outdated-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.outdated-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.outdated-btn.primary {
+  background-color: #ff9800;
+  color: white;
+}
+
+.outdated-btn.primary:hover {
+  background-color: #f57c00;
+  transform: translateY(-1px);
+}
+
+.outdated-btn.secondary {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.outdated-btn.secondary:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.outdated-btn:active {
+  transform: translateY(0);
+}
+
+.outdated-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  color: #999;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.outdated-close:hover {
+  color: #666;
+  background-color: #f5f5f5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .outdated-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .outdated-buttons {
+    flex-direction: column;
+  }
+  
+  .outdated-btn {
+    width: 100%;
+  }
+}

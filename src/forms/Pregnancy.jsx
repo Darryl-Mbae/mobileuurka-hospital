@@ -5,9 +5,14 @@ import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
 import cuid from "cuid";
+import OutdatedDialog from "../components/Outdated";
+import useOutdatedDialog from "../hooks/useOutdatedDialog";
+
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const id = cuid();
+  const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS;
+
   const [formData, setFormData] = useState({
     patient_id: selectedPatientId || "",
     editor: "",
@@ -50,6 +55,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
+  const { showDialog, dialogConfig, showOutdatedDialog } = useOutdatedDialog();
+
   const [notSet, setNotSet] = useState(null);
 
   useEffect(() => {
@@ -65,7 +72,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   }, [currentUser, selectedPatientId]);
 
   useEffect(() => {
-      
     if (!patient) return;
 
     const missing = [];
@@ -82,28 +88,30 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
   useEffect(() => {
     if (!notSet) return;
-  
+
     const hasMissing = Array.isArray(notSet) && notSet.length > 0;
-  
-    console.log(notSet[0])
+
+    console.log(notSet[0]);
     const formatMissingItems = (items) => {
       if (items.length === 1) return items[0];
       return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
     };
-  
+
     const missingItems = hasMissing ? formatMissingItems(notSet) : "";
-  
+
     // Dynamic button label
     let nextButtonText = "Add Another Triage";
     if (hasMissing) {
-      if (notSet.length > 0 ) {
+      if (notSet.length > 0) {
         nextButtonText =
-          notSet[0] === "Patient History" ? "Add Patient History" : "Add Triage";
+          notSet[0] === "Patient History"
+            ? "Add Patient History"
+            : "Add Triage";
       } else {
         nextButtonText = "Complete Missing Inf";
       }
     }
-  
+
     showSuccessMessage({
       title: hasMissing ? "Action Needed" : "Success",
       message: hasMissing
@@ -115,16 +123,15 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       showNextButton: true,
       nextButtonText,
       nextButtonAction: () => {
-       changeScreening()
+        changeScreening();
       },
       patientId: formData.patient_id,
     });
-  
+
     setSuccess(true);
   }, [notSet]);
-  
-  
-  function changeScreening(){
+
+  function changeScreening() {
     if (notSet[0] === "Patient History") {
       setInternalTab(2.2);
     } else if (notSet[0] === "Triage") {
@@ -193,11 +200,64 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
     await addData(formData);
   };
-  const getLatest = (array, property, defaultValue) => {
-    return array?.length ? array[array.length - 1][property] : defaultValue;
+
+  const MS_IN_A_DAY = 24 * 60 * 60 * 1000;
+
+  const isRecent = (dateString, days = MAXDAYS) => {
+    if (!dateString) return false;
+    const diff = Date.now() - new Date(dateString).getTime();
+    return diff < days * MS_IN_A_DAY;
+  };
+
+  const getLatest = (
+    array,
+    property,
+    defaultValue = "Unknown",
+    dateField = "date"
+  ) => {
+    if (!Array.isArray(array) || array.length === 0) return defaultValue;
+
+    // Filter for recent items
+    const recentItems = array.filter((item) => isRecent(item?.[dateField]));
+
+    if (recentItems.length === 0) return defaultValue;
+
+    const lastItem = recentItems[recentItems.length - 1];
+    const value = lastItem?.[property];
+
+    if (typeof value === "string") {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    return value ?? defaultValue;
   };
 
   const addData = async (formData) => {
+    const latestLabwork = patient?.labworks?.[patient.labworks.length - 1];
+    const latestTriage = patient?.triages?.[patient.triages.length - 1];
+
+    const outdated = [];
+
+    if (!isRecent(latestTriage?.date, MAXDAYS))
+      outdated.push("Triage data");
+    if (!isRecent(latestLabwork?.date, MAXDAYS)) outdated.push("Labwork");
+
+    if (outdated.length > 0) {
+      const proceed = await showOutdatedDialog({
+        title: "Old or Missing Data",
+        message: `The following records are more than ${MAXDAYS} days old or missing:\n- ${outdated.join(
+          "\n- "
+        )}\n\nSubmitting now will use "unknown" values, reducing prediction accuracy.`,
+        confirmText: "Proceed Anyway",
+        cancelText: "Update Data First",
+      });
+
+      if (!proceed) {
+        setLoading(false);
+        return;
+      }
+    }
+
     const newFormData = {
       ...formData,
 
@@ -268,8 +328,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       ),
 
       // ─── Lifestyle ─────────────────────────────────────────────
-      DIET: getLatest(patient?.patient_lifestyles, "diet", "Balanced"),
-      EXERCISE: getLatest(patient?.patient_lifestyles, "excercise", "Unknown"),
+      DIET: getLatest(patient?.lifestyles, "diet", "Balanced"),
+      EXERCISE: getLatest(patient?.lifestyles, "excercise", "Unknown"),
 
       // ─── Gynecological History ────────────────────────────────
       MENORRHAGIA: getLatest(
@@ -351,7 +411,11 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
       // ─── Other Medical Conditions ──────────────────────────────
       AUTOIMMUNE: getLatest(patient?.patientHistories, "autoimmune", "Unknown"),
-      FAMHISTORYAUTOIMMUNE: "Unknown", // Not in schema
+      FAMHISTORYAUTOIMMUNE: getLatest(
+        patient?.patientHistories,
+        "famHistoryAutoimmune",
+        "Unknown"
+      ), // Not in schema
       LIVER: getLatest(patient?.patientHistories, "liver", "Unknown"),
       CHRONICRENALDISEASE: getLatest(
         patient?.patientHistories,
@@ -370,8 +434,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       // ─── Lab Results ───────────────────────────────────────────
 
       HAEMOGLOBIN: getLatest(patient?.labworks, "haemoglobin", "Unknown"),
-      URINE_GLUCOSE: getLatest(patient?.labworks, "urine_glucose", "Negative"),
-      URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Negative"),
+      URINE_GLUCOSE: getLatest(patient?.labworks, "urine_glucose", "Unkown"),
+      URINE_PROTEIN: getLatest(patient?.labworks, "urine_protein", "Unknown"),
 
       // ─── Obstetric History ─────────────────────────────────────
       PREVGYNASURGERY: getLatest(
@@ -456,6 +520,25 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         } else {
           const secondaryResult = await secondaryResponse.json();
           console.log("✅ Secondary submission successful:", secondaryResult);
+          // Only show success if we get here
+          showSuccessMessage({
+            title: "Pregnancy Information Completed Successfully!",
+            message: `Vital signs recorded for ${
+              patientName || "the patient"
+            }.`,
+            showRedoButton: true,
+            showScreeningButton: true,
+            showNextButton: true,
+            setInternalTab: setInternalTab,
+            nextButtonText: "Add Another Triage",
+            nextButtonAction: () => {
+              clearForm();
+            },
+            patientId: formData.patient_id,
+          });
+          setSuccess(true);
+
+          setFormData([]);
         }
       } catch (secondaryError) {
         console.warn(
@@ -465,24 +548,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         // Continue despite this error
       }
 
-      // Only show success if we get here
-      showSuccessMessage({
-        title: "Pregnancy Information Completed Successfully!",
-        message: `Vital signs recorded for ${patientName || "the patient"}.`,
-        showRedoButton: true,
-        showScreeningButton: true,
-        showNextButton: true,
-        setInternalTab: setInternalTab,
-        nextButtonText: "Add Another Triage",
-        nextButtonAction: () => {
-          clearForm();
-        },
-        patientId: formData.patient_id,
-      });
-      setSuccess(true);
-
       setLoading(false);
-      setFormData([]);
     } catch (error) {
       console.error("❌ Critical submission error:", error);
       alert(`Submission failed: ${error.message}`);
@@ -515,6 +581,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   return (
     <div className="form">
       {showSuccess && <SuccessMessage {...successConfig} />}
+      {showDialog && <OutdatedDialog {...dialogConfig} />}
 
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Current Pregnancy Information</h2>

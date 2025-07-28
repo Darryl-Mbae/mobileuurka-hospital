@@ -4,8 +4,11 @@ import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import SuccessMessage from "../components/SuccessMessage";
 import useSuccessMessage from "../hooks/useSuccessMessage";
+import OutdatedDialog from "../components/Outdated";
+import useOutdatedDialog from "../hooks/useOutdatedDialog";
 
 const Labwork = ({ setInternalTab, selectedPatientId }) => {
+  const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS
   const [formData, setFormData] = useState({
     patientId: selectedPatientId || "",
     editor: "",
@@ -75,6 +78,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   const [patient, setPatient] = useState(false);
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
+  const { showDialog, dialogConfig, showOutdatedDialog } = useOutdatedDialog();
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -100,6 +104,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
       if (response.ok) {
         const patient = await response.json();
         setPatient(patient);
+        console.log(patient)
         setPatientName(patient.name || "Unknown Patient");
       } else {
         setPatientName("Patient not found");
@@ -217,29 +222,58 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     { value: "4+", label: "4+" },
   ];
 
-  const addData = async (formData) => {
+  const MS_IN_A_DAY = 24 * 60 * 60 * 1000;
+
+  const isRecent = (dateString, days = MAXDAYS) => {
+    if (!dateString) return false;
+    const diff = Date.now() - new Date(dateString).getTime();
+    return diff < days * MS_IN_A_DAY;
+  };
+  
+  const addData = async (formData, options = { maxAgeInDays: MAXDAYS }) => {
+    const { maxAgeInDays } = options;
+  
+    const latestTriage = patient?.triages?.[patient.triages.length - 1];
+    const latestPreg = patient?.currentPregnancies?.[patient.currentPregnancies.length - 1];
+    const latestScan = patient?.ultrasounds?.[patient.ultrasounds.length - 1];
+  
+    const outdated = [];
+  
+    if (!isRecent(latestTriage?.date, maxAgeInDays)) outdated.push("Triage data");
+    if (!isRecent(latestPreg?.date, maxAgeInDays)) outdated.push("Pregnancy record");
+    if (!isRecent(latestScan?.date, maxAgeInDays)) outdated.push("Ultrasound");
+  
+    if (outdated.length > 0) {
+      const proceed = await showOutdatedDialog({
+        title: "Old or Missing Data",
+        message: `The following records are more than ${maxAgeInDays} days old or missing:\n- ${outdated.join(
+          "\n- "
+        )}\n\nSubmitting now will use "unknown" values, reducing prediction accuracy.`,
+        confirmText: "Proceed Anyway",
+        cancelText: "Update Data First",
+      });
+  
+      if (!proceed) {
+        setLoading(false);
+        return
+      };
+    }
+  
     const newFormData = {
       ...formData,
-      edema:
-        patient?.currentPregnancies[patient?.currentPregnancies.length - 1]
-          ?.edema || "Unknown",
-      systolic: patient?.triages?.length
-        ? patient?.triages[patient?.triages.length - 1]?.systolic
-        : "unknown",
-      diastolic: patient?.triages?.length
-        ? patient?.triages[patient?.triages.length - 1]?.diastolic
-        : "unknown",
-      amniotic:
-        patient?.ultrasounds[patient?.ultrasounds.length - 1]?.amniotic ||
-        "unknown",
+      edema: latestPreg?.edema || "Unknown",
+      systolic: latestTriage?.systolic || "Unknown",
+      diastolic: latestTriage?.diastolic || "Unknown",
+      amniotic: latestScan?.amniotic || "Unknown",
     };
-
+  
     submitData({
       data: newFormData,
       user_id: currentUser?.id,
       schema_name: "public",
     });
   };
+  
 
   const submitData = async (submissionData) => {
     try {
@@ -292,6 +326,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   return (
     <div className="form">
       {showSuccess && <SuccessMessage {...successConfig} />}
+      {showDialog && <OutdatedDialog {...dialogConfig} />}
 
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Laboratory Work</h2>
