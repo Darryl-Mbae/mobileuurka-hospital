@@ -269,7 +269,7 @@ const Pagination = ({
         )}
 
         {/* Items Per Page Selector */}
-        {showItemsPerPageSelector && onItemsPerPageChange && (
+        {/* {showItemsPerPageSelector && onItemsPerPageChange && (
           <div className="pagination-items-per-page">
             <CustomDropdown
               value={validItemsPerPage}
@@ -279,7 +279,7 @@ const Pagination = ({
               label="Items per page:"
             />
           </div>
-        )}
+        )} */}
       </div>
     </nav>
   );
