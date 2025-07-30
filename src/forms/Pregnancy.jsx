@@ -8,6 +8,7 @@ import cuid from "cuid";
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const id = cuid();
+  const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS;
   const [formData, setFormData] = useState({
     patient_id: selectedPatientId || "",
     editor: "",
@@ -51,6 +52,16 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
   const [notSet, setNotSet] = useState(null);
+  const MS_IN_A_DAY = 24 * 60 * 60 * 1000;
+
+  const outdated = []; // this will store "Labwork", "Triage", or "Ultrasound"
+
+  // Helper function to check if date is older than MAXDAYS
+  const isOlderThanMaxDays = (dateStr) => {
+    if (!dateStr) return true; // If no date, treat as outdated
+    const diff = Date.now() - new Date(dateStr).getTime();
+    return diff > MAXDAYS * MS_IN_A_DAY;
+  };
 
   useEffect(() => {
     setFormData((prev) => ({
@@ -110,14 +121,18 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       message: hasMissing
         ? `${missingItems} ${
             patientName ? `for ${patientName}` : "for the patient"
-          } still need to be completed.`
+          } still needs to be completed.`
         : `Vital signs recorded for ${patientName || "the patient"}.`,
-      setInternalTab,
-      showNextButton: true,
-      nextButtonText,
-      nextButtonAction: () => {
-        changeScreening();
+      closeAction: () => {
+        setFormData((prev) => ({
+          ...prev,
+          editor: currentUser?.name,
+          patient_id: "",
+        }));
+        setPatientName("");
       },
+      showScreeningButton: true,
+
       patientId: formData.patient_id,
     });
 
@@ -193,26 +208,69 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
     await addData(formData);
   };
-  const getLatest = (array, property, defaultValue = "—") => {
-    console.log(array);
-    console.log(property);
-    console.log(defaultValue);
-  
+
+  const getLatest = (array, property, defaultValue = "Unknown") => {
     if (!Array.isArray(array) || array.length === 0) return defaultValue;
-  
+
     const lastItem = array[array.length - 1];
     const value = lastItem?.[property];
-  
+
+    // Auto-detect type from array content properties
+    let type = "";
+    if (lastItem) {
+      // Check for triage-specific properties
+      if (
+        "bmi" in lastItem ||
+        "systolic" in lastItem ||
+        "diastolic" in lastItem
+      ) {
+        type = "triages";
+      }
+      // Check for ultrasound-specific properties
+      else if ("amniotic" in lastItem || "biparietal" in lastItem) {
+        type = "ultrasound";
+      }
+      // Check for labwork-specific properties
+      else if ("hemoglobin" in lastItem || "glucose" in lastItem) {
+        type = "labworks";
+      }
+    }
+
+    // Check age only for specific types
+    const shouldCheckDate = ["labworks", "triages", "ultrasound"].includes(
+      type.toLowerCase()
+    );
+    const recordDate = lastItem?.date;
+
+    if (shouldCheckDate && recordDate) {
+      
+      // Parse the date more reliably
+      const recordTime = new Date(recordDate).getTime();
+      const currentTime = Date.now();
+      const diff = currentTime - recordTime;
+
+    
+      if (diff > MAXDAYS * MS_IN_A_DAY) {
+        console.log("Record too old, returning Unknown");
+        return "Unknown";
+      }
+    }
+
     if (typeof value === "string") {
       return value.charAt(0).toUpperCase() + value.slice(1);
     }
-  
+
+    if (value !== undefined && value !== null) {
+      return value;
+    }
+
     return defaultValue;
   };
-  
+
+  // Usage example:
+  // bmi: getLatest(patient?.triages, "bmi", "Unknown", "triages")
+
   const addData = async (formData) => {
-    console.log(getLatest(patient?.patientHistories,"urine_protein", "Unknown"));
-    console.log(patient);
     const newFormData = {
       ...formData,
 
@@ -421,18 +479,52 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       MALE_AGE: getLatest(patient?.patientHistories, "maleAge", "Unknown"),
       KIDNEY: getLatest(patient?.patientHistories, "kidney", "Unknown"),
     };
+    // Get latest dates
+    const labworkDate = patient?.labworks?.[patient.labworks.length - 1]?.date;
+    const triageDate = patient?.triages?.[patient.triages.length - 1]?.date;
+    const ultrasoundDate =
+      patient?.ultrasounds?.[patient.ultrasounds.length - 1]?.date;
 
-    submitData({
-      data: newFormData,
-      user_id: currentUser?.id,
-      schema_name: "public",
-    });
+    // Compare and collect
+    if (isOlderThanMaxDays(labworkDate)) outdated.push("Labwork");
+    if (isOlderThanMaxDays(triageDate)) outdated.push("Triage");
+    if (isOlderThanMaxDays(ultrasoundDate)) outdated.push("Ultrasound");
+
+    if (outdated.length > 1) {
+      showSuccessMessage({
+        title: "Action Needed",
+        message: `Recent ${outdated.join(
+          ", "
+        )} records are required for AI risk score calculation, but they are older than ${MAXDAYS} days.\n\nProceeding will mark these values as 'unknown' to prevent the use of outdated clinical data.\n\nNote: This may affect the accuracy of the AI-generated score.`,
+
+        showProceedButton: true,
+        showScreeningButton: false,
+        proceedButtonText: "Proceed",
+        closeAction: () => {
+          setLoading(false);
+        },
+        proceedButtonAction: () => {
+          submitData({
+            data: newFormData,
+            user_id: currentUser?.id,
+            schema_name: "public",
+          });
+          console.log(newFormData);
+        },
+        patientId: formData.patient_id,
+      });
+    } else {
+      submitData({
+        data: newFormData,
+        user_id: currentUser?.id,
+        schema_name: "public",
+      });
+    }
   };
 
   const submitData = async (submissionData) => {
     try {
       setLoading(true);
-      console.log(submissionData);
 
       // First API call
       const primaryURL =
@@ -481,14 +573,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
             message: `Vital signs recorded for ${
               patientName || "the patient"
             }.`,
-            showRedoButton: true,
             showScreeningButton: true,
-            showNextButton: true,
-            setInternalTab: setInternalTab,
-            nextButtonText: "Add Another Triage",
-            nextButtonAction: () => {
-              clearForm();
-            },
+            showProceedButton: false,
             patientId: formData.patient_id,
           });
           setSuccess(true);

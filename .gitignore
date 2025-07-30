@@ -14,6 +14,11 @@ dist-ssr
 .kiro
 
 
+# dotenv environment variables file
+.env
+.env.*.local
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

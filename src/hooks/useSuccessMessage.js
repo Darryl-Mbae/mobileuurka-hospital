@@ -17,7 +17,11 @@ export const useSuccessMessage = (clearFormFunction = null) => {
     setInternalTab: null,
     nextButtonAction: null,
     showScreeningButton: false,
-    patientId: null
+    patientId: null,
+    showProceedButton: false,
+    proceedButtonText: "Proceed",
+    proceedButtonAction: null,
+    closeAction: null
   });
 
   /**

@@ -1148,23 +1148,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
                     <FiChevronDown className="select-icon" />
                   </div>
                 </div>
-                <div className="form-group">
-                  <label>Infertility History</label>
-                  <div className="select-container">
-                    <select
-                      name="infertility"
-                      value={formData.infertility}
-                      onChange={handleChange}
-                    >
-                      {yesNoOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <FiChevronDown className="select-icon" />
-                  </div>
-                </div>
+                
                 
               
               </div>
@@ -1188,11 +1172,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}
-          {success && (
-            <div className="button primary" onClick={() => setInternalTab(0)}>
-              Back to Patient
-            </div>
-          )}
+         
         </div>
       </form>
     </div>

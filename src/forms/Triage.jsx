@@ -153,13 +153,7 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
       showSuccessMessage({
         title: "Triage Completed Successfully!",
         message: `Vital signs recorded for ${patientName || 'the patient'}.`,
-        showRedoButton: false,
         showScreeningButton: true,
-        showNextButton: false,
-        setInternalTab: setInternalTab,
-        nextButtonAction: () => {
-          clearForm();
-        },
         patientId: formData.patientId
       });
       setSuccess(true);

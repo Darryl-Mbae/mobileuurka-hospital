@@ -6,6 +6,19 @@ import SuccessMessage from "../components/SuccessMessage";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 
 const Labwork = ({ setInternalTab, selectedPatientId }) => {
+  const MS_IN_A_DAY = 24 * 60 * 60 * 1000;
+  const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS;
+
+  const outdated = []; // this will store "Labwork", "Triage", or "Ultrasound"
+
+  // Helper function to check if date is older than MAXDAYS
+  const isOlderThanMaxDays = (dateStr) => {
+    if (!dateStr) return true; // If no date, treat as outdated
+    const diff = Date.now() - new Date(dateStr).getTime();
+    return diff > MAXDAYS * MS_IN_A_DAY;
+  };
+
+
   const [formData, setFormData] = useState({
     patientId: selectedPatientId || "",
     editor: "",
@@ -129,25 +142,64 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   // Function to validate required fields
   const validateForm = () => {
     const requiredFields = [
-      'patientId', 'date', 'gestationweek', 'alp', 'alt', 'ast', 'albumin',
-      'bicarbonate', 'bilirubin', 'calcium', 'chloride', 'creatinine', 'fbs',
-      'fbs1', 'fbs2', 'glutamyl', 'ht', 'leukocyte', 'haemoglobin', 'hba1c',
-      'hba1c_value', 'mch', 'mchc', 'mcv', 'platelets', 'potassium', 'rbc',
-      'randombloodsugar', 'sodium', 't3', 't4', 'tsh', 'uric', 'wbc', 'bun',
-      'ketones', 'urine_color', 'urine_glucose', 'urine_nitrite', 'urine_odor',
-      'urine_protein', 'clarity', 'sg', 'ph'
+      "patientId",
+      "date",
+      "gestationweek",
+      "alp",
+      "alt",
+      "ast",
+      "albumin",
+      "bicarbonate",
+      "bilirubin",
+      "calcium",
+      "chloride",
+      "creatinine",
+      "fbs",
+      "fbs1",
+      "fbs2",
+      "glutamyl",
+      "ht",
+      "leukocyte",
+      "haemoglobin",
+      "hba1c",
+      "hba1c_value",
+      "mch",
+      "mchc",
+      "mcv",
+      "platelets",
+      "potassium",
+      "rbc",
+      "randombloodsugar",
+      "sodium",
+      "t3",
+      "t4",
+      "tsh",
+      "uric",
+      "wbc",
+      "bun",
+      "ketones",
+      "urine_color",
+      "urine_glucose",
+      "urine_nitrite",
+      "urine_odor",
+      "urine_protein",
+      "clarity",
+      "sg",
+      "ph",
     ];
 
     const emptyFields = [];
-    
-    requiredFields.forEach(field => {
-      if (!formData[field] || formData[field].toString().trim() === '') {
+
+    requiredFields.forEach((field) => {
+      if (!formData[field] || formData[field].toString().trim() === "") {
         emptyFields.push(field);
       }
     });
 
     if (emptyFields.length > 0) {
-      alert(`Please fill in all required fields. Missing: ${emptyFields.join(', ')}`);
+      alert(
+        `Please fill in all required fields. Missing: ${emptyFields.join(", ")}`
+      );
       return false;
     }
     return true;
@@ -156,18 +208,46 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
   // Function to transform numeric fields for submission
   const transformFormDataForSubmission = (data) => {
     const numericFields = [
-      'gestationweek', 'alp', 'alt', 'ast', 'albumin', 'bicarbonate', 'bilirubin',
-      'calcium', 'chloride', 'creatinine', 'fbs1', 'fbs2', 'glutamyl', 'ht',
-      'leukocyte', 'haemoglobin', 'hba1c_value', 'mch', 'mchc', 'mcv', 'platelets',
-      'potassium', 'rbc', 'randombloodsugar', 'sodium', 't3', 't4', 'tsh', 'uric',
-      'wbc', 'bun', 'sg', 'ph'
+      "gestationweek",
+      "alp",
+      "alt",
+      "ast",
+      "albumin",
+      "bicarbonate",
+      "bilirubin",
+      "calcium",
+      "chloride",
+      "creatinine",
+      "fbs1",
+      "fbs2",
+      "glutamyl",
+      "ht",
+      "leukocyte",
+      "haemoglobin",
+      "hba1c_value",
+      "mch",
+      "mchc",
+      "mcv",
+      "platelets",
+      "potassium",
+      "rbc",
+      "randombloodsugar",
+      "sodium",
+      "t3",
+      "t4",
+      "tsh",
+      "uric",
+      "wbc",
+      "bun",
+      "sg",
+      "ph",
     ];
 
     const transformedData = { ...data };
 
-    numericFields.forEach(field => {
+    numericFields.forEach((field) => {
       const value = transformedData[field];
-      if (value && value.toString().toLowerCase() !== 'unknown') {
+      if (value && value.toString().toLowerCase() !== "unknown") {
         const numValue = parseFloat(value);
         if (!isNaN(numValue)) {
           transformedData[field] = numValue;
@@ -180,14 +260,14 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate all fields are filled
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    
+
     // Transform data before submission
     const transformedData = transformFormDataForSubmission(formData);
     await addData(transformedData);
@@ -217,34 +297,119 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     { value: "4+", label: "4+" },
   ];
 
+  const getLatest = (array, property, defaultValue = "Unknown") => {
+    if (!Array.isArray(array) || array.length === 0) return defaultValue;
+
+    const lastItem = array[array.length - 1];
+    const value = lastItem?.[property];
+
+    // Auto-detect type from array content properties
+    let type = "";
+    if (lastItem) {
+      // Check for triage-specific properties
+      if (
+        "systolic" in lastItem ||
+        "diastolic" in lastItem
+      ) {
+        type = "triages";
+      }
+      // Check for ultrasound-specific properties
+      else if ("amniotic" in lastItem ) {
+        type = "ultrasound";
+      }
+      else if("edema" in lastItem){
+        type = "pregnancies"
+      }
+     
+    }
+
+    // Check age only for specific types
+    const shouldCheckDate = [ "triages", "ultrasound","pregnancies"].includes(
+      type.toLowerCase()
+    );
+    const recordDate = lastItem?.date;
+
+    if (shouldCheckDate && recordDate) {
+      
+      // Parse the date more reliably
+      const recordTime = new Date(recordDate).getTime();
+      const currentTime = Date.now();
+      const diff = currentTime - recordTime;
+
+    
+      if (diff > MAXDAYS * MS_IN_A_DAY) {
+        console.log("Record too old, returning Unknown");
+        return "Unknown";
+      }
+    }
+
+    if (typeof value === "string") {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    if (value !== undefined && value !== null) {
+      return value;
+    }
+
+    return defaultValue;
+  };
+
+  
   const addData = async (formData) => {
     const newFormData = {
       ...formData,
-      edema:
-        patient?.currentPregnancies[patient?.currentPregnancies.length - 1]
-          ?.edema || "Unknown",
-      systolic: patient?.triages?.length
-        ? patient?.triages[patient?.triages.length - 1]?.systolic
-        : "unknown",
-      diastolic: patient?.triages?.length
-        ? patient?.triages[patient?.triages.length - 1]?.diastolic
-        : "unknown",
-      amniotic:
-        patient?.ultrasounds[patient?.ultrasounds.length - 1]?.amniotic ||
-        "unknown",
+      edema: getLatest(patient?.currentPregnancies, "edema" , "Unkown"),
+      systolic: getLatest(patient?.triages, "systolic" , "Unkown"),
+      diastolic: getLatest(patient?.triages, "diastolic", "Unkown"),
+      amniotic: getLatest(patient?.ultrasounds, "amniotic", "Unkown"),  
     };
 
-    submitData({
-      data: newFormData,
-      user_id: currentUser?.id,
-      schema_name: "public",
-    });
+
+    // Get latest dates
+    const triageDate = patient?.triages?.[patient.triages.length - 1]?.date;
+    const ultrasoundDate =
+      patient?.ultrasounds?.[patient.ultrasounds.length - 1]?.date;
+
+    // Compare and collect
+    if (isOlderThanMaxDays(triageDate)) outdated.push("Triage");
+    if (isOlderThanMaxDays(ultrasoundDate)) outdated.push("Ultrasound");
+
+    if (outdated.length > 1) {
+      showSuccessMessage({
+        title: "Action Needed",
+        message: `Recent ${outdated.join(
+          ", "
+        )} records are required for AI diagnosis score calculation, but they are older than ${MAXDAYS} days.\n\nProceeding will mark these values as 'unknown' to prevent the use of outdated clinical data.\n\nNote: This may affect the accuracy of the AI-generated score.`,
+
+        showProceedButton: true,
+        showScreeningButton: false,
+        proceedButtonText: "Proceed",
+        closeAction: () => {
+          setLoading(false);
+        },
+        proceedButtonAction: () => {
+          submitData({
+            data: newFormData,
+            user_id: currentUser?.id,
+            schema_name: "public",
+          });
+          console.log(newFormData);
+        },
+        patientId: formData.patient_id,
+      });
+    } else {
+      submitData({
+        data: newFormData,
+        user_id: currentUser?.id,
+        schema_name: "public",
+      });
+    }
   };
 
   const submitData = async (submissionData) => {
     try {
       setLoading(true);
-      console.log(submissionData)
+      console.log(submissionData);
 
       // First API call
       const primaryURL = "https://diagnosis-864851114868.europe-west4.run.app";
@@ -277,8 +442,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
         },
         patientId: formData.patientId,
       });
-      // Only show success if we get here
-      alert("Form submitted successfully!");
+      
 
       setLoading(false);
       setFormData({});
@@ -778,7 +942,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Urine Clarity *</label>
                   <input
@@ -832,7 +996,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
                 </div>
               </div>
               <div className="column-2">
-              <div className="form-group">
+                <div className="form-group">
                   <label>Urine Odor *</label>
                   <input
                     type="text"

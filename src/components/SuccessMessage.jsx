@@ -9,36 +9,19 @@ import { IoMdInformationCircle } from "react-icons/io";
 const SuccessMessage = ({
   title = "Success!",
   message = "Your action was completed successfully.",
-  showRedoButton = true,
   showNextButton = false,
   nextButtonText = "Next",
   nextButtonAction = null,
-  setInternalTab = null,
-  onRedo = null,
-  clearForm = null,
   showScreeningButton = false,
-  patientId = null,
+  closeAction = null,
+  showProceedButton = false,
+  proceedButtonText = "Proceed",
+  proceedButtonAction = null,
   onClose = null,
 }) => {
   const navigate = useNavigate();
 
-  const handleRedo = () => {
-    // Clear the form first if clearForm function is provided
-    if (clearForm) {
-      clearForm();
-    }
 
-    // Then call custom onRedo function if provided
-    if (onRedo) {
-      onRedo();
-    }
-
-    // Close the success message to show the form again
-    if (onClose) {
-      onClose();
-      onRedo();
-    }
-  };
 
   const handleGoToScreening = () => {
     navigate(`/Screening`);
@@ -51,21 +34,16 @@ const SuccessMessage = ({
     }
   };
 
-  const handleBackToPatient = () => {
-    if (patientId) {
-      navigate(`/Patient/${patientId}`);
-    } else {
-      navigate("/Patients");
-    }
-  };
 
   return (
     <div className="success-overlay">
       <div className="success-container">
-        {nextButtonText === "Triages" || nextButtonText ===  "Patient History" ? (
+        {title === "Action Needed"  ? (
           <div>
-            <div className="success-icon">
-            <IoMdInformationCircle />
+            <div className="success-icon" >
+            <IoMdInformationCircle  style={{
+              color:"#ffc187"
+            }}/>
 
           </div>
           </div>
@@ -83,20 +61,32 @@ const SuccessMessage = ({
             <button
               className="success-btn primary"
               onClick={handleGoToScreening}
+              style={{
+                backgroundColor: title == "Action Needed"  ? "#ffc187" : "#008540"
+              }}
             >
               Go to Screening
             </button>
           )}
 
-          {showNextButton === "Triages" ||
-            showNextButton === "Patient History" && nextButtonAction && (
-              <button className="success-btn primary" onClick={handleNext}>
-                {nextButtonText}
-              </button>
-            )}
+          { showProceedButton && (
+            <button
+              className="success-btn primary"
+              onClick={proceedButtonAction}
+              style={{
+                backgroundColor: title == "Action Needed"  ? "#ffc187" : "#008540"
+              }}
+            >
+              {proceedButtonText}
+            </button>
+          )}
 
-          {onClose &&  nextButtonText !== "Triages" && nextButtonText !== "Patient History" && (
-            <div className="close" onClick={onClose}>
+          {onClose && (
+            <div className="close" onClick={() => {
+              onClose();
+              closeAction();
+            }}>
+            
               <FaTimes />
             </div>
           )}
