@@ -1,0 +1,347 @@
+/* Pagination Component Styles */
+.pagination {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 35px;
+  width: 100%;
+}
+
+/* Page Info Display */
+.pagination-info {
+  color: #666666;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Pagination Controls Container */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Page Numbers Container */
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Base Button Styles */
+.pagination-btn {
+  padding: 8px 12px;
+  border: 1px solid rgba(109, 109, 109, 0.09);
+  background-color: rgba(239, 239, 239, 0.61);
+  color: #666666;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500 !important;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  text-align: center;
+  user-select: none;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background-color: rgba(241, 237, 233, 0.68);
+  border-color: rgba(109, 109, 109, 0.2);
+}
+
+/* .pagination-btn:focus {
+  outline: 2px solid #008540;
+  outline-offset: 2px;
+} */
+
+/* Active Page Button */
+.pagination-btn.active {
+  background-color: #008540;
+  color: white;
+  border-color: #008540;
+}
+
+.pagination-btn.active:hover {
+  background-color: #006d35;
+}
+
+/* Disabled Button States */
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(239, 239, 239, 0.3);
+  color: #999999;
+}
+
+/* Previous/Next Button Specific Styles */
+.pagination-prev,
+.pagination-next {
+  padding: 8px 16px;
+  font-weight: 500;
+}
+
+/* Ellipsis Styling */
+.pagination-ellipsis {
+  padding: 8px 4px;
+  color: #666666;
+  font-size: 14px;
+  user-select: none;
+}
+
+/* Items Per Page Selector */
+.pagination-items-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666666;
+}
+
+/* Custom Dropdown Styles */
+.custom-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown-label {
+  font-weight: 500;
+  color: #666666;
+  font-size: 14px;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border: 1px solid rgba(109, 109, 109, 0.2);
+  border-radius: 4px;
+  background-color: white;
+  color: #666666;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 30px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.dropdown-trigger:hover:not(.disabled) {
+  border-color: rgba(109, 109, 109, 0.4);
+  background-color: rgba(241, 237, 233, 0.3);
+}
+
+/* .dropdown-trigger:focus {
+  outline: 2px solid #008540;
+  outline-offset: 2px;
+  border-color: #008540;
+} */
+
+.dropdown-trigger.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(239, 239, 239, 0.3);
+}
+
+.dropdown-trigger.open {
+  border-color: #008540;
+  box-shadow: 0 0 0 2px rgba(0, 133, 64, 0.1);
+}
+
+.dropdown-value {
+  flex: 1;
+  text-align: left;
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+  color: #666666;
+  font-size: 16px;
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid rgba(109, 109, 109, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666666;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.dropdown-option:hover {
+  background-color: rgba(241, 237, 233, 0.5);
+}
+
+.dropdown-option.selected {
+  background-color: #008540;
+  color: white;
+}
+
+.dropdown-option.selected:hover {
+  background-color: #006d35;
+}
+
+/* Legacy select styles (kept for fallback) */
+.pagination-select {
+  padding: 6px 8px;
+  border: 1px solid rgba(109, 109, 109, 0.2);
+  border-radius: 4px;
+  background-color: white;
+  color: #666666;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 30px;
+}
+
+.pagination-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(239, 239, 239, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pagination-container {
+    gap: 10px;
+  }
+
+  .pagination-controls {
+    gap: 4px;
+  }
+
+  .pagination-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    min-width: 32px;
+  }
+
+  .pagination-prev,
+  .pagination-next {
+    padding: 6px 12px;
+  }
+
+  .pagination-info {
+    font-size: 12px;
+  }
+
+  .pagination-items-per-page {
+    font-size: 12px;
+  }
+
+  .dropdown-label {
+    font-size: 12px;
+  }
+
+  .dropdown-trigger {
+    font-size: 12px;
+    padding: 6px 10px;
+    min-width: 60px;
+  }
+
+  .dropdown-option {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .pagination-select {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .pagination-pages {
+    gap: 2px;
+  }
+
+  .pagination-btn {
+    padding: 4px 6px;
+    font-size: 11px;
+    min-width: 28px;
+  }
+
+  .pagination-prev,
+  .pagination-next {
+    padding: 4px 8px;
+  }
+
+  .dropdown-label {
+    font-size: 11px;
+  }
+
+  .dropdown-trigger {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 50px;
+  }
+
+  .dropdown-option {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+/* Loading State */
+.pagination.loading .pagination-btn {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .pagination-btn {
+    border-width: 2px;
+  }
+
+  .pagination-btn.active {
+    border-width: 3px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .pagination-btn {
+    transition: none;
+  }
+}

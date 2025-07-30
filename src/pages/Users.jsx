@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import "../css/Users.css";
 import { setUsers } from "../reducers/Slices/userSlice";
 import SearchContainer from "../components/SearchContainer";
+import { usePagination } from "../hooks/usePagination";
+import Pagination from "../components/Pagination";
 
 const columns = [
   {
@@ -68,11 +70,26 @@ const columns = [
 const Users = ({ setActiveItem }) => {
   const users = useSelector((s) => s.user.users);
   const dispatch = useDispatch();
-  const SERVER = import.meta.env.VITE_SERVER_URL;
   const organisations = useSelector((s) => s.organisation.organisations);
   const onlineUsers = useSelector((s) => s.user.onlineUsers);
   const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
+
+  // Add pagination hook
+  const {
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    handlePageChange,
+    handleItemsPerPageChange,
+    getPaginatedData,
+  } = usePagination({
+    totalItems: filteredUsers.length,
+    initialItemsPerPage: 10,
+    initialPage: 1,
+  });
+
+  const currentPageUsers = getPaginatedData(filteredUsers);
 
   useEffect(() => {
     if (organisations && organisations.length > 0) {
@@ -98,11 +115,12 @@ const Users = ({ setActiveItem }) => {
     if (users) {
       const safeUsers = Array.isArray(users) ? users : users ? [users] : [];
 
-      const filtered = safeUsers?.filter(user => 
-        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.org?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role?.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = safeUsers?.filter(
+        (user) =>
+          user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.org?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.role?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredUsers(filtered);
     }
@@ -110,6 +128,7 @@ const Users = ({ setActiveItem }) => {
 
   const handleSearch = (searchValue) => {
     setSearchTerm(searchValue);
+    handlePageChange(1); // Reset to first page when searching
   };
 
   const handleAddUser = () => {
@@ -120,7 +139,7 @@ const Users = ({ setActiveItem }) => {
     <div className="users-page">
       <div className="toolbar">
         <div className="count">
-          All Users <span>{users?.length || 0}</span>
+          All Users <span>{filteredUsers?.length || 0}</span>
         </div>
         <div className="search">
           <SearchContainer
@@ -143,8 +162,8 @@ const Users = ({ setActiveItem }) => {
           ))}
         </div>
 
-        {filteredUsers?.length > 0 ? (
-          filteredUsers.map((user) => (
+        {currentPageUsers?.length > 0 ? (
+          currentPageUsers.map((user) => (
             <div className="list" key={user.id}>
               {columns.map((col) => (
                 <div key={col.key} className={col.key}>
@@ -157,10 +176,26 @@ const Users = ({ setActiveItem }) => {
           ))
         ) : (
           <div className="no-results">
-            {searchTerm ? `No users found matching "${searchTerm}"` : "No users found."}
+            {searchTerm
+              ? `No users found matching "${searchTerm}"`
+              : "No users found."}
           </div>
         )}
       </div>
+
+      {/* Add Pagination Component */}
+      {filteredUsers?.length > 0 && (
+        <Pagination
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          showPageInfo={true}
+          showItemsPerPageSelector={true}
+          itemsPerPageOptions={[5, 10, 15, 20]}
+        />
+      )}
     </div>
   );
 };
