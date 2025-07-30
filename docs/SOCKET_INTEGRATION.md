@@ -1007,7 +1007,6 @@ const socket = io(SERVER, {
 - **[Form Integration Guide](FORM_INTEGRATION_GUIDE.md)** - How forms interact with real-time data updates (see [Real-time Form Updates](FORM_INTEGRATION_GUIDE.md#real-time-form-updates))
 
 ### Complementary Guides
-- **[AI Chatbot Guide](AI_CHATBOT_GUIDE.md)** - Real-time chat functionality implementation
 - **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Socket configuration in production environments (see [WebSocket Configuration](DEPLOYMENT_GUIDE.md#websocket-configuration))
 
 ### Cross-Reference Quick Links

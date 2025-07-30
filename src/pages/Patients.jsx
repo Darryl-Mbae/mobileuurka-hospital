@@ -155,7 +155,9 @@ const Patients = ({ setActiveItem , setSelectedPatientId}) => {
 
   useEffect(() => {
     if (patients) {
-      const filtered = patients.filter(patient => 
+      const safeUsers = Array.isArray(patients) ? patients : patients ? [patients] : [];
+
+      const filtered = safeUsers.filter(patient => 
         patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.patientId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         patient.hospital?.toLowerCase().includes(searchTerm.toLowerCase()) ||

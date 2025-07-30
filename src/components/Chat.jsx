@@ -129,7 +129,7 @@ const Chat = ({ patient, user }) => {
 
   const handleSendMessage = async () => {
     if (message.trim() === "") return;
-
+  
     // Add user message to local state
     const userMessage = {
       id: Date.now(),
@@ -140,11 +140,11 @@ const Chat = ({ patient, user }) => {
         minute: "2-digit",
       }),
     };
-
+  
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
     setIsBotTyping(true);
-
+  
     try {
       const res = await fetch(
         "https://healthcare-worker-chatbot-864851114868.europe-west4.run.app",
@@ -161,12 +161,27 @@ const Chat = ({ patient, user }) => {
           }),
         }
       );
-
+  
       const data = await res.json();
       const botResponseText = data.response || "Okay, I've noted that!";
-      sendtoDb(user.id, message, botResponseText);
-
-      // Rest of your bot typing logic...
+      
+      // Add bot response immediately to local state
+      const botMessage = {
+        id: Date.now() + 1, // Ensure unique ID
+        text: botResponseText,
+        sender: "bot",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+      setIsBotTyping(false);
+      
+      // Then send to DB
+      await sendtoDb(user.id, message, botResponseText);
+      
     } catch (err) {
       console.error("Failed to send chat:", err);
       setIsBotTyping(false);

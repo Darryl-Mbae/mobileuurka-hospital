@@ -1296,7 +1296,6 @@ const ReduxDebugger = () => {
 - **[Form Integration Guide](FORM_INTEGRATION_GUIDE.md)** - Form state management patterns (see [Patient Data Integration](FORM_INTEGRATION_GUIDE.md#patient-data-integration))
 
 ### Complementary Guides
-- **[AI Chatbot Guide](AI_CHATBOT_GUIDE.md)** - AI healthcare chatbot state management with Redux (see [Redux Integration](AI_CHATBOT_GUIDE.md#redux-integration))
 - **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Redux configuration in production environments
 
 ### Cross-Reference Quick Links
@@ -1304,7 +1303,6 @@ const ReduxDebugger = () => {
 |-------|-------------------|----------------------|
 | **Socket Integration** | [Integration Between Redux and Socket Events](#integration-between-redux-and-socket-events) | [Socket Integration Guide](SOCKET_INTEGRATION.md#redux-integration) |
 | **Form State** | [State Management for Real-time Updates](#state-management-for-real-time-updates) | [Form Integration Guide](FORM_INTEGRATION_GUIDE.md#patient-data-integration) |
-| **AI Chatbot State** | [Creating New Redux Slices](#creating-new-redux-slices-and-actions) | [AI Chatbot Guide](AI_CHATBOT_GUIDE.md#redux-integration) |
 | **Production Setup** | [Best Practices](#best-practices) | [Deployment Guide](DEPLOYMENT_GUIDE.md#performance-optimization) |
 
 ---

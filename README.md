@@ -83,10 +83,10 @@ Before running this application, make sure you have:
    # Backend API Configuration
    VITE_SERVER_URL=http://localhost:8080/api/v1
    VITE_SOCKET_URL=http://localhost:8080
-   
+
    # Security Configuration
    VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-   
+
    # Production URLs (when deploying)
    # VITE_SERVER_URL=https://your-production-api.com/api/v1
    # VITE_SOCKET_URL=https://your-production-api.com
@@ -196,7 +196,6 @@ MobileUurka is designed to work seamlessly across:
 
 - Desktop computers
 
-
 ## 🚀 Deployment
 
 ### Production Build
@@ -212,7 +211,7 @@ The build artifacts will be stored in the `dist/` directory.
 Ensure all environment variables are properly configured in your deployment platform:
 
 - `VITE_SERVER_URL` - Your production backend API URL
-- `VITE_SOCKET_URL` - Your production WebSocket server URL  
+- `VITE_SOCKET_URL` - Your production WebSocket server URL
 - `VITE_RECAPTCHA_SITE_KEY` - Google reCAPTCHA v3 site key
 
 For deployment instructions, see the [Deployment Guide](docs/DEPLOYMENT_GUIDE.md).
@@ -243,59 +242,54 @@ For support and questions:
 
 ### 🎯 Quick Start Navigation
 
-| I want to... | Go to | Time needed |
-|---------------|-------|-------------|
-| **Set up the project** | [Installation](#-installation) → [Environment Setup](#environment-setup) | 10 minutes |
-| **Deploy to production** | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) | 30 minutes |
-| **Add real-time features** | [Socket Integration Guide](docs/SOCKET_INTEGRATION.md) | 45 minutes |
-| **Create new forms** | [Form Integration Guide](docs/FORM_INTEGRATION_GUIDE.md) | 30 minutes |
-| **Manage application state** | [Redux Integration Guide](docs/REDUX_INTEGRATION.md) | 45 minutes |
-| **Integrate AI chatbot** | [AI Chatbot Guide](docs/AI_CHATBOT_GUIDE.md) | 60 minutes |
-| **Troubleshoot issues** | See troubleshooting sections in each guide | Variable |
+| I want to...                 | Go to                                                                    | Time needed |
+| ---------------------------- | ------------------------------------------------------------------------ | ----------- |
+| **Set up the project**       | [Installation](#-installation) → [Environment Setup](#environment-setup) | 10 minutes  |
+| **Deploy to production**     | [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)                             | 30 minutes  |
+| **Add real-time features**   | [Socket Integration Guide](docs/SOCKET_INTEGRATION.md)                   | 45 minutes  |
+| **Manage application state** | [Redux Integration Guide](docs/REDUX_INTEGRATION.md)                     | 45 minutes  |
+| **Troubleshoot issues**      | See troubleshooting sections in each guide                               | Variable    |
 
 ### 📖 Technical Implementation Guides
 
 #### For Frontend Developers
-| Guide | Purpose | Key Topics |
-|-------|---------|------------|
-| **[Socket Integration Guide](docs/SOCKET_INTEGRATION.md)** | Real-time features and WebSocket implementation | Connection management, event handling, Redux integration |
-| **[Form Integration Guide](docs/FORM_INTEGRATION_GUIDE.md)** | Form patterns, validation, and SuccessMessage integration | Form setup, validation patterns, error handling |
-| **[Redux Integration Guide](docs/REDUX_INTEGRATION.md)** | State management patterns and real-time updates | Redux Toolkit, slices, async actions |
-| **[AI Chatbot Guide](docs/AI_CHATBOT_GUIDE.md)** | AI chatbot implementation and troubleshooting | API integration, message processing, chat history |
+
+| Guide                                                        | Purpose                                                   | Key Topics                                               |
+| ------------------------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------- |
+| **[Socket Integration Guide](docs/SOCKET_INTEGRATION.md)**   | Real-time features and WebSocket implementation           | Connection management, event handling, Redux integration |
+| **[Redux Integration Guide](docs/REDUX_INTEGRATION.md)**     | State management patterns and real-time updates           | Redux Toolkit, slices, async actions                     |
 
 #### For DevOps & Deployment
-| Guide | Purpose | Key Topics |
-|-------|---------|------------|
+
+| Guide                                            | Purpose                                     | Key Topics                                             |
+| ------------------------------------------------ | ------------------------------------------- | ------------------------------------------------------ |
 | **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** | Production deployment and environment setup | Platform deployment, environment variables, monitoring |
 
 ### 🚀 Quick Reference
 
 #### Common Development Tasks
-| Task | Quick Link | Related Guides |
-|------|------------|----------------|
+
+| Task                          | Quick Link                                                                                            | Related Guides            |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------- |
 | **Adding Real-time Features** | [Implementation Patterns](docs/SOCKET_INTEGRATION.md#implementation-patterns-for-new-socket-features) | Socket Guide, Redux Guide |
-| **Creating New Forms** | [Basic Form Setup](docs/FORM_INTEGRATION_GUIDE.md#basic-form-setup) | Form Guide |
-| **Managing State** | [Creating Redux Slices](docs/REDUX_INTEGRATION.md#creating-new-redux-slices-and-actions) | Redux Guide |
-| **Deploying to Production** | [Deployment Platforms](docs/DEPLOYMENT_GUIDE.md#deployment-platforms) | Deployment Guide |
-| **Integrating AI Features** | [Chatbot Implementation](docs/AI_CHATBOT_GUIDE.md#core-implementation) | AI Chatbot Guide |
+| **Managing State**            | [Creating Redux Slices](docs/REDUX_INTEGRATION.md#creating-new-redux-slices-and-actions)              | Redux Guide               |
+| **Deploying to Production**   | [Deployment Platforms](docs/DEPLOYMENT_GUIDE.md#deployment-platforms)                                 | Deployment Guide          |
 
 #### Development Patterns & Examples
-| Pattern | Quick Link | Description |
-|---------|------------|-------------|
-| **Socket Event Handling** | [Event Patterns](docs/SOCKET_INTEGRATION.md#socket-events-and-real-time-data-synchronization) | How to handle real-time data updates |
-| **Form Validation** | [Validation Patterns](docs/FORM_INTEGRATION_GUIDE.md#form-validation-patterns) | Consistent form validation approaches |
-| **State Management** | [Redux Patterns](docs/REDUX_INTEGRATION.md#state-management-for-real-time-updates) | Managing real-time state updates |
-| **Error Handling** | [Error Patterns](docs/FORM_INTEGRATION_GUIDE.md#error-handling) | Consistent error handling across forms |
-| **API Integration** | [API Patterns](docs/AI_CHATBOT_GUIDE.md#api-integration-patterns) | External API integration best practices |
+
+| Pattern                   | Quick Link                                                                                    | Description                             |
+| ------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Socket Event Handling** | [Event Patterns](docs/SOCKET_INTEGRATION.md#socket-events-and-real-time-data-synchronization) | How to handle real-time data updates    |
+| **Form Validation**       | [Validation Patterns](docs/FORM_INTEGRATION_GUIDE.md#form-validation-patterns)                | Consistent form validation approaches   |
+| **State Management**      | [Redux Patterns](docs/REDUX_INTEGRATION.md#state-management-for-real-time-updates)            | Managing real-time state updates        |
 
 #### Troubleshooting Quick Links
-| Issue Type | Quick Link | Guide |
-|------------|------------|-------|
-| **Socket Connection Issues** | [Socket Troubleshooting](docs/SOCKET_INTEGRATION.md#troubleshooting-common-socket-connection-issues) | Socket Guide |
-| **Form Submission Problems** | [Form Troubleshooting](docs/FORM_INTEGRATION_GUIDE.md#troubleshooting) | Form Guide |
-| **State Management Issues** | [Redux Debugging](docs/REDUX_INTEGRATION.md#debugging-redux) | Redux Guide |
-| **Chatbot Integration Problems** | [Chatbot Troubleshooting](docs/AI_CHATBOT_GUIDE.md#troubleshooting-chatbot-integration-issues) | AI Chatbot Guide |
-| **Deployment Issues** | [Deployment Troubleshooting](docs/DEPLOYMENT_GUIDE.md#troubleshooting-deployment-issues) | Deployment Guide |
+
+| Issue Type                       | Quick Link                                                                                           | Guide            |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------- |
+| **Socket Connection Issues**     | [Socket Troubleshooting](docs/SOCKET_INTEGRATION.md#troubleshooting-common-socket-connection-issues) | Socket Guide     |
+| **State Management Issues**      | [Redux Debugging](docs/REDUX_INTEGRATION.md#debugging-redux)                                         | Redux Guide      |
+| **Deployment Issues**            | [Deployment Troubleshooting](docs/DEPLOYMENT_GUIDE.md#troubleshooting-deployment-issues)             | Deployment Guide |
 
 ### 🔗 Cross-Reference Map
 
@@ -315,13 +309,12 @@ Understanding how different parts of the system work together:
 ```
 
 - **Socket + Redux**: [Socket-Redux Integration](docs/SOCKET_INTEGRATION.md#redux-integration)
-- **Forms + Redux**: [Form State Management](docs/FORM_INTEGRATION_GUIDE.md#redux-integration)
-- **Chatbot + Redux**: [Chat State Management](docs/AI_CHATBOT_GUIDE.md#redux-integration)
 - **All Systems + Deployment**: [Production Configuration](docs/DEPLOYMENT_GUIDE.md#environment-configuration)
 
 ## 🚧 Development Status
 
 ### ✅ Implemented Features
+
 - Complete patient management system
 - AI healthcare chatbot with external API integration
 - Real-time data synchronization via Socket.io
@@ -332,6 +325,7 @@ Understanding how different parts of the system work together:
 - Responsive design for all devices
 
 ### 🔄 Planned Features
+
 - Live user-to-user messaging between healthcare providers
 - Advanced reporting and analytics dashboard
 - Mobile app companion

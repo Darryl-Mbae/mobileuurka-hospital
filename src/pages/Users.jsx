@@ -96,7 +96,9 @@ const Users = ({ setActiveItem }) => {
 
   useEffect(() => {
     if (users) {
-      const filtered = users?.filter(user => 
+      const safeUsers = Array.isArray(users) ? users : users ? [users] : [];
+
+      const filtered = safeUsers?.filter(user => 
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.org?.toLowerCase().includes(searchTerm.toLowerCase()) ||

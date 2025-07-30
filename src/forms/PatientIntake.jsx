@@ -381,11 +381,7 @@ const PatientIntake = ({ setInternalTab }) => {
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}
-          {grid === 1 && success && (
-            <div className="button primary" onClick={() => setInternalTab(2.6)}>
-              Proceed to Visits
-            </div>
-          )}
+          
         </div>
       </form>
     </div>

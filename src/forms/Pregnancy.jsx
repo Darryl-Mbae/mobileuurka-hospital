@@ -5,14 +5,9 @@ import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
 import cuid from "cuid";
-import OutdatedDialog from "../components/Outdated";
-import useOutdatedDialog from "../hooks/useOutdatedDialog";
-
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const id = cuid();
-  const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS;
-
   const [formData, setFormData] = useState({
     patient_id: selectedPatientId || "",
     editor: "",
@@ -55,8 +50,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
-  const { showDialog, dialogConfig, showOutdatedDialog } = useOutdatedDialog();
-
   const [notSet, setNotSet] = useState(null);
 
   useEffect(() => {
@@ -200,64 +193,26 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
     await addData(formData);
   };
-
-  const MS_IN_A_DAY = 24 * 60 * 60 * 1000;
-
-  const isRecent = (dateString, days = MAXDAYS) => {
-    if (!dateString) return false;
-    const diff = Date.now() - new Date(dateString).getTime();
-    return diff < days * MS_IN_A_DAY;
-  };
-
-  const getLatest = (
-    array,
-    property,
-    defaultValue = "Unknown",
-    dateField = "date"
-  ) => {
+  const getLatest = (array, property, defaultValue = "—") => {
+    console.log(array);
+    console.log(property);
+    console.log(defaultValue);
+  
     if (!Array.isArray(array) || array.length === 0) return defaultValue;
-
-    // Filter for recent items
-    const recentItems = array.filter((item) => isRecent(item?.[dateField]));
-
-    if (recentItems.length === 0) return defaultValue;
-
-    const lastItem = recentItems[recentItems.length - 1];
+  
+    const lastItem = array[array.length - 1];
     const value = lastItem?.[property];
-
+  
     if (typeof value === "string") {
       return value.charAt(0).toUpperCase() + value.slice(1);
     }
-
-    return value ?? defaultValue;
+  
+    return defaultValue;
   };
-
+  
   const addData = async (formData) => {
-    const latestLabwork = patient?.labworks?.[patient.labworks.length - 1];
-    const latestTriage = patient?.triages?.[patient.triages.length - 1];
-
-    const outdated = [];
-
-    if (!isRecent(latestTriage?.date, MAXDAYS))
-      outdated.push("Triage data");
-    if (!isRecent(latestLabwork?.date, MAXDAYS)) outdated.push("Labwork");
-
-    if (outdated.length > 0) {
-      const proceed = await showOutdatedDialog({
-        title: "Old or Missing Data",
-        message: `The following records are more than ${MAXDAYS} days old or missing:\n- ${outdated.join(
-          "\n- "
-        )}\n\nSubmitting now will use "unknown" values, reducing prediction accuracy.`,
-        confirmText: "Proceed Anyway",
-        cancelText: "Update Data First",
-      });
-
-      if (!proceed) {
-        setLoading(false);
-        return;
-      }
-    }
-
+    console.log(getLatest(patient?.patientHistories,"urine_protein", "Unknown"));
+    console.log(patient);
     const newFormData = {
       ...formData,
 
@@ -581,7 +536,6 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   return (
     <div className="form">
       {showSuccess && <SuccessMessage {...successConfig} />}
-      {showDialog && <OutdatedDialog {...dialogConfig} />}
 
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Current Pregnancy Information</h2>
