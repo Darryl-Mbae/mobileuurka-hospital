@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import "../css/Patients.css";
 import SearchContainer from "../components/SearchContainer";
 import { useNavigate } from "react-router-dom";
 import { IoIosWarning } from "react-icons/io";
 import { usePagination } from "../hooks/usePagination";
 import Pagination from "../components/Pagination";
+import { setPatients } from "../reducers/Slices/patientsSlice";
 
 const columns = [
   { label: "Name", key: "name" },
@@ -148,10 +149,14 @@ function maskId(id) {
 }
 
 const Patients = ({ setActiveItem }) => {
+  const dispatch = useDispatch();
   const patients = useSelector((state) => state.patient.patients);
   const [filteredPatients, setFilteredPatients] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [refreshing, setRefreshing] = React.useState(false);
   const navigate = useNavigate();
+
+
 
   // Add pagination hook
   const {
@@ -186,7 +191,10 @@ const Patients = ({ setActiveItem }) => {
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase())
       );
+      
       setFilteredPatients(filtered);
+    } else {
+      setFilteredPatients([]);
     }
   }, [patients, searchTerm]);
 
@@ -205,7 +213,19 @@ const Patients = ({ setActiveItem }) => {
     setActiveItem("PatientIntake");
   };
 
-  const handleRefresh = () => {};
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const { apiGet } = await import("../config/api.js");
+      const patientsData = await apiGet("/patients/my");
+      dispatch(setPatients(patientsData));
+      console.log("Patients refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing patients:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <div className="patients-page">
@@ -223,6 +243,7 @@ const Patients = ({ setActiveItem }) => {
             onSearchChange={setSearchTerm}
             onRefresh={handleRefresh}
             showRefresh={true}
+            refreshing={refreshing}
           />
         </div>
       </div>

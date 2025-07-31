@@ -1,0 +1,116 @@
+.connection-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  max-width: 300px;
+}
+
+.connection-status.connected {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.connection-status.connecting {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+.connection-status.error {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.connection-status.disconnected {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.status-icon {
+  font-size: 12px;
+}
+
+.status-details {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.connection-health {
+  font-weight: 500;
+}
+
+.error-message {
+  font-size: 12px;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid currentColor;
+}
+
+.retry-button {
+  align-self: flex-start;
+  padding: 4px 12px;
+  font-size: 12px;
+  border: 1px solid currentColor;
+  background-color: transparent;
+  color: inherit;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.retry-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Compact version for header/navbar */
+.connection-status.compact {
+  flex-direction: row;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.connection-status.compact .error-message {
+  display: none;
+}
+
+.connection-status.compact .retry-button {
+  padding: 2px 6px;
+  margin-left: 8px;
+}
+
+/* Animation for connecting state */
+.connection-status.connecting .status-icon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}

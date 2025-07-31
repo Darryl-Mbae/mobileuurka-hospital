@@ -16,10 +16,9 @@ const Profile = ({ patient }) => {
   function getLatestEntry(entries) {
     if (!Array.isArray(entries) || entries.length === 0) return null;
 
-    return entries.reduce((latest, current) => {
-      return new Date(current.date) > new Date(latest.date) ? current : latest;
-    });
+    return entries[entries.length - 1];
   }
+  
 
   const renderSection = (title, items) => (
     <section>
@@ -35,9 +34,9 @@ const Profile = ({ patient }) => {
     </section>
   );
 
+
   const latestHistory = getLatestEntry(patient?.patientHistories);
-  console.log("Latest History:", latestHistory);
-  console.log("Patient Data:", patient);
+  console.log(patient);
 
   // Obstetric History
   const obstetricHistoryDetails = [
@@ -175,7 +174,9 @@ const Profile = ({ patient }) => {
     { label: "Date of Birth", value: patientInfo?.dob || "-" },
     {
       label: "Age",
-      value: patientInfo?.age ? `${patientInfo.age} years` : `${getAge(patientInfo.dob)} Years`,
+      value: patientInfo?.age
+        ? `${patientInfo.age} years`
+        : `${getAge(patientInfo.dob)} Years`,
     },
     {
       label: "Race",

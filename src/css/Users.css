@@ -63,7 +63,7 @@ vertical-align: middle;
   padding: 20px;
   border-radius: 10px;
   display: grid;
-  grid-template-columns: 15% 20% 18% 15% 8% 14% 10%;
+  grid-template-columns: 17% 20% 18% 15% 8% 14% 10%;
   margin: 20px 0px;
   color: #666666;
 }
@@ -71,7 +71,7 @@ vertical-align: middle;
 .users-page .lists .list {
   width: calc(100% - 40px);
   display: grid;
-  grid-template-columns: 15% 20% 18% 15% 7% 14% 10%;
+  grid-template-columns: 17% 20% 18% 15% 7% 14% 10%;
   padding: 15px 20px;
   border-bottom: 1px solid rgba(109, 109, 109, 0.09);
   transition: all 0.3s ease-in-out;
@@ -430,11 +430,11 @@ vertical-align: middle;
   } */
 
   .users-page .lists .title {
-    grid-template-columns: 12% 12% 18% 8% 8% 8% 8% 12%;
+    grid-template-columns: 14% 12% 18% 8% 8% 8% 8% 12%;
   }
 
   .users-page .lists .list {
-    grid-template-columns: 12% 12% 18% 8% 8% 8% 8% 12%;
+    grid-template-columns: 14% 12% 18% 8% 8% 8% 8% 12%;
   }
 
   .users-page .lists .title .status {

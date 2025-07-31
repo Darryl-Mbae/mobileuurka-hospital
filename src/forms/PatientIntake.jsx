@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
+import { useSocket } from "../hooks/useSocket";
+import { addPatient } from "../reducers/Slices/patientsSlice";
 
 const PatientIntake = ({ setInternalTab }) => {
   // Initialize form state to match your desired output structure
@@ -60,7 +62,6 @@ const PatientIntake = ({ setInternalTab }) => {
         credentials: 'include',
       });
       const data = await response.json();
-      console.log(data);
       setIds(data);
     } catch (error) {
       console.error("Error fetching hospitals:", error);
@@ -73,7 +74,6 @@ const PatientIntake = ({ setInternalTab }) => {
         credentials: 'include',
       });
       const data = await response.json();
-      console.log(data);
       setHospitals(data);
     } catch (error) {
       console.error("Error fetching hospitals:", error);
@@ -134,12 +134,9 @@ const PatientIntake = ({ setInternalTab }) => {
       showSuccessMessage({
         title: "Registration Completed Successfully!",
         message: `Vital signs recorded for ${formData.name || 'the patient'}.`,
-        showNextButton: true,
-        setInternalTab: setInternalTab,
-        nextButtonText: "Add Another Triage",
+        showScreeningButton: true,
         nextButtonAction: () => {
           clearForm();
-          setInternalTab(2.2)
         },
         patientId: formData.patientId
       });

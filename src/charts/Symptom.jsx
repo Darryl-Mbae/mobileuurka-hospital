@@ -4,7 +4,6 @@ import { IoFlagSharp } from "react-icons/io5";
 
 const Symptom = ({patient, setActiveTab}) => {
 
-  console.log(patient)
   function getLatest(data){
     return data?.[data?.length - 1]
   }
@@ -62,7 +61,7 @@ const Symptom = ({patient, setActiveTab}) => {
           <div className="value">Dizziness and abdominal pains</div>
         </div>
       </div> */}
-      {patient.notes.length > 0 ?
+      {patient?.notes?.length > 0 ?
       <div className="notes-small" onClick={() => setActiveTab("notes")}>
           <div className="title">
             <div className="dot"></div>

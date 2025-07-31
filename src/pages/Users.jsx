@@ -75,6 +75,7 @@ const Users = ({ setActiveItem }) => {
   const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
 
+
   // Add pagination hook
   const {
     currentPage,
@@ -102,7 +103,6 @@ const Users = ({ setActiveItem }) => {
             email: userTenant.user?.email,
             org: org.name,
             role: userTenant.role,
-            status: userTenant.status,
             createdAt: userTenant.joinedAt,
           })) || []
       );
@@ -110,6 +110,9 @@ const Users = ({ setActiveItem }) => {
       dispatch(setUsers(allUsers));
     }
   }, [organisations, dispatch]);
+
+  console.log("users", users);
+  console.log("onlineUsers", onlineUsers);
 
   useEffect(() => {
     if (users) {

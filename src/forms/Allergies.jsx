@@ -98,14 +98,8 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
       showSuccessMessage({
         title: "Patient Allergy Registered Successfully!",
         message: `Allergies recorded for ${patientName || "the patient"}.`,
-        showRedoButton: true,
+        
         showScreeningButton: true,
-        showNextButton: true,
-        setInternalTab: setInternalTab,
-        nextButtonText: "Add Another Triage",
-        nextButtonAction: () => {
-          clearForm();
-        },
         patientId: formData.patientId,
       });
       setSuccess(true);

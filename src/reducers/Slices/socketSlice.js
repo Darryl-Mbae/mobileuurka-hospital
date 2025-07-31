@@ -7,6 +7,8 @@ const initialState = {
   connectionStatus: 'disconnected', // 'connecting', 'connected', 'disconnected', 'error'
   reconnectAttempts: 0,
   lastError: null,
+  connectionHealth: 'unknown', // 'good', 'poor', 'bad', 'unknown'
+  isReconnecting: false,
 };
 
 export const socketSlice = createSlice({
@@ -19,9 +21,12 @@ export const socketSlice = createSlice({
       state.connectionStatus = 'connected';
       state.reconnectAttempts = 0;
       state.lastError = null;
+      state.connectionHealth = 'good';
+      state.isReconnecting = false;
     },
     setConnecting: (state) => {
       state.connectionStatus = 'connecting';
+      state.isReconnecting = true;
     },
     disconnectSocket: (state) => {
       if (state.socket) {
@@ -30,19 +35,35 @@ export const socketSlice = createSlice({
       state.socket = null;
       state.isConnected = false;
       state.connectionStatus = 'disconnected';
+      state.connectionHealth = 'unknown';
+      state.isReconnecting = false;
     },
     resetSocket: (state) => {
       state.socket = null;
       state.isConnected = false;
       state.connectionStatus = 'disconnected';
+      state.connectionHealth = 'unknown';
+      state.isReconnecting = false;
     },
     setConnectionError: (state, action) => {
       state.connectionStatus = 'error';
       state.lastError = action.payload;
-      state.reconnectAttempts += 1;
+      state.connectionHealth = state.reconnectAttempts > 3 ? 'bad' : 'poor';
     },
     clearError: (state) => {
       state.lastError = null;
+      if (state.connectionStatus === 'error') {
+        state.connectionStatus = 'disconnected';
+      }
+    },
+    setReconnectAttempts: (state, action) => {
+      state.reconnectAttempts = action.payload;
+    },
+    setConnectionHealth: (state, action) => {
+      state.connectionHealth = action.payload;
+    },
+    setReconnecting: (state, action) => {
+      state.isReconnecting = action.payload;
     },
   },
 });
@@ -53,7 +74,10 @@ export const {
   disconnectSocket, 
   resetSocket, 
   setConnectionError,
-  clearError 
+  clearError,
+  setReconnectAttempts,
+  setConnectionHealth,
+  setReconnecting
 } = socketSlice.actions;
 
 export default socketSlice.reducer;

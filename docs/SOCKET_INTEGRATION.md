@@ -25,7 +25,7 @@ MobileUurka uses Socket.IO for real-time data synchronization across the healthc
 
 - **Real-time Data Synchronization**: Automatic updates for patients, users, and organizations
 - **Online User Tracking**: Monitor which healthcare providers are currently active
-- **Connection Management**: Robust connection handling with automatic reconnection
+- **Enhanced Connection Management**: Robust connection handling with exponential backoff reconnection, connection status tracking, and user-friendly error messages
 - **Redux Integration**: Seamless state management with real-time updates
 - **Authentication**: Secure token-based connection authentication
 
@@ -57,26 +57,57 @@ The socket system follows a layered architecture:
 
 ### Connection Events
 
-The socket system handles these connection-related events automatically:
+The socket system handles these connection-related events automatically with enhanced reconnection logic:
 
 ```javascript
 // Connection established
 socket.on("connect", () => {
   console.log("✅ Socket connected successfully to server");
-  // Updates Redux state: isConnected = true
+  // Updates Redux state: isConnected = true, connectionStatus = 'connected'
+  // Resets reconnection attempts and clears errors
 });
 
 // Connection lost
 socket.on("disconnect", (reason) => {
   console.log("👋 Socket disconnected from server:", reason);
-  // Updates Redux state: isConnected = false
+  // Updates Redux state: isConnected = false, connectionStatus = 'disconnected'
+  // Triggers smart reconnection based on disconnect reason
 });
 
-// Connection error
+// Connection error with enhanced error handling
 socket.on("connect_error", (error) => {
   console.error("❌ Socket connection error:", error);
-  // Triggers automatic reconnection logic
+  // Provides user-friendly error messages
+  // Triggers exponential backoff reconnection (1s, 2s, 4s, 8s, 16s, 30s max)
+  // Updates connection health status (good, poor, bad)
 });
+```
+
+#### Enhanced Reconnection Features
+
+The socket system now includes advanced reconnection capabilities:
+
+- **Exponential Backoff**: Reconnection delays increase exponentially (1s → 2s → 4s → 8s → 16s → 30s max)
+- **Maximum Retry Limit**: Stops attempting after 10 failed reconnection attempts
+- **Connection Health Tracking**: Monitors connection quality (good, poor, bad, unknown)
+- **User-Friendly Error Messages**: Maps technical errors to readable messages
+- **Manual Reconnection**: Users can trigger manual reconnection attempts
+- **Smart Reconnection Logic**: Only reconnects for appropriate disconnect reasons
+
+```javascript
+// Connection status tracking
+const { 
+  connectionStatus,    // 'connecting', 'connected', 'disconnected', 'error'
+  connectionHealth,    // 'good', 'poor', 'bad', 'unknown'
+  isReconnecting,      // boolean indicating active reconnection
+  lastError,          // user-friendly error message
+  manualReconnect     // function to trigger manual reconnection
+} = useSocket();
+
+// Manual reconnection
+const handleReconnect = () => {
+  manualReconnect(); // Resets retry count and attempts immediate reconnection
+};
 ```
 
 ### User Management Events
@@ -201,9 +232,40 @@ socket.on("feedback_status_updated", (data) => {
 
 ## Working Code Examples
 
+### Connection Status Component
+
+The `ConnectionStatus` component provides visual feedback about the socket connection:
+
+```javascript
+import React from 'react';
+import ConnectionStatus from '../components/ConnectionStatus';
+
+const MyApp = () => {
+  return (
+    <div className="app">
+      {/* Shows connection status only when there are issues */}
+      <ConnectionStatus />
+      
+      {/* Or show detailed connection status always */}
+      <ConnectionStatus showDetails={true} />
+      
+      <div className="app-content">
+        {/* Your app content */}
+      </div>
+    </div>
+  );
+};
+```
+
+The component automatically displays:
+- **Connection Status**: Visual indicator (🟢 Connected, 🟡 Connecting, 🔴 Error, ⚫ Disconnected)
+- **Error Messages**: User-friendly error descriptions
+- **Retry Button**: Manual reconnection option when disconnected
+- **Connection Health**: Quality indicator based on reconnection attempts
+
 ### Basic Socket Integration
 
-Here's how to use the socket system in a React component:
+Here's how to use the enhanced socket system in a React component:
 
 ```javascript
 import React, { useEffect } from 'react';
@@ -214,6 +276,10 @@ const PatientDashboard = () => {
   const { 
     isConnected, 
     connectionStatus,
+    connectionHealth,
+    lastError,
+    isReconnecting,
+    manualReconnect,
     emitPatientUpdate,
     emitUserUpdate 
   } = useSocket();
@@ -232,6 +298,18 @@ const PatientDashboard = () => {
       <div className="connection-status">
         Status: {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
         <span>({connectionStatus})</span>
+        <span className={`health-${connectionHealth}`}>
+          Health: {connectionHealth}
+        </span>
+        {lastError && <div className="error">Error: {lastError}</div>}
+        {!isConnected && (
+          <button 
+            onClick={manualReconnect} 
+            disabled={isReconnecting}
+          >
+            {isReconnecting ? 'Reconnecting...' : 'Retry Connection'}
+          </button>
+        )}
       </div>
       
       <div className="online-users">

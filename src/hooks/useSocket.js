@@ -5,7 +5,13 @@ import { setConnecting, setConnectionError } from '../reducers/Slices/socketSlic
 
 export const useSocket = () => {
   const dispatch = useDispatch();
-  const { socket, isConnected, connectionStatus } = useSelector(state => state.socket);
+  const { 
+    socket, 
+    connectionStatus, 
+    lastError, 
+    connectionHealth,
+    isReconnecting 
+  } = useSelector(state => state.socket);
   const { currentUser } = useSelector(state => state.user);
   
 
@@ -132,11 +138,51 @@ export const useSocket = () => {
     socketManager.requestOnlineUsersUpdate();
   };
 
+  // Organization filtering methods
+  const getOrganizationFilteredOnlineUsers = () => {
+    return socketManager.getOrganizationFilteredOnlineUsers();
+  };
+
+  const getUserOrganizations = () => {
+    return socketManager.getUserOrganizations();
+  };
+
+  // Organization-specific online user methods
+  const getOnlineUsersForOrganization = (organizationId) => {
+    return socketManager.getOnlineUsersForOrganization(organizationId);
+  };
+
+  const getOnlineCountsByOrganization = () => {
+    return socketManager.getOnlineCountsByOrganization();
+  };
+
+  const getOnlineCountForOrganization = (organizationId) => {
+    return socketManager.getOnlineCountForOrganization(organizationId);
+  };
+
+  const getAllOnlineUsersByOrganization = () => {
+    return socketManager.getAllOnlineUsersByOrganization();
+  };
+
+  // New connection management methods
+  const manualReconnect = () => {
+    socketManager.manualReconnect();
+  };
+
+  const getConnectionStatus = () => {
+    return socketManager.getConnectionStatus();
+  };
+
   return {
     socket: socketManager.getSocket(),
     isConnected: socketManager.isConnected(),
     connectionStatus,
+    lastError,
+    connectionHealth,
+    isReconnecting,
     disconnect,
+    manualReconnect,
+    getConnectionStatus,
     // User methods
     emitUserUpdate,
     emitUserCreated,
@@ -156,16 +202,24 @@ export const useSocket = () => {
     emitUserCreatedForOrganization,
     emitUserRemovedFromOrganization,
     emitUserRoleUpdated,
-    // Medical records
+    // Medical record methods (Requirements 3.1, 5.3)
     emitMedicalRecordCreated,
     emitMedicalRecordUpdated,
-    // Feedback
+    // Feedback methods (Requirements 3.2, 5.3)
     emitFeedbackCreated,
     emitFeedbackStatusUpdated,
-    // Request methods
+    // Request methods for organization-filtered online users (Requirements 3.3, 5.3)
     requestOnlineUsers,
     requestOnlineCounts,
     requestOnlineUsersUpdate,
+    // Organization filtering methods
+    getOrganizationFilteredOnlineUsers,
+    getUserOrganizations,
+    // Organization-specific online user methods (Requirements 4.1, 4.2, 4.3, 4.4)
+    getOnlineUsersForOrganization,
+    getOnlineCountsByOrganization,
+    getOnlineCountForOrganization,
+    getAllOnlineUsersByOrganization,
   };
 };
 

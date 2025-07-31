@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addPatient, updatePatient } from "../reducers/Slices/patientsSlice.js";
 import MainSearch from "../components/MainSearch";
 import "../css/Patient.css";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
@@ -21,24 +22,31 @@ import { FaRegCopy } from "react-icons/fa";
 import { TiTick } from "react-icons/ti";
 
 const Patient = ({ id }) => {
-  const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const SERVER = import.meta.env.VITE_SERVER_URL;
   const [activeTab, setActiveTab] = useState("overview");
   const [alerts, setAlerts] = useState();
   const currentUser = useSelector((s) => s.user.currentUser);
+  const dispatch = useDispatch();
   const [profilePic, setProfilePic] = useState(defaultImg);
   const [chatActive, setChatActive] = useState(false);
   const [copied, setCopied] = useState(false);
   const [document, setDocument] = useState([]);
   const [note, setNote] = useState("");
 
+  // Get patient from Redux store instead of local state
+  const patient = useSelector((state) => 
+    state.patient?.patients?.find(p => p.id === id)
+  );
+
   useEffect(() => {
     if (id) {
-      fetchPatientById(id);
+      // Only fetch if patient is not in Redux store
+      if (!patient) {
+        fetchPatientById(id);
+      }
     }
-  }, [id]);
+  }, [id, patient]);
 
   const fetchPatientById = async (patientId) => {
     setLoading(true);
@@ -48,8 +56,14 @@ const Patient = ({ id }) => {
       const { apiGet } = await import("../config/api.js");
       const patientData = await apiGet(`/patients/${patientId}`);
 
-      setPatient(patientData);
-      console.log("Patient fetched:", patientData);
+      // Check if patient already exists in store
+      if (patient) {
+        dispatch(updatePatient(patientData));
+      } else {
+        dispatch(addPatient(patientData));
+      }
+      
+      console.log("Patient fetched and added to Redux store:", patientData);
     } catch (err) {
       console.error("Error fetching patient:", err);
       setError(err.message);

@@ -23,6 +23,7 @@ import Feedback from "./pages/Feedback.jsx";
 import FeedbackForm from "./forms/FeedbackForm.jsx";
 import { setPatients } from "./reducers/Slices/patientsSlice.js";
 import useSocket from "./hooks/useSocket.js";
+import ConnectionStatus from "./components/ConnectionStatus.jsx";
 
 function App() {
   const [activeItem, setActiveItem] = useState("Dashboard");
@@ -41,7 +42,6 @@ function App() {
 
   // Initialize socket connection
   const { isConnected, connectionStatus } = useSocket();
-
 
   useEffect(() => {
     if (page) {
@@ -128,10 +128,14 @@ function App() {
     fetchOrganizations();
   }, [currentUser, dispatch]);
 
+  // Fetch patients only once when user is first loaded
+  const [initialPatientsFetched, setInitialPatientsFetched] = useState(false);
+  
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && !initialPatientsFetched) {
       fetchPatients();
     }
+    
     async function fetchPatients() {
       try {
         const res = await fetch(`${SERVER}/patients/my`, {
@@ -141,16 +145,18 @@ function App() {
         const data = await res.json();
 
         // Optional: transform or normalize data
-        const transformed = data.map((p) => ({
+        const transformed = data?.map((p) => ({
           ...p,
         }));
 
         dispatch(setPatients(transformed));
+        setInitialPatientsFetched(true);
       } catch (err) {
         console.error("Failed to fetch patients:", err);
+        setInitialPatientsFetched(true); // Mark as attempted even on error
       }
     }
-  }, [currentUser, dispatch]);
+  }, [currentUser, initialPatientsFetched]); // Only run once per user session
 
   const renderContent = () => {
     switch (activeItem) {
@@ -241,6 +247,7 @@ function App() {
         setInternalTab={setInternalTab}
       />
       <div className={`content ${activeItem === "Patient" && "active"}`}>
+        {/* <ConnectionStatus /> */}
         {renderContent()}
       </div>
     </div>
