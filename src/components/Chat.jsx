@@ -11,7 +11,7 @@ import rehypeRaw from "rehype-raw";
 import { setChats } from "../reducers/Slices/chatSlice";
 import DropdownMenu from "./DropdownMenu";
 import Articles from "../assets/images/Articles.png";
-import Whatsapp from '../assets/images/WhatsApp-logo.png'
+import Whatsapp from '../assets/images/whatsapplogo.png'
 // Function to clean up text by replacing multiple line breaks with single ones
 const cleanText = (text) => {
   if (!text) return text;
