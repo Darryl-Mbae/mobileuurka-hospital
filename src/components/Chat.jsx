@@ -10,7 +10,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { setChats } from "../reducers/Slices/chatSlice";
 import DropdownMenu from "./DropdownMenu";
-import Whatsapp from "../assets/images/WhatsApp logo.png";
+import Whatsapp from "../assets/images/WhatsApp-logo.png";
 import Articles from "../assets/images/Articles.png";
 
 // Function to clean up text by replacing multiple line breaks with single ones
