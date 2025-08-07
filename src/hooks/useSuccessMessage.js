@@ -18,6 +18,7 @@ export const useSuccessMessage = (clearFormFunction = null) => {
     nextButtonAction: null,
     showScreeningButton: false,
     patientId: null,
+    showFeedbackButton: false,
     showProceedButton: false,
     proceedButtonText: "Proceed",
     proceedButtonAction: null,

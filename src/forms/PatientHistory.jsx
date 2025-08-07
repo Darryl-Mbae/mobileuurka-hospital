@@ -190,7 +190,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
       // Show success message
       showSuccessMessage({
         title: "History Completed Successfully!",
-        message: `Vital signs recorded for ${patientName || "the patient"}.`,
+        message: `History form submitted for ${formData.name || 'the patient'}.`,
         showScreeningButton: true,
         patientId: formData.patientId,
       });

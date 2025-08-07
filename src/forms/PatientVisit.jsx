@@ -117,7 +117,7 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
       // Show success message
       showSuccessMessage({
         title: "Visit Recorded Successfully!",
-        message: `Visit ${formData.visitNumber} for ${patientName || 'the patient'} has been recorded.`,
+        message: `Visit details recorded for ${formData.name || 'the patient'}.`,
         showScreeningButton: true,
         patientId: formData.patientId
       });

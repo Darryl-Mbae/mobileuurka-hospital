@@ -91,9 +91,10 @@ export default function Chart({ patient, selectedDate, explanations }) {
     
     // Find explanation for the exact selected date
     const selectedDateStr = selectedDateObj.toISOString().split('T')[0];
-    const exactMatch = explanations.find(exp => 
-      exp.date.split('T')[0] === selectedDateStr
-    );
+    const exactMatch = explanations
+    .filter(exp => exp.date.split('T')[0] === selectedDateStr)
+    .at(-1) || null;
+  
     
     if (exactMatch) return exactMatch;
     

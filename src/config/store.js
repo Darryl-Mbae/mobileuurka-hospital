@@ -6,7 +6,6 @@ import patientReducer from "../reducers/Slices/patientsSlice.js";
 import socketReducer from "../reducers/Slices/socketSlice.js";
 import chatsReducer from "../reducers/Slices/chatSlice.js";
 
-
 export const store = configureStore({
   reducer: {
     user: userReducer,
@@ -14,6 +13,7 @@ export const store = configureStore({
     patient: patientReducer,
     socket: socketReducer,
     chats: chatsReducer,
+
 
   },
   middleware: (getDefaultMiddleware) =>

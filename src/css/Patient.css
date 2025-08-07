@@ -205,8 +205,23 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  position: relative;
 }
+.patient .tabs .lists .ai-buttons .notification .badge{
+  width: 18px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgb(252, 56, 56);
+  color: white;
+  display: flex;
+  justify-content:center ;
+  align-items: center;
+  font-size: .7em;
+  position: absolute;
+  top: -10%;
+  right: -15%;
 
+}
 .patient .tabs .lists .ai-buttons .notification img{
   width: 50%;
   margin: auto;

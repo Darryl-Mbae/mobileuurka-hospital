@@ -1,6 +1,6 @@
 .chat-page {
   width: 88%;
-  height: 95%;
+  height: 97%;
   margin: auto;
   border-radius: 10px;
   /* background: linear-gradient(to bottom, rgba(243, 238, 231, 0.63) 0%, #f8f4ef 100%); */
@@ -21,13 +21,17 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 20px 0px;
+  padding: 5px 20px 0px ;
   /* background: linear-gradient(to bottom, rgba(243, 238, 231, 1) 0%, #f8f4ef 100%); */
   background: var(--section);
   border-bottom: 0.5px solid rgba(9, 9, 9, 0.09);
   flex-shrink: 0;
+  padding-left: 20px;
 }
-
+.chat-page .select-menu{
+  margin-left: 10px;
+  margin-top: -15px;
+}
 .chat-page .top .logon {
   width: 40px;
   aspect-ratio: 1;
@@ -54,7 +58,7 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding: 10px 20px;
+  padding: 20px 20px;
   min-height: 0;
    scrollbar-width: none; /* For Firefox */
   -ms-overflow-style: none; /* For IE and Edge */
@@ -191,12 +195,16 @@
 .chat-page .mid .new .example {
   align-self: flex-end;
   width: 55%;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
   padding: 15px;
   background: white;
   border-radius: 10px;
   margin-bottom: 15px;
   transition: all 0.3s ease-in-out;
   cursor: pointer;
+  align-items: flex-start;
 }
 .chat-page .mid .new .example:hover {
   transform: translateX(-5px) scale(1.01);
@@ -212,6 +220,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: flex-start;
 }
 .chat-page .mid .new .example .smlogo img {
   width: 60%;
@@ -342,4 +351,156 @@
   to {
     transform: translateY(-5px);
   }
+}
+/* Example messages styles */
+.examples {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+  max-width: 400px;
+}
+
+.example {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.example:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.example .smlogo {
+  font-size: 20px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.example .title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.example .subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+* Chat header styles */
+.chat-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.chat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.message-type-indicator {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.patient-indicator {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+/* Message type badges */
+.message-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.message-badge.whatsapp {
+  background: #25d366;
+  color: white;
+}
+
+.message-badge.sabi {
+  background: #007bff;
+  color: white;
+}
+/* Header actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suggestions-toggle {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.suggestions-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Suggestions overlay */
+.suggestions-overlay {
+  position: absolute;
+  width: 50%;
+  top: 105px;
+  /* left: 20px; */
+  right: 25px;
+  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+
+
+
+.close-suggestions:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Adjust examples in overlay */
+.suggestions-overlay .examples {
+  max-width: none;
+  margin-top: 0;
+}
+.suggestions-overlay .examples .example{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 0px;
+  border-bottom: 1px solid rgba(88, 88, 88, 0.1);
+}
+.suggestions-overlay .examples .example:last-child{
+  border-bottom: none;
 }

@@ -101,8 +101,8 @@ const Infections = ({ setInternalTab, selectedPatientId }) => {
       console.log("Infection record created:", result);
       // Show success message
       showSuccessMessage({
-        title: "IInfections Completed Successfully!",
-        message: `Vital signs recorded for ${patientName || 'the patient'}.`,
+        title: "Infections Screening Completed Successfully!",
+        message: `Infection screening  recorded for ${formData.name || 'the patient'}.`,
         showRedoButton: true,
         showScreeningButton: true,
         showNextButton: true,

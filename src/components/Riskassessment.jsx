@@ -95,6 +95,19 @@ const Riskassessment = ({ patient }) => {
     },
   };
 
+  const getLatestExplanationForDate = (explanations, selectedDate) => {
+    if (!explanations || !selectedDate) return null;
+  
+    const explanationsForDate = explanations.filter(
+      (exp) => exp.date.split("T")[0] === selectedDate
+    );
+  
+    return explanationsForDate.length > 1
+      ? explanationsForDate.at(-1)
+      : null;
+  };
+
+  
   return (
     <div className="xchart" style={{ width: "95%" }}>
       <div className="title-block" style={{ margin: "0px" }}>
@@ -211,9 +224,10 @@ const Riskassessment = ({ patient }) => {
 
                 
 
-                const currentExplanation = patient?.explanations?.find(
-                  (exp) => exp.date.split("T")[0] === selectedDate
-                );
+                  const currentExplanation = patient?.explanations
+                  ?.filter((exp) => exp.date.split("T")[0] === selectedDate)
+                  ?.at(-1) || null;
+                
                 // Check if this is a visit date
                 const currentVisit = patient?.visits?.find(
                   (visit) => visit.date.split("T")[0] === selectedDate

@@ -1,0 +1,229 @@
+.alerts-dialog {
+  position: fixed;
+  top: 8%;
+  right: -48%;
+  height: 65vh;
+  width: 40%;
+  background: red;
+  border: none;
+  border-radius: 10px;
+  padding: 20px;
+  z-index: 1001;
+  font-size: 0.8em;
+}
+.alerts-dialog .cancel {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+dialog::backdrop {
+  outline: none;
+  border: none;
+  /* backdrop-filter: blur(5px); Apply blur to the area behind the dialog */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.55
+  ); /* Adjust opacity to control darkness */
+}
+dialog:focus {
+  outline: none;
+  border: none;
+}
+@keyframes slideInRight {
+  from {
+    right: -100%;
+    opacity: 0;
+  }
+  to {
+    right: -45%;
+    opacity: 1;
+  }
+}
+
+.alerts-dialog {
+  position: fixed;
+  top: 15%;
+  right: -52%;
+  height: 70vh;
+  width: 40%;
+  background: #f8f4ef;
+  border: none;
+  border-radius: 10px;
+  padding: 20px;
+  z-index: 1001;
+
+  animation: slideInRight 0.4s ease-out forwards;
+}
+.alerts-dialog .container {
+  width: 95%;
+  height: 97%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
+}
+
+.alerts-dialog .options {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.alerts-dialog .options .select-all {
+  width: 25px !important;
+  aspect-ratio: 1;
+  padding: 0px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border: 1px solid rgba(109, 109, 109, 0.19);
+}
+.alerts-dialog .options .delete,
+.alerts-dialog .options .flagged {
+  padding: 10px 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  gap: 5px;
+  border: 1px solid rgba(109, 109, 109, 0.19);
+  transition: all 0.3s ease-in-out;
+}
+.alerts-dialog .options .delete{
+  min-width: 100px;
+}
+.alerts-dialog .options .delete:hover,
+.alerts-dialog .options .flagged:hover {
+  transform: translateY(-5px);
+
+}
+.alerts-dialog .options .select-all.active {
+  background: #008540;
+  border: 1px solid #008540;
+  color: white;
+}
+
+.alerts-dialog .options .pagination {
+  margin-left: auto; /* This will push it to the right */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.alerts-dialog .options .pagination p {
+  margin-right: 20px;
+  color: #333;
+}
+.alerts-dialog .options .pagination .pages-button {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.alerts-dialog .options .pagination .p-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #686868;
+  font-size: 0.8rem;
+  border: 1px solid rgba(109, 109, 109, 0.19);
+}
+.alerts-dialog .alerts {
+  margin-top: 20px;
+}
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(109, 109, 109, .19)
+;
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+}
+
+.custom-checkbox.checked {
+  background-color: #008540;
+}
+
+.custom-checkbox.checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 3px;
+  width: 3px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.alerts-dialog .alerts .alert {
+  width: calc(100% - 30px);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease-in-out;
+  padding:20px 15px;
+  margin: 10px 0px;
+  border-bottom: 1px solid rgba(109, 109, 109, 0.09);
+}
+.alerts-dialog .alerts .alert:last-child{
+  border-bottom: none;
+}
+.alerts-dialog .alerts .alert:hover{
+  transform: translateX(5px);
+  background: #edeae4;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+.alerts-dialog .alerts .alert .message-box {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+}
+.alerts-dialog .alerts .alert .message-box .timestamp {
+  color: #686868;
+  font-size: 0.7rem;
+  display: flex;
+
+}
+
+.alerts-dialog .alerts .alert .message-box .message {
+  width: 70%;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.alerts-dialog .alerts .alert.flagged .message-box .message {
+  width: 72%;
+}
+.alerts-dialog .alerts .alert.active {
+  background: #efebe6;
+  border-radius: 10px;
+  border: none;
+}
+
+.alerts-dialog .alerts .alert .message-box .message{
+  color: #333;
+}

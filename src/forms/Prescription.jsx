@@ -20,8 +20,6 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
     medicationPurpose: "",
   });
 
-  
-
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
@@ -47,7 +45,8 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
   };
 
   // Use success message hook
-  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+  const { showSuccess, successConfig, showSuccessMessage } =
+    useSuccessMessage(clearForm);
 
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -58,12 +57,10 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
       editor: currentUser?.name || "",
       patientId: selectedPatientId || "",
     }));
-    
+
     if (selectedPatientId) {
       fetchPatientName(selectedPatientId);
     }
-    
-
   }, [currentUser, selectedPatientId]);
 
   // Auto-calculate trimester based on gestation week
@@ -72,19 +69,19 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
     let trimester = 1;
     if (week >= 14 && week <= 27) trimester = 2;
     else if (week >= 28) trimester = 3;
-    
-    setFormData(prev => ({ ...prev, trimester }));
+
+    setFormData((prev) => ({ ...prev, trimester }));
   }, [formData.gestationWeek]);
 
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
-    
+
     setFetchingPatient(true);
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
       });
-      
+
       if (response.ok) {
         const patient = await response.json();
         setPatientName(patient.name || "Unknown Patient");
@@ -99,22 +96,18 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
     }
   };
 
-
-
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? parseInt(value) || 0 : value,
     }));
-    
+
     if (name === "patientId" && value) {
       fetchPatientName(value);
     } else if (name === "patientId" && !value) {
       setPatientName("");
     }
-    
-
   };
 
   const handleSubmit = async (e) => {
@@ -136,11 +129,13 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Prescription created:", result);
-      
+
       // Show success message
       showSuccessMessage({
         title: "Prescription Added Successfully!",
-        message: `${formData.medicine} has been prescribed for ${patientName || 'the patient'}.`,
+        message: `${formData.medicine} has been prescribed for ${
+          patientName || "the patient"
+        }.`,
         showRedoButton: true,
         showScreeningButton: true,
         showNextButton: true,
@@ -148,7 +143,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
         nextButtonAction: () => {
           clearForm();
         },
-        patientId: formData.patientId
+        patientId: formData.patientId,
       });
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -172,11 +167,15 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
   ];
 
   const getTrimesterName = (trimester) => {
-    switch(trimester) {
-      case 1: return "First Trimester (0-13 weeks)";
-      case 2: return "Second Trimester (14-27 weeks)";
-      case 3: return "Third Trimester (28+ weeks)";
-      default: return "Unknown";
+    switch (trimester) {
+      case 1:
+        return "First Trimester (0-13 weeks)";
+      case 2:
+        return "Second Trimester (14-27 weeks)";
+      case 3:
+        return "Third Trimester (28+ weeks)";
+      default:
+        return "Unknown";
     }
   };
 
@@ -261,9 +260,15 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
                     value={fetchingPatient ? "Fetching..." : patientName}
                     readOnly
                     className="read-only-field"
-                    style={{ 
-                      background: patientName === "Patient not found" ? "#ffe6e6" : "#f8f9fa",
-                      color: patientName === "Patient not found" ? "#d32f2f" : "inherit"
+                    style={{
+                      background:
+                        patientName === "Patient not found"
+                          ? "#ffe6e6"
+                          : "#f8f9fa",
+                      color:
+                        patientName === "Patient not found"
+                          ? "#d32f2f"
+                          : "inherit",
                     }}
                   />
                 </div>
@@ -322,7 +327,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
                     value={formData.stopDate}
                     onChange={handleChange}
                   />
-                  <small style={{ color: '#666', fontSize: '12px' }}>
+                  <small style={{ color: "#666", fontSize: "12px" }}>
                     Leave empty for ongoing medication
                   </small>
                 </div>
@@ -341,8 +346,6 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
           )}
         </div>
 
-
-
         <div className="form-navigation">
           {grid !== 0 && (
             <div className="button" onClick={() => setGrid(grid - 1)}>
@@ -355,15 +358,10 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
             </div>
           )}
           {grid === 1 && (
-            <button
-              type="submit"
-              className="button primary"
-              disabled={loading}
-            >
+            <button type="submit" className="button primary" disabled={loading}>
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}
-
         </div>
       </form>
     </div>

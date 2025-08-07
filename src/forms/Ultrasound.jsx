@@ -154,7 +154,7 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
       // Show success message
       showSuccessMessage({
         title: "Ultrasound Completed Successfully!",
-        message: `Vitals recorded for ${patientName || 'the patient'}.`,
+        message: `Ultrasound findings recorded for ${formData.name || 'the patient'}.`,
         showRedoButton: true,
         showScreeningButton: true,
         showNextButton: true,

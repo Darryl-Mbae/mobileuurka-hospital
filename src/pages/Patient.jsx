@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addPatient, updatePatient } from "../reducers/Slices/patientsSlice.js";
 import MainSearch from "../components/MainSearch";
@@ -20,6 +20,8 @@ import Note from "../patient/Note";
 import Notepad from "./Notepad";
 import { FaRegCopy } from "react-icons/fa";
 import { TiTick } from "react-icons/ti";
+import { HiBellAlert } from "react-icons/hi2";
+import Alerts from "../dialog/Alerts.jsx";
 
 const Patient = ({ id }) => {
   const [loading, setLoading] = useState(false);
@@ -35,8 +37,8 @@ const Patient = ({ id }) => {
   const [note, setNote] = useState("");
 
   // Get patient from Redux store instead of local state
-  const patient = useSelector((state) => 
-    state.patient?.patients?.find(p => p.id === id)
+  const patient = useSelector((state) =>
+    state.patient?.patients?.find((p) => p.id === id)
   );
 
   useEffect(() => {
@@ -47,6 +49,12 @@ const Patient = ({ id }) => {
       }
     }
   }, [id, patient]);
+
+  const alertsRef = useRef();
+
+  const handleShowAlert = () => {
+    alertsRef.current.show();
+  };
 
   const fetchPatientById = async (patientId) => {
     setLoading(true);
@@ -62,7 +70,7 @@ const Patient = ({ id }) => {
       } else {
         dispatch(addPatient(patientData));
       }
-      
+
       console.log("Patient fetched and added to Redux store:", patientData);
     } catch (err) {
       console.error("Error fetching patient:", err);
@@ -75,17 +83,17 @@ const Patient = ({ id }) => {
   if (loading) {
     return (
       <div className="patient-page">
-       <div className="loading">
-                <div className="image">
-                  <img src="/logo.png" alt="" />
-                </div>
-                <DotLottieReact
-                  src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
-                  loop
-                  autoplay
-                  style={{ width: "70%", margin: "-20px auto" }}
-                />
-              </div>
+        <div className="loading">
+          <div className="image">
+            <img src="/logo.png" alt="" />
+          </div>
+          <DotLottieReact
+            src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
+            loop
+            autoplay
+            style={{ width: "70%", margin: "-20px auto" }}
+          />
+        </div>
       </div>
     );
   }
@@ -170,21 +178,19 @@ const Patient = ({ id }) => {
       label: "Last Visit",
       value: patient?.visits?.length
         ? formatDate(patient.visits[patient.visits.length - 1]?.date) || "-"
-        : "-"
+        : "-",
     },
-    
+
     {
       label: "Visit Number",
       value: patient?.visits?.[patient.visits.length - 1]?.visitNumber ?? "-",
     },
     {
       label: "Next Visit",
-      value:
-        patient?.visits?.length ?
-        formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
+      value: patient?.visits?.length
+        ? formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
         : "-",
-    }
-    ,
+    },
     {
       label: "Estimated Due date",
       value: new Date(
@@ -371,6 +377,8 @@ const Patient = ({ id }) => {
     <div className="patient-container">
       <MainSearch />
       <div className={chatActive ? "patient active" : "patient"}>
+        <Alerts ref={alertsRef} patient={patient} />
+
         <div className="profile">
           <div className="profile-container">
             <div className="profile-pic">
@@ -451,8 +459,14 @@ const Patient = ({ id }) => {
               </ul>
               <div className="ai-buttons">
                 <div className="notification" onClick={() => handleShowAlert()}>
-                  <LuBell />
-                  <span className="badge">{alerts?.length}</span>
+                  <HiBellAlert
+                    style={{ color: "#ffc187", fontSize: "1.4em" }}
+                  />
+                  {patient?.alerts.filter((alert) => !alert.read).length > 0 && (
+                    <span className="badge">
+                      {patient?.alerts.filter((alert) => !alert.read).length}
+                    </span>
+                  )}
                 </div>
                 <div
                   className="notification"
@@ -489,7 +503,9 @@ const Patient = ({ id }) => {
                   />
                 )}
                 {activeTab === "document" && <Document document={document} />}
-                {activeTab === "note" && <Note note={note} user={currentUser} />}
+                {activeTab === "note" && (
+                  <Note note={note} user={currentUser} />
+                )}
                 {activeTab === "notepad" && (
                   <Notepad patient={patient} user={currentUser} />
                 )}

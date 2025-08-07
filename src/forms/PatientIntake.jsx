@@ -5,6 +5,7 @@ import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
 import { useSocket } from "../hooks/useSocket";
+import { alertService } from "../services/alertService.js";
 import { addPatient } from "../reducers/Slices/patientsSlice";
 
 const PatientIntake = ({ setInternalTab }) => {
@@ -37,9 +38,8 @@ const PatientIntake = ({ setInternalTab }) => {
   const clearForm = () => {
     setFormData({});
   };
-  const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
-
-
+  const { showSuccess, successConfig, showSuccessMessage } =
+    useSuccessMessage(clearForm);
 
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -56,22 +56,22 @@ const PatientIntake = ({ setInternalTab }) => {
     getIds();
   }, []);
 
-  const getIds = async ()=>{
+  const getIds = async () => {
     try {
       const response = await fetch(`${SERVER}/patients/ids`, {
-        credentials: 'include',
+        credentials: "include",
       });
       const data = await response.json();
       setIds(data);
     } catch (error) {
       console.error("Error fetching hospitals:", error);
-  } 
-}
+    }
+  };
 
   const fetchHospitals = async () => {
     try {
       const response = await fetch(`${SERVER}/tenants/names`, {
-        credentials: 'include',
+        credentials: "include",
       });
       const data = await response.json();
       setHospitals(data);
@@ -79,7 +79,6 @@ const PatientIntake = ({ setInternalTab }) => {
       console.error("Error fetching hospitals:", error);
     }
   };
-  
 
   const calculateAge = (dob) => {
     if (!dob) return 0;
@@ -115,30 +114,42 @@ const PatientIntake = ({ setInternalTab }) => {
     });
   };
 
-
   const handleSubmit = async (e) => {
     setLoading(true);
 
-    console.log(formData)
+    console.log(formData);
+
+   
     try {
       const response = await fetch(`${SERVER}/patients`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ ...formData })
+        body: JSON.stringify({ ...formData }),
       });
 
       if (!response.ok) throw new Error("Submission failed");
 
+      const data = await response.json();
+      if (formData.rh == "-") {
+        const alertData = {
+          alert:
+            "Anti-D immunoglobulin should be administered between 28–30 weeks gestation if not already given.",
+          flagged: true,
+        };
+        alertService.createAlert(data.id, alertData);
+      }
       // Show success message
       showSuccessMessage({
         title: "Registration Completed Successfully!",
-        message: `Vital signs recorded for ${formData.name || 'the patient'}.`,
+        message: `Patient intake form completed for ${
+          formData?.name || "the patient"
+        }. Thank you for capturing their details.`,
         showScreeningButton: true,
         nextButtonAction: () => {
           clearForm();
         },
-        patientId: formData.patientId
+        patientId: formData.patientId,
       });
       setSuccess(true);
     } catch (error) {
@@ -149,10 +160,9 @@ const PatientIntake = ({ setInternalTab }) => {
     }
   };
 
-
   return (
     <div className="form">
-             {showSuccess && <SuccessMessage {...successConfig} />}
+      {showSuccess && <SuccessMessage {...successConfig} />}
 
       <form action={handleSubmit} className="form-container">
         <h2>Patient Registration</h2>
@@ -271,7 +281,6 @@ const PatientIntake = ({ setInternalTab }) => {
           {grid === 1 && (
             <div className="form-grid">
               <div className="column-1">
-
                 <div className="form-group">
                   <label>Blood Group</label>
                   <div className="select-container">
@@ -310,7 +319,7 @@ const PatientIntake = ({ setInternalTab }) => {
                     <FiChevronDown className="select-icon" />
                   </div>
                 </div>
-                                <div className="form-group">
+                <div className="form-group">
                   <label>Hospital</label>
                   <div className="select-container">
                     <select
@@ -353,7 +362,6 @@ const PatientIntake = ({ setInternalTab }) => {
                     <FiChevronDown className="select-icon" />
                   </div>
                 </div>
-
               </div>
             </div>
           )}
@@ -378,7 +386,6 @@ const PatientIntake = ({ setInternalTab }) => {
               {loading ? <div className="spinner"></div> : "Submit"}
             </button>
           )}
-          
         </div>
       </form>
     </div>

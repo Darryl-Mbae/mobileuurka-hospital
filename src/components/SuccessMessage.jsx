@@ -5,6 +5,7 @@ import "../css/SuccessMessage.css";
 import { FaTimes } from "react-icons/fa";
 import { RiInformation2Line } from "react-icons/ri";
 import { IoMdInformationCircle } from "react-icons/io";
+import { MdError } from "react-icons/md";
 
 const SuccessMessage = ({
   title = "Success!",
@@ -14,6 +15,7 @@ const SuccessMessage = ({
   nextButtonAction = null,
   showScreeningButton = false,
   closeAction = null,
+  showFeedbackButton = false,
   showProceedButton = false,
   proceedButtonText = "Proceed",
   proceedButtonAction = null,
@@ -21,10 +23,13 @@ const SuccessMessage = ({
 }) => {
   const navigate = useNavigate();
 
-
-
   const handleGoToScreening = () => {
     navigate(`/Screening`);
+    window.location.reload();
+  };
+
+  const handleGoToFeedback = () => {
+    navigate(`/Feedback`);
     window.location.reload();
   };
 
@@ -34,18 +39,22 @@ const SuccessMessage = ({
     }
   };
 
-
   return (
     <div className="success-overlay">
       <div className="success-container">
-        {title === "Action Needed"  ? (
+        {title === "Action Needed" ? (
           <div>
-            <div className="success-icon" >
-            <IoMdInformationCircle  style={{
-              color:"#ffc187"
-            }}/>
-
+            <div className="success-icon">
+              <IoMdInformationCircle
+                style={{
+                  color: "#ffc187",
+                }}
+              />
+            </div>
           </div>
+        ) : title === "Feature Unavailable During Pilot" ? (
+          <div className="success-icon" style={{color:"#008540"}}>
+            <MdError />
           </div>
         ) : (
           <div className="success-icon">
@@ -62,19 +71,29 @@ const SuccessMessage = ({
               className="success-btn primary"
               onClick={handleGoToScreening}
               style={{
-                backgroundColor: title == "Action Needed"  ? "#ffc187" : "#008540"
+                backgroundColor:
+                  title == "Action Needed" ? "#ffc187" : "#008540",
               }}
             >
               Go to Screening
             </button>
           )}
+          {showFeedbackButton && (
+            <button
+              className="success-btn primary"
+              onClick={handleGoToFeedback}
+            >
+              Feedback
+            </button>
+          )}
 
-          { showProceedButton && (
+          {showProceedButton && (
             <button
               className="success-btn primary"
               onClick={proceedButtonAction}
               style={{
-                backgroundColor: title == "Action Needed"  ? "#ffc187" : "#008540"
+                backgroundColor:
+                  title == "Action Needed" ? "#ffc187" : "#008540",
               }}
             >
               {proceedButtonText}
@@ -82,11 +101,13 @@ const SuccessMessage = ({
           )}
 
           {onClose && (
-            <div className="close" onClick={() => {
-              onClose();
-              closeAction();
-            }}>
-            
+            <div
+              className="close"
+              onClick={() => {
+                onClose();
+                closeAction();
+              }}
+            >
               <FaTimes />
             </div>
           )}

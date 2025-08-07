@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
 import cuid from "cuid";
+import { alertService } from "../services/alertService.js";
+import { setPatients } from "../reducers/Slices/patientsSlice";
+import { useSocket } from "../hooks/useSocket";
 
 const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
+  const dispatch = useDispatch();
+  const { emitMedicalRecordCreated } = useSocket();
   const id = cuid();
+  const PREDICTION_API_URL = import.meta.env.VITE_PREDICTION_API_URL;
   const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS;
   const [formData, setFormData] = useState({
     patient_id: selectedPatientId || "",
@@ -55,6 +61,18 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const MS_IN_A_DAY = 24 * 60 * 60 * 1000;
 
   const outdated = []; // this will store "Labwork", "Triage", or "Ultrasound"
+
+  // Function to refetch patients data
+  const refetchPatients = async () => {
+    try {
+      const { apiGet } = await import("../config/api.js");
+      const patientsData = await apiGet("/patients/my");
+      dispatch(setPatients(patientsData));
+      console.log("Patients data refreshed after pregnancy form submission");
+    } catch (error) {
+      console.error("Error refreshing patients data:", error);
+    }
+  };
 
   // Helper function to check if date is older than MAXDAYS
   const isOlderThanMaxDays = (dateStr) => {
@@ -243,13 +261,11 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     const recordDate = lastItem?.date;
 
     if (shouldCheckDate && recordDate) {
-      
       // Parse the date more reliably
       const recordTime = new Date(recordDate).getTime();
       const currentTime = Date.now();
       const diff = currentTime - recordTime;
 
-    
       if (diff > MAXDAYS * MS_IN_A_DAY) {
         console.log("Record too old, returning Unknown");
         return "Unknown";
@@ -527,9 +543,7 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
       setLoading(true);
 
       // First API call
-      const primaryURL =
-        "https://prediction-api-864851114868.europe-west4.run.app";
-
+      const primaryURL = PREDICTION_API_URL;
       const primaryResponse = await fetch(primaryURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -544,6 +558,31 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
 
       const primaryResult = await primaryResponse.json();
       console.log("✅ Primary submission successful:", primaryResult);
+      if (primaryResult.prediction) {
+        let alert = "";
+        let flag = false;
+
+        if (primaryResult?.prediction == "High") {
+          flag = true;
+          alert = "Patient has been flagged as a High risk patient";
+        }
+
+        if (primaryResult?.prediction == "Low") {
+          flag = true;
+          alert = "Patient has been flagged as a Low risk patient";
+        }
+        if (primaryResult?.prediction == "Mid") {
+          flag = true;
+          alert = "Patient has been flagged as a Mid risk patient";
+        }
+
+        const alertData = {
+          alert: alert,
+          flagged: flag,
+        };
+
+        alertService.createAlert(formData.patient_id, alertData);
+      }
 
       try {
         const secondaryResponse = await fetch(
@@ -567,11 +606,25 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         } else {
           const secondaryResult = await secondaryResponse.json();
           console.log("✅ Secondary submission successful:", secondaryResult);
+
+          // Refetch patients data to update the list with new pregnancy info
+          await refetchPatients();
+
+          // Emit socket event for real-time updates to other clients
+          if (emitMedicalRecordCreated) {
+            emitMedicalRecordCreated({
+              patientId: formData.patient_id,
+              recordType: "currentpregnancyinfo",
+              recordData: secondaryResult,
+              eventType: "created",
+            });
+          }
+
           // Only show success if we get here
           showSuccessMessage({
             title: "Pregnancy Information Completed Successfully!",
-            message: `Vital signs recorded for ${
-              patientName || "the patient"
+            message: `Pregnancy journey details recorded for ${
+              formData.name || "the patient"
             }.`,
             showScreeningButton: true,
             showProceedButton: false,

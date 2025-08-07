@@ -120,7 +120,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
        // Show success message
        showSuccessMessage({
         title: "Lifestyle Completed Successfully!",
-        message: `Vital signs recorded for ${patientName || 'the patient'}.`,
+        message: `Visit details recorded for ${formData.name || 'the patient'}.`,
         showRedoButton: true,
         showScreeningButton: true,
         showNextButton: true,

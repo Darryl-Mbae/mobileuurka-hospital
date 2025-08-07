@@ -218,6 +218,13 @@ const patientSlice = createSlice({
               if (recordIndex !== -1) {
                 patient.alerts[recordIndex] = recordData;
               }
+            } else if (eventType === "deleted") {
+              const recordIndex = patient.alerts.findIndex(
+                (f) => f.id === recordData.id
+              );
+              if (recordIndex !== -1) {
+                patient.alerts.splice(recordIndex, 1);
+              }
             }
             break;
 

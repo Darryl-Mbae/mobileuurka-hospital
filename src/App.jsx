@@ -26,7 +26,7 @@ import useSocket from "./hooks/useSocket.js";
 import ConnectionStatus from "./components/ConnectionStatus.jsx";
 
 function App() {
-  const [activeItem, setActiveItem] = useState("Dashboard");
+  const [activeItem, setActiveItem] = useState("Patients");
   const [loading, setLoading] = useState(true);
   const dialog = useRef();
   const [error, setError] = useState(null);
