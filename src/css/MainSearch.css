@@ -14,3 +14,482 @@
     z-index: 99;
    
   }
+
+  
+  .main-search .search {
+    width: 28%;
+    height: 50px; /* Fixed height */
+    border-radius: 5px;
+    background:var(--section);
+    display: flex;
+    flex-direction: row; /* Back to row for input */
+    gap: 15px;
+    align-items: center;
+    color: #666666;
+    position: relative;
+    z-index: 9999;
+    transition: all 0.2s ease;
+  }
+  .main-search .search.active {
+    background: #f1ede9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .main-search .filter {
+    width: calc(100% - 40px);
+    padding: 0px 20px;
+    height: 50px;
+    /* border-bottom: 1px solid rgba(9, 9, 9, 0.09); */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+  .main-search .filter .filter-option {
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .main-search .filter .filter-option:hover {
+    background: rgba(0, 133, 64, 0.1);
+  }
+  .main-search .filter .filter-option.active-filter {
+    background: #008540;
+    color: white;
+    border: 1px solid #008540;
+  }
+  
+  /* Results container - absolutely positioned dropdown */
+  .search-results {
+    position: absolute;
+    top: 110%; /* Position directly below the search box */
+    left: 0;
+    right: 0;
+    width: 100%; /* Your original width */
+    background: #f1ede9;
+    border-radius: 5px;
+    z-index: 9999 !important;
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    max-height: 350px;
+    overflow-y: auto;
+    margin-top: 5px; /* Small gap between input and results */
+    font-size: 0.85em;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  .search-results .icon {
+    width: 35px;
+    aspect-ratio: 1;
+    margin-right: 15px;
+    border-radius: 50%;
+    background: #008540;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: white !important;
+  }
+  
+  /* Show results when search is active */
+  .main-search .search.active .search-results {
+    display: flex;
+  }
+  .search-result-item {
+    position: relative;
+    border-bottom: 1px solid rgba(9, 9, 9, 0.09);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .search-result-item:hover {
+    transform: translateX(3px);
+    background-color: rgba(0, 133, 64, 0.05);
+  }
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
+  .search-result-item .risk {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    border-radius: 8px;
+    padding: 4px 8px;
+    justify-content: center;
+    font-size: 0.75em;
+    font-weight: 500;
+  }
+  .search-result-item .risk .dot {
+    width: 6px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
+  
+  .search-result-item .flag {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .search-result-item {
+    padding: 12px 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .search-result-item .details {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 35% 25% 20% 20%;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .result-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9em;
+  }
+  
+  .result-id {
+    color: #666;
+    font-size: 0.8em;
+    font-family: monospace;
+  }
+  
+  .main-search .search .icon {
+    margin-left: 20px;
+    font-size: 1.2em;
+    color: #666666;
+  }
+  
+  .main-search .search .search-input {
+    border: none;
+    background: none;
+    font-size: 14px;
+    flex: 1; /* Take remaining space */
+    color: #666666;
+  }
+  
+  .main-search .search .search-input:focus {
+    outline: none;
+    border: none;
+  }
+  
+  .main-search .search .search-input::placeholder {
+    color: #666666;
+  }
+  
+  /* Alternative: If you prefer the dropdown style with absolute positioning */
+  .search-results-dropdown {
+    position: absolute;
+    top: 100%; /* Position directly below the search input */
+    left: 0;
+    right: 0;
+    background: rgba(241, 237, 233, 1);
+    border-radius: 5px;
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    max-height: 350px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 150%; /* Match your original width */
+  }
+  
+  .main-search .search.active .search-results-dropdown {
+    display: flex;
+  }
+  
+  .notification {
+    width: 50px;
+    aspect-ratio: 1;
+    border-radius: 5px;
+    background: rgba(241, 237, 233, 0.48);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    font-size: 1.2em;
+  }
+  
+  .notification span {
+    position: absolute;
+    right: 7px;
+    top: 6px;
+    background: #e31c23;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    font-size: 0.5em;
+    cursor: pointer;
+  }
+  
+  .main-search .profile {
+    padding: 0px 20px;
+    height: 50px;
+    border-radius: 5px;
+    background: rgba(241, 237, 233, 0.48);
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    gap: 10px;
+    position: relative;
+  }
+  
+  .main-search .profile .circle {
+    height: 60%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #d9d9d9;
+    margin: auto;
+    display: flex;
+    background: #008540;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.6em;
+    overflow: hidden;
+  }
+  
+  .main-search .profile .circle img {
+    width: 100%;
+    margin: auto;
+  }
+  
+  .main-search .profile .details {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9em;
+    color: #333;
+    margin-right: 7px;
+  }
+  
+  .main-search .profile .details .role {
+    text-transform: capitalize;
+    font-size: 0.7em;
+    color: #666666;
+  }
+  
+  .main-search .profile .icon {
+    color: #666666;
+    margin-top: -8px;
+    cursor: pointer;
+  }
+  
+  .main-search .staff {
+    position: absolute;
+    right: 235px;
+    top: 90px;
+    padding-bottom: 30px;
+    width: 350px;
+    background: rgba(241, 237, 233, 1);
+    border-radius: 5px;
+    z-index: 9999;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .main-search .staff h3 {
+    padding-left: 25px;
+    font-size: 1.17em;
+    color: black;
+  }
+  
+  .main-search .profile-element {
+    position: absolute;
+    right: 28px;
+    top: 90px;
+    padding-bottom: 30px;
+    width: 350px;
+    background: rgba(241, 237, 233, 1);
+    border-radius: 5px;
+    z-index: 9999;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .main-search .profile-element .edit-image {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgb(189, 189, 189);
+    color: #333;
+    width: 35px;
+    font-size: 0.9em;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .main-search .profile-element .bg-image {
+    height: 9vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .main-search .profile-element .bg-image img {
+    width: 100%;
+    margin: auto;
+  }
+  
+  .main-search .profile-element .profile-container {
+    width: 85%;
+    height: 70%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  .main-search .profile-element .profile-image {
+    width: 70px;
+    aspect-ratio: 1;
+    position: absolute;
+    top: -35px;
+    border-radius: 50%;
+    background: #008540;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2em;
+    overflow: hidden;
+  }
+  
+  .main-search .profile-element .profile-image img {
+    width: 100%;
+    margin: auto;
+  }
+  
+  .main-search .profile-element .profile-details {
+    display: flex;
+    margin-top: 55px;
+    flex-direction: column;
+    font-size: 0.9em;
+    color: #333;
+  }
+  
+  .main-search .profile-element .profile-details .title {
+    font-size: 0.8em;
+    color: #666666;
+  }
+  
+  .main-search .profile-element .profile-details .name {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .main-search .profile-element .profile-details .name .span {
+    border: 1px solid rgba(49, 49, 49, 0.4);
+    padding: 5px 9px;
+    font-size: 0.7em;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .main-search .profile-element .profile-details .name .span .dot {
+    width: 5px;
+    height: 5px;
+    background: #008540;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  
+  .main-search .profile-element .profile-details .name .span p {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .main-search .profile-element .buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0px;
+  }
+  
+  .main-search .profile-element .buttons.edit {
+    display: grid;
+    width: calc(100% - 10px);
+    grid-template-columns: 50% 50%;
+    gap: 10px;
+  }
+  
+  .main-search .profile-element .edit-pp {
+    background: #e0e0e0;
+    margin-top: 30px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    color: #333;
+    padding: 10px 0px;
+    cursor: pointer;
+  }
+  
+  .main-search .profile-element .logout {
+    width: 100%;
+    background: #e31c23;
+    margin-top: 0px;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    color: white;
+    padding: 10px 10px;
+  }
+  
+  .main-search .profile-element .info {
+    width: calc(100% - 40px);
+    background: white;
+    border-radius: 5px;
+    margin: 25px 0px 0px;
+    padding: 15px 20px;
+    font-size: 0.8em;
+    color: #333;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .main-search .profile-element .info .icon {
+    color: #008540;
+    font-size: 1.5em;
+  }
+  
