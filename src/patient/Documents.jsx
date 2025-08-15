@@ -135,8 +135,14 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     }
   }
 
-  const buildRecord = (array, title) =>
-    array?.map((item) => {
+  const buildRecord = (array, title) => {
+    // Handle case where array might not be an array (like SymptomReasoningReport)
+    if (!array) return [];
+    
+    // If it's not an array, make it an array
+    const dataArray = Array.isArray(array) ? array : [array];
+    
+    return dataArray.map((item) => {
       let result = "";
 
       if (title === "Lab Work") {
@@ -146,6 +152,9 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
       if (title === "Infections") {
         const resultMessage = generateInfectionMessage(item);
         result = resultMessage || "No Positive infections";
+      }
+      if (title === "AI Analysis") {
+        result = ""
       }
 
       if (title === "Pregnancy Journey") {
@@ -173,13 +182,16 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
         result,
       };
     }) || [];
-
+  }
   // Combine all patient data arrays into one flat record list
   const realRecords = [
     ...buildRecord(patient?.triages, "Triage"),
     ...buildRecord(patient?.labworks, "Lab Work"),
     ...buildRecord(patient?.currentPregnancies, "Pregnancy Journey"),
     ...buildRecord(patient?.infections, "Infections"),
+    ...buildRecord(patient?.SymptomReasoningReport
+      , "AI Analysis"),
+
   ];
 
   const filteredRecords = realRecords.filter((record) =>

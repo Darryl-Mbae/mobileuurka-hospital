@@ -152,36 +152,103 @@ const Document = ({ document, title, patient }) => {
               }
 
               <!-- Document Details Section -->
-              <div style="${styles.section}">
-                <h3 style="${styles.sectionTitle}">
-                  Document Details
-                  ${
-                    totalPages > 1
-                      ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>`
-                      : ""
-                  }
-                </h3>
-                <div style="${styles.documentGrid}">
-                  ${pageItems
-                    .map(
-                      (item) => `
+              ${isSymptomReasoningReport ? `
+                <!-- Risk Assessment Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Risk Assessment</h3>
+                  <div style="${styles.documentGrid}">
                     <div style="${styles.fieldGroup}">
-                      <label style="${styles.fieldLabel}">${item.label}</label>
-                      <div style="${styles.fieldValue}">
-                        ${
-                          item.value === "Not provided"
-                            ? `<span style="${styles.emptyValue}">` +
-                              item.value +
-                              "</span>"
-                            : item.value
-                        }
+                      <label style="${styles.fieldLabel}">Risk Level</label>
+                      <div style="${styles.fieldValue}; ${styles.riskCritical}">
+                        ${documentData.records[0].risk_level}
                       </div>
                     </div>
-                  `
-                    )
-                    .join("")}
+                    <div style="${styles.fieldGroup}">
+                      <label style="${styles.fieldLabel}">Risk Score</label>
+                      <div style="${styles.fieldValue}">${documentData.records[0].risk_score}</div>
+                    </div>
+                    <div style="${styles.fieldGroup}">
+                      <label style="${styles.fieldLabel}">Gestation</label>
+                      <div style="${styles.fieldValue}">
+                        ${documentData.records[0].gestation_weeks_int} weeks (of ${documentData.records[0].gestation_weeks_total})
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+
+                <!-- Clinical Reasoning Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Clinical Reasoning</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].clinical_reasoning}</p>
+                  </div>
+                </div>
+
+                <!-- Key Risk Factors Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Key Risk Factors</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].key_risk_factors}</p>
+                  </div>
+                </div>
+
+                <!-- Primary Concerns Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Primary Concerns</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].primary_concerns}</p>
+                  </div>
+                </div>
+
+                <!-- Recommendations Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Recommendations</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].recommendations}</p>
+                  </div>
+                </div>
+
+                <!-- Monitoring Requirements Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Monitoring Requirements</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].monitoring_requirements}</p>
+                  </div>
+                </div>
+
+                <!-- Immediate Actions Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Immediate Actions</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].immediate_actions}</p>
+                  </div>
+                </div>
+
+                <!-- Follow-up Section -->
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">Follow-up</h3>
+                  <div style="${styles.contentArea}">
+                    <p>${documentData.records[0].follow_up_timing}</p>
+                  </div>
+                </div>
+              ` : `
+                <div style="${styles.section}">
+                  <h3 style="${styles.sectionTitle}">
+                    Document Details
+                    ${totalPages > 1 ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>` : ""}
+                  </h3>
+                  <div style="${styles.documentGrid}">
+                    ${pageItems.map(item => `
+                      <div style="${styles.fieldGroup}">
+                        <label style="${styles.fieldLabel}">${item.label}</label>
+                        <div style="${styles.fieldValue}">
+                          ${item.value === "Not provided" ? `<span style="${styles.emptyValue}">${item.value}</span>` : item.value}
+                        </div>
+                      </div>
+                    `).join("")}
+                  </div>
+                </div>
+              `}
 
               ${page === 1 ? `
               <div style="${styles.footer}">
@@ -274,6 +341,11 @@ const Document = ({ document, title, patient }) => {
         fieldValue:
           "padding: 8px 12px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.85rem; color: #2d3748; min-height: 16px; display: flex; align-items: center;",
         emptyValue: "color: #a0aec0; font-style: italic;",
+        riskCritical: "background: #fed7d7; color: #742a2a; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskHigh: "background: #fef5e7; color: #744210; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskModerate: "background: #e6fffa; color: #234e52; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskLow: "background: #c6f6d5; color: #22543d; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        contentArea: "background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; line-height: 1.6;",
         footer:
           "margin-top: 50px; padding-top: 40px; border-top: 1px solid #e2e8f0;",
         signatureSection:
@@ -361,8 +433,16 @@ const Document = ({ document, title, patient }) => {
 
   if (!document) return null;
 
+  // Check if this is a SymptomReasoningReport
+  const isSymptomReasoningReport = document?.modelName === "symptomreasoningreport";
+
   // Prepare data for FormTemplate
   const prepareDocumentData = () => {
+    if (isSymptomReasoningReport) {
+      // For SymptomReasoningReport, we'll handle it differently
+      return document;
+    }
+
     const transformed = { ...document };
 
     // Clean up unwanted fields first
@@ -405,10 +485,12 @@ const Document = ({ document, title, patient }) => {
   };
 
   // Legacy view data preparation with human-readable dates
-  const allItems = Object.entries(documentData).map(([key, value]) => ({
-    label: formatKey(key),
-    value: formatValue(formatHumanDate(key, value)),
-  }));
+  const allItems = isSymptomReasoningReport 
+    ? [] // SymptomReasoningReport doesn't use the table format
+    : Object.entries(documentData).map(([key, value]) => ({
+        label: formatKey(key),
+        value: formatValue(formatHumanDate(key, value)),
+      }));
 
   // Calculate pagination with different page sizes
   const calculatePagination = () => {
@@ -434,6 +516,96 @@ const Document = ({ document, title, patient }) => {
   };
 
   const { totalPages, currentItems } = calculatePagination();
+
+  // Render SymptomReasoningReport as a summary
+  const renderSymptomReasoningSummary = () => {
+    if (!isSymptomReasoningReport || !documentData.records?.[0]) return null;
+    
+    const record = documentData.records[0];
+    
+    return (
+      <>
+        {/* Risk Assessment Section */}
+        <div className="section">
+          <h3 className="section-title">Risk Assessment</h3>
+          <div className="grid document-grid">
+            <div className="field-group">
+              <label>Risk Level</label>
+              <div className={`field-value risk-${record.risk_level?.toLowerCase()}`}>
+                {record.risk_level}
+              </div>
+            </div>
+            <div className="field-group">
+              <label>Risk Score</label>
+              <div className="field-value">{record.risk_score}</div>
+            </div>
+            <div className="field-group">
+              <label>Gestation</label>
+              <div className="field-value">
+                {record.gestation_weeks_int} weeks (of {record.gestation_weeks_total})
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Clinical Summary Section */}
+        <div className="section">
+          <h3 className="section-title">Clinical Reasoning</h3>
+          <div className="content-area">
+            <p>{record.clinical_reasoning}</p>
+          </div>
+        </div>
+
+        {/* Key Risk Factors Section */}
+        <div className="section">
+          <h3 className="section-title">Key Risk Factors</h3>
+          <div className="content-area">
+            <p>{record.key_risk_factors}</p>
+          </div>
+        </div>
+
+        {/* Primary Concerns Section */}
+        <div className="section">
+          <h3 className="section-title">Primary Concerns</h3>
+          <div className="content-area">
+            <p>{record.primary_concerns}</p>
+          </div>
+        </div>
+
+        {/* Recommendations Section */}
+        <div className="section">
+          <h3 className="section-title">Recommendations</h3>
+          <div className="content-area">
+            <p>{record.recommendations}</p>
+          </div>
+        </div>
+
+        {/* Monitoring Requirements Section */}
+        <div className="section">
+          <h3 className="section-title">Monitoring Requirements</h3>
+          <div className="content-area">
+            <p>{record.monitoring_requirements}</p>
+          </div>
+        </div>
+
+        {/* Immediate Actions Section */}
+        <div className="section">
+          <h3 className="section-title">Immediate Actions</h3>
+          <div className="content-area">
+            <p>{record.immediate_actions}</p>
+          </div>
+        </div>
+
+        {/* Follow-up Section */}
+        <div className="section">
+          <h3 className="section-title">Follow-up</h3>
+          <div className="content-area">
+            <p>{record.follow_up_timing}</p>
+          </div>
+        </div>
+      </>
+    );
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -508,31 +680,35 @@ const Document = ({ document, title, patient }) => {
               organizationName="Mobileuurka"
               logoSrc="/logo.png"
             >
-              {/* Custom content section for document data - only this changes per page */}
-              <div className="section">
-                <h3 className="section-title">
-                  Document Details
-                  {totalPages > 1 && (
-                    <span className="page-indicator">
-                      (Page {currentPage} of {totalPages})
-                    </span>
-                  )}
-                </h3>
-                <div className="grid document-grid">
-                  {currentItems.map((item, index) => (
-                    <div key={index} className="field-group">
-                      <label>{item.label}</label>
-                      <div className="field-value">
-                        {item.value === "Not provided" ? (
-                          <span className="empty-value">{item.value}</span>
-                        ) : (
-                          <span>{item.value}</span>
-                        )}
+              {/* Custom content section for document data */}
+              {isSymptomReasoningReport ? (
+                renderSymptomReasoningSummary()
+              ) : (
+                <div className="section">
+                  <h3 className="section-title">
+                    Document Details
+                    {totalPages > 1 && (
+                      <span className="page-indicator">
+                        (Page {currentPage} of {totalPages})
+                      </span>
+                    )}
+                  </h3>
+                  <div className="grid document-grid">
+                    {currentItems.map((item, index) => (
+                      <div key={index} className="field-group">
+                        <label>{item.label}</label>
+                        <div className="field-value">
+                          {item.value === "Not provided" ? (
+                            <span className="empty-value">{item.value}</span>
+                          ) : (
+                            <span>{item.value}</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </FormTemplate>
 
             {/* Pagination Controls - Outside the FormTemplate */}
