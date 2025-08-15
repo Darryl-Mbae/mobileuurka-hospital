@@ -206,6 +206,7 @@
   align-items: center;
   cursor: pointer;
   position: relative;
+  overflow: visible;
 }
 .patient .tabs .lists .ai-buttons .notification .badge{
   width: 18px;
@@ -220,6 +221,7 @@
   position: absolute;
   top: -10%;
   right: -15%;
+  z-index: 9999;
 
 }
 .patient .tabs .lists .ai-buttons .notification img{

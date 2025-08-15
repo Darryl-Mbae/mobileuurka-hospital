@@ -227,11 +227,11 @@ const Alerts = forwardRef(function Alerts({ patient }, ref) {
     return new Intl.DateTimeFormat("en-GB", options).format(date);
   };
 
-  const renderAlertSection = (title, alerts) => {
+  const renderAlertSection = (title, alerts, key) => {
     if (alerts.length === 0) return null;
 
     return (
-      <div className="alert-section">
+      <div key={key} className="alert-section">
         <h3 className="time-category">{title}</h3>
         {alerts.map((alert) => (
           <div
@@ -334,7 +334,8 @@ const Alerts = forwardRef(function Alerts({ patient }, ref) {
             Object.entries(groupedPaginated).map(([category, items]) =>
               renderAlertSection(
                 category.charAt(0).toUpperCase() + category.slice(1),
-                items
+                items,
+                category
               )
             )
           )}

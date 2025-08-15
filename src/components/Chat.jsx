@@ -11,18 +11,18 @@ import rehypeRaw from "rehype-raw";
 import { setChats } from "../reducers/Slices/chatSlice";
 import DropdownMenu from "./DropdownMenu";
 import Articles from "../assets/images/Articles.png";
-import Whatsapp from '../assets/images/whatsapplogo.png'
+import Whatsapp from "../assets/images/whatsapplogo.png";
 // Function to clean up text by replacing multiple line breaks with single ones
 const cleanText = (text) => {
   if (!text) return text;
-  
+
   // Replace multiple consecutive line breaks (\n\n\n+) with just two (\n\n)
   // Replace multiple consecutive spaces with single space
   return text
-    .replace(/\n{3,}/g, '\n\n')  // Replace 3+ line breaks with 2
-    .replace(/\r\n{3,}/g, '\r\n\r\n')  // Handle Windows line endings
-    .replace(/[ \t]{2,}/g, ' ')  // Replace multiple spaces/tabs with single space
-    .trim();  // Remove leading/trailing whitespace
+    .replace(/\n{3,}/g, "\n\n") // Replace 3+ line breaks with 2
+    .replace(/\r\n{3,}/g, "\r\n\r\n") // Handle Windows line endings
+    .replace(/[ \t]{2,}/g, " ") // Replace multiple spaces/tabs with single space
+    .trim(); // Remove leading/trailing whitespace
 };
 
 const Chat = ({ patient, user }) => {
@@ -38,22 +38,26 @@ const Chat = ({ patient, user }) => {
   const [selectedOption, setSelectedOption] = useState("sabi"); // Default option
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Coming soon mode - only for WhatsApp, Sabi works normally
+  const [isWhatsAppEnabled, setIsWhatsAppEnabled] = useState(false);
+
+  // Chat history loading - works for Sabi, disabled for WhatsApp
   useEffect(() => {
-    if (user && user.id) {
+    if (selectedOption === "sabi" && user && user.id) {
       getChats();
     }
-  }, [user]);
+  }, [user, selectedOption]);
 
   useEffect(() => {
-    if (chats && chats.length > 0) {
+    if (selectedOption === "sabi" && chats && chats.length > 0) {
       const transformedMessages = transformChatsToMessages(chats);
       setMessages(transformedMessages);
     }
-  }, [chats]);
+  }, [chats, selectedOption]);
 
-  // Filter messages when selectedOption changes
+  // Filter messages when selectedOption changes - only for Sabi
   useEffect(() => {
-    if (user && user.id) {
+    if (selectedOption === "sabi" && user && user.id) {
       getChats();
     }
   }, [selectedOption, patient?.id]); // Refetch when type or patient changes
@@ -334,7 +338,6 @@ const Chat = ({ patient, user }) => {
               Review recent measurements and trends
             </div>
           </div>
-          
         </>
       ) : (
         <>
@@ -362,7 +365,6 @@ const Chat = ({ patient, user }) => {
             <div className="title">Medication reminder</div>
             <div className="subtitle">Remind patient to take medications</div>
           </div>
-         
         </>
       )}
     </div>
@@ -408,13 +410,120 @@ const Chat = ({ patient, user }) => {
       <div className="mid">
         {/* Suggestions section - always available when toggled */}
         {showSuggestions && (
-          <div className="suggestions-overlay">
-           
-            {renderSuggestions()}
-          </div>
+          <div className="suggestions-overlay">{renderSuggestions()}</div>
         )}
 
-        {messages.length === 0 ? (
+        {selectedOption === "whatsapp" && !isWhatsAppEnabled ? (
+          // WhatsApp Coming Soon - Show as bot message
+          <div className="messages">
+            <div className="message bot-message">
+              <div className="message-content">
+                <div className="message-text">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      h3: ({ node, ...props }) => (
+                        <h3
+                          style={{ fontSize: "1.1em", fontWeight: 800 }}
+                          {...props}
+                        />
+                      ),
+                      h2: ({ node, ...props }) => (
+                        <h3
+                          style={{ fontSize: "1.1em", fontWeight: 800 }}
+                          {...props}
+                        />
+                      ),
+                      h1: ({ node, ...props }) => (
+                        <h3
+                          style={{ fontSize: "1.1em", fontWeight: 800 }}
+                          {...props}
+                        />
+                      ),
+                      strong: ({ node, ...props }) => (
+                        <strong style={{ fontWeight: 600 }} {...props} />
+                      ),
+                      em: ({ node, ...props }) => (
+                        <em style={{ fontStyle: "italic" }} {...props} />
+                      ),
+                      p: ({ node, ...props }) => (
+                        <p
+                          style={{
+                            margin: "0.8em 0",
+                            wordWrap: "break-word",
+                            wordBreak: "break-word",
+                            overflowWrap: "break-word",
+                            lineHeight: "1.5",
+                          }}
+                          {...props}
+                        />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <ul
+                          style={{
+                            margin: "0.7rem",
+                            padding: "0",
+                            wordWrap: "break-word",
+                            wordBreak: "break-word",
+                          }}
+                          {...props}
+                        />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li
+                          style={{
+                            margin: "0",
+                            padding: "0",
+                            wordWrap: "break-word",
+                            wordBreak: "break-word",
+                          }}
+                          {...props}
+                        />
+                      ),
+                    }}
+                  >
+                    {
+`#  WhatsApp Integration - Coming Soon!
+
+Hi there! I'm excited to let you know that **WhatsApp integration** is currently under development and will be available soon.
+
+##  Expected Features:
+
+###  **Appointment Management**
+- Automated appointment reminders
+- Confirmation requests
+- Rescheduling notifications
+
+###  **Direct Patient Communication**
+- Send personalized messages
+- Secure patient messaging
+- Two-way communication
+
+### **Health Alerts**
+- Important health updates
+- Emergency notifications
+- Preventive care reminders
+
+---
+
+**We're working hard to bring you seamless WhatsApp integration for better patient communication. Stay tuned for updates!**
+
+*In the meantime, feel free to switch to the Sabi tab for AI-powered clinical assistance.*`
+}
+                  </ReactMarkdown>
+                </div>
+                <div className="message-time">
+                  {new Date().toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : // Regular Chat Mode (when isChatEnabled is true)
+        messages.length === 0 ? (
           <div className="new">
             <div className="b-logo">
               <img src="/logo.png" alt="logo" />
@@ -471,32 +580,35 @@ const Chat = ({ patient, user }) => {
                           <em style={{ fontStyle: "italic" }} {...props} />
                         ),
                         p: ({ node, ...props }) => (
-                          <p style={{ 
-                            margin: "0.8em 0", 
-                            wordWrap: "break-word",
-                            wordBreak: "break-word",
-                            overflowWrap: "break-word",
-                            lineHeight: "1.5"
-                          }} {...props} />
+                          <p
+                            style={{
+                              margin: "0.8em 0",
+                              wordWrap: "break-word",
+                              wordBreak: "break-word",
+                              overflowWrap: "break-word",
+                              lineHeight: "1.5",
+                            }}
+                            {...props}
+                          />
                         ),
                         ul: ({ node, ...props }) => (
                           <ul
-                            style={{ 
-                              margin: "0.7rem", 
+                            style={{
+                              margin: "0.7rem",
                               padding: "0",
                               wordWrap: "break-word",
-                              wordBreak: "break-word"
+                              wordBreak: "break-word",
                             }}
                             {...props}
                           />
                         ),
                         li: ({ node, ...props }) => (
                           <li
-                            style={{ 
-                              margin: "0", 
+                            style={{
+                              margin: "0",
                               padding: "0",
                               wordWrap: "break-word",
-                              wordBreak: "break-word"
+                              wordBreak: "break-word",
                             }}
                             {...props}
                           />
@@ -511,7 +623,7 @@ const Chat = ({ patient, user }) => {
                               fontSize: "0.85em",
                               border: "1px solid #ddd",
                               borderRadius: "6px",
-                              overflow: "hidden"
+                              overflow: "hidden",
                             }}
                             {...props}
                           />
@@ -525,7 +637,7 @@ const Chat = ({ patient, user }) => {
                               fontWeight: 600,
                               borderBottom: "2px solid #dee2e6",
                               wordWrap: "break-word",
-                              wordBreak: "break-word"
+                              wordBreak: "break-word",
                             }}
                             {...props}
                           />
@@ -538,7 +650,7 @@ const Chat = ({ patient, user }) => {
                               borderBottom: "1px solid #eee",
                               wordWrap: "break-word",
                               wordBreak: "break-word",
-                              verticalAlign: "top"
+                              verticalAlign: "top",
                             }}
                             {...props}
                           />
@@ -546,7 +658,11 @@ const Chat = ({ patient, user }) => {
                         tr: ({ node, ...props }) => (
                           <tr
                             style={{
-                              backgroundColor: props.children && props.children.length % 2 === 0 ? "#f9f9f9" : "transparent"
+                              backgroundColor:
+                                props.children &&
+                                props.children.length % 2 === 0
+                                  ? "#f9f9f9"
+                                  : "transparent",
                             }}
                             {...props}
                           />

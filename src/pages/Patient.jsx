@@ -22,6 +22,7 @@ import { FaRegCopy } from "react-icons/fa";
 import { TiTick } from "react-icons/ti";
 import { HiBellAlert } from "react-icons/hi2";
 import Alerts from "../dialog/Alerts.jsx";
+import { FaRegBell } from "react-icons/fa6";
 
 const Patient = ({ id }) => {
   const [loading, setLoading] = useState(false);
@@ -41,12 +42,18 @@ const Patient = ({ id }) => {
     state.patient?.patients?.find((p) => p.id === id)
   );
 
+  useEffect(()=>{
+    if(patient){
+      console.log("patient",patient)
+    }
+  },[patient])
   useEffect(() => {
     if (id) {
       // Only fetch if patient is not in Redux store
       if (!patient) {
         fetchPatientById(id);
       }
+      
     }
   }, [id, patient]);
 
@@ -71,7 +78,6 @@ const Patient = ({ id }) => {
         dispatch(addPatient(patientData));
       }
 
-      console.log("Patient fetched and added to Redux store:", patientData);
     } catch (err) {
       console.error("Error fetching patient:", err);
       setError(err.message);
@@ -459,11 +465,12 @@ const Patient = ({ id }) => {
               </ul>
               <div className="ai-buttons">
                 <div className="notification" onClick={() => handleShowAlert()}>
-                  <HiBellAlert
-                    style={{ color: "#ffc187", fontSize: "1.4em" }}
+                  <FaRegBell 
+
+                    style={{ color: "#333",}}
                   />
-                  {patient?.alerts.filter((alert) => !alert.read).length > 0 && (
-                    <span className="badge">
+                  {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
+                    <span className="badge" >
                       {patient?.alerts.filter((alert) => !alert.read).length}
                     </span>
                   )}

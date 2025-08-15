@@ -3,15 +3,14 @@ import "../css/SideBar.css";
 import CompanyConfig from "../config/config.js";
 import "../css/hamburger.css";
 
-import { MdLogout, MdOutlineSpaceDashboard } from "react-icons/md";
-import { HiOutlineUserGroup } from "react-icons/hi";
-import { HiOutlineBuildingOffice } from "react-icons/hi2"; // for hospital
+import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FiBell } from "react-icons/fi";
 import { RiBubbleChartLine } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { BsChatDots } from "react-icons/bs";
-
+import { LuUserRound } from "react-icons/lu";
+import { TbUserSquare } from "react-icons/tb";
 
 const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -36,20 +35,16 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
 
   const ClientItems = [
     { name: "Dashboard", icon: <MdOutlineSpaceDashboard /> },
-    { name: "Patients", icon: <HiOutlineUserGroup /> },
-    { name: "Staff", icon: <HiOutlineBuildingOffice /> },
+    { name: "Patients", icon: <LuUserRound /> },
+    { name: "Staff", icon: <TbUserSquare /> },
     { name: "Screening", icon: <RiBubbleChartLine /> },
   ];
 
   const activityItems = [
     { name: "Settings", icon: <IoSettingsOutline /> },
-    { name: "Feedback", icon: <BsChatDots />},
+    { name: "Feedback", icon: <BsChatDots /> },
     { name: "Alerts", icon: <FiBell />, showBadge: true },
   ];
-
-  async function logout() {
-   
-  }
 
   return (
     <div className={`sidebar ${active ? "active" : ""}`}>
@@ -76,7 +71,12 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
           {ClientItems.map((item) => (
             <li
               key={item.name}
-              className={activeItem === item.name ? "active" : ""}
+              className={
+                activeItem === item.name ||
+                (item.name === "Patients" && activeItem === "Patient")
+                  ? "active"
+                  : ""
+              }
               onClick={() => handleClick(item.name)}
             >
               <div className="icon">{item.icon}</div>

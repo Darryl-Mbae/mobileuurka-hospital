@@ -7,12 +7,13 @@ import { useSelector } from "react-redux";
 import { FaShieldAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Document from "./Document";
+import { usePagination } from "../hooks/usePagination";
+import Pagination from "../components/Pagination";
 
 const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const users = useSelector((s) => s.user.users);
   const navigate = useNavigate();
-
 
   const riskLevelColors = {
     high: "#FF3B30",
@@ -23,16 +24,16 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
 
   function formatDiagnosis(raw) {
     if (!raw) return "No diagnosis records";
-  
+
     const parsePostgresArray = (str) => {
       return str
         .replace(/^{|}$/g, "") // remove surrounding braces
         .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/) // split on commas outside quotes
         .map((item) => item.replace(/^"(.*)"$/, "$1").trim()); // remove surrounding quotes
     };
-  
+
     const parsed = parsePostgresArray(raw);
-  
+
     const cleaned = parsed
       .filter((x) => x && x !== "NULL")
       .map((entry) =>
@@ -42,14 +43,14 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           .replace(/\.$/, "")
           .trim()
       );
-  
+
     if (cleaned.length === 0) return "No diagnosis data found";
-  
+
     // 🧠 Check for "No specific conditions detected" as first item
     if (/^no specific conditions detected/i.test(cleaned[0])) {
       return cleaned[0];
     }
-  
+
     return `Suspected to have ${cleaned.join(" & ")}`;
   }
 
@@ -85,18 +86,14 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
   const handleAddDocument = () => {
     // Navigate to Screening for adding documents
-    navigate("/Screening", { 
-      state: { 
+    navigate("/Screening", {
+      state: {
         patientId: patient?.id,
-        returnTo: 'documents',
-        internalTab: 1 // Documents/screening tab
-      } 
+        returnTo: "documents",
+        internalTab: 1, // Documents/screening tab
+      },
     });
   };
 
@@ -158,8 +155,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           const itemDate = new Date(item.date).toISOString().split("T")[0];
           return expDate === itemDate;
         });
-        
-        
+
         // Join risk_levels found
         result = relatedExplanations?.length
           ? relatedExplanations
@@ -190,11 +186,37 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     record.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Add pagination hook
+  const {
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    handlePageChange,
+    handleItemsPerPageChange,
+    getPaginatedData,
+  } = usePagination({
+    totalItems: filteredRecords.length,
+    initialItemsPerPage: 10,
+    initialPage: 1,
+  });
+
+  const currentPageRecords = getPaginatedData(filteredRecords);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    handlePageChange(1); // Reset to first page when searching
+  };
+
   return (
     <div id="notes" className="content">
       {document?.title ? (
         <>
-        <Document document={document?.source} title={document?.title}/>
+          <Document 
+            document={document?.source} 
+            title={document?.title}
+            patient={patient}
+            onBack={() => setDocument(null)}
+          />
         </>
       ) : (
         <>
@@ -224,7 +246,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
               <div className="date">Analysis</div>
             </div>
 
-            {filteredRecords.map((record, index) => (
+            {currentPageRecords.map((record, index) => (
               <div
                 key={index}
                 className="record"
@@ -259,6 +281,22 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
               </div>
             ))}
           </div>
+
+          {/* Add Pagination Component */}
+          {filteredRecords?.length > 0 && (
+            <Pagination
+
+              width='125%'
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              showPageInfo={true}
+              showItemsPerPageSelector={true}
+              itemsPerPageOptions={[5, 10, 15, 20]}
+            />
+          )}
         </>
       )}
     </div>

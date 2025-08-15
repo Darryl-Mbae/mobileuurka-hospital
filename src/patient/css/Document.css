@@ -2,11 +2,14 @@
   margin-top: 50px;
 }
 
+.meds.documents {
+  margin-top: 20px;
+}
 .documents .title {
   width: 70vw !important;
   display: grid;
   margin: 10px;
-  grid-template-columns: 25% 30% 30% ;
+  grid-template-columns: 25% 30% 30%;
   font-size: 0.9em;
   color: #333;
   margin-bottom: 15px;
@@ -23,7 +26,7 @@
   padding: 20px 10px;
   width: 70vw;
   display: grid;
-  grid-template-columns: 25% 30% 30% ;
+  grid-template-columns: 25% 30% 30%;
   font-size: 0.9em;
   color: #333;
   align-items: center;
@@ -297,7 +300,7 @@
     width: 99%;
     display: grid;
     margin: 10px;
-    grid-template-columns: 25% 20% 15% 39%;
+    grid-template-columns: 22% 22% 15% 39%;
     font-size: 0.9em;
     color: #333;
     margin-bottom: 15px;
@@ -313,7 +316,7 @@
     flex-direction: row;
     padding: 20px 10px;
     display: grid;
-    grid-template-columns: 25% 20% 15% 39%;
+    grid-template-columns: 22% 22% 15% 39%;
     font-size: 0.9em;
     color: #333;
     align-items: center;
@@ -322,8 +325,8 @@
     transition: padding-left 0.3s ease-in-out;
   }
   .record:hover {
-  padding-left: 20px;
-}
+    padding-left: 20px;
+  }
 }
 /* Add Note Form Styles */
 .add-note-form {
@@ -394,7 +397,7 @@
 
 .note-title-input:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
@@ -414,7 +417,7 @@
 
 .note-content-input:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
@@ -424,7 +427,8 @@
   justify-content: flex-end;
 }
 
-.cancel-btn, .save-btn {
+.cancel-btn,
+.save-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -449,7 +453,7 @@
 }
 
 .save-btn {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
 }
 
@@ -458,7 +462,8 @@
   transform: translateY(-1px);
 }
 
-.save-btn:disabled, .cancel-btn:disabled {
+.save-btn:disabled,
+.cancel-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -469,9 +474,442 @@
   .form-actions {
     flex-direction: column;
   }
-  
-  .cancel-btn, .save-btn {
+
+  .cancel-btn,
+  .save-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+/* Document Viewer Styles */
+.document-viewer {
+  width: 100%;
+  min-height: 100vh;
+  /* background: #f8f9fa; */
+}
+
+.document-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); */
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-left h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-button,
+.view-toggle,
+.download-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #4a5568;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.back-button:hover,
+.view-toggle:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  color: #2d3748;
+}
+
+.download-button {
+  background: #008540;
+  color: white;
+  border-color: #008540;
+}
+
+.download-button:hover {
+  background: #006d35;
+  border-color: #006d35;
+}
+
+.document-content {
+  padding: 0;
+  /* background: #f8f9fa; */
+}
+
+/* Override FormTemplate styles when used in document viewer */
+.document-viewer .form-template {
+  margin: 30px;
+  /* box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12); */
+}
+
+/* Document grid for custom content */
+.document-grid {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .document-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+
+  .header-left,
+  .header-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .back-button,
+  .view-toggle,
+  .download-button {
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
+  }
+
+  .document-viewer .form-template {
+    margin: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .document-header {
+    padding: 12px 15px;
+  }
+
+  .header-left h2 {
+    font-size: 1.25rem;
+  }
+
+  .back-button,
+  .view-toggle,
+  .download-button {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .document-viewer .form-template {
+    margin: 10px;
+  }
+}
+
+/* Print styles for PDF generation */
+@media print {
+  .document-header {
+    display: none;
+  }
+
+  .document-content {
+    padding: 0;
+    background: white;
+  }
+
+  .document-viewer .form-template {
+    margin: 0;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+} /* Pa
+gination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 25px;
+  padding-top: 20px;
+}
+
+.pagination-controls.legacy {
+  margin-top: 30px;
+}
+
+/* Document Pagination - Outside FormTemplate */
+.pagination-controls.document-pagination {
+  background: white;
+  padding: 10px 20px;
+  margin: 30px auto;
+  max-width: 800px;
+  border-radius: 12px;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.page-btn {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #4a5568;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 40px;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.page-btn.active {
+  background: #008540;
+  color: white;
+  border-color: #008540;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f7fafc;
+}
+
+/* Page indicator styles */
+.page-indicator {
+  font-size: 0.75rem;
+  color: #718096;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+.item-count {
+  font-size: 0.875rem;
+  color: #718096;
+  font-weight: normal;
+  margin-left: 10px;
+}
+
+/* Form template page indicator */
+.form-template .section-title .page-indicator {
+  float: right;
+  font-size: 0.75rem;
+  color: #718096;
+  font-weight: normal;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .page-numbers {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .page-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-width: 35px;
+  }
+
+  .item-count,
+  .page-indicator {
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-numbers {
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 5px 0;
+  }
+
+  .page-btn {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    min-width: 30px;
+  }
+}
+
+/* Print styles - hide pagination in print */
+@media print {
+  .pagination-controls {
+    display: none !important;
+  }
+
+  .page-indicator {
+    display: none !important;
+  }
+
+  .item-count {
+    display: none !important;
+  }
+
+  /* Show all items when printing */
+  .document-grid,
+  .container {
+    display: block !important;
+  }
+} /* Enhan
+ced Print Styles */
+@media print {
+  /* Hide UI elements */
+  .document-header,
+  .pagination-controls,
+  .page-indicator,
+  .item-count {
+    display: none !important;
+  }
+
+  /* Reset document viewer */
+  .document-viewer {
+    width: 100% !important;
+    min-height: auto !important;
+    background: white !important;
+  }
+
+  .document-content {
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  /* Form template print styles */
+  .form-template {
+    margin: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+  }
+
+  .form-template .field-value {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+  }
+
+  .form-template .content-area {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+  }
+
+  /* Legacy view print styles */
+  .doc-main {
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+
+  .doc-main .container {
+    border: 1px solid #000 !important;
+    padding: 10px !important;
+  }
+
+  .doc-main .list {
+    border-bottom: 1px solid #333 !important;
+    padding: 8px !important;
+  }
+
+  /* Show all items when printing (ignore pagination) */
+  .document-grid .field-group,
+  .container .list {
+    display: flex !important;
+  }
+
+  /* Page settings */
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+
+  /* Ensure text is black */
+  * {
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  .form-template .field-value,
+  .form-template .header,
+  .form-template .section {
+    background: white !important;
+  }
+}
+
+/* Simple Print Styles */
+@media print {
+  /* Hide UI elements that shouldn't print */
+  .document-header {
+    display: none !important;
+  }
+  
+  .pagination-controls {
+    display: none !important;
+  }
+  
+  .page-indicator {
+    display: none !important;
+  }
+  
+  .item-count {
+    display: none !important;
+  }
+  
+  /* Ensure proper page layout */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .document-viewer {
+    width: 100% !important;
+    background: white !important;
+  }
+  
+  .document-content {
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  /* Make sure form template prints nicely */
+  .form-template {
+    margin: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    max-width: none !important;
   }
 }

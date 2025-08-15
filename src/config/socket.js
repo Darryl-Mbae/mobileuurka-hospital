@@ -535,7 +535,7 @@ class SocketManager {
 
     // Enhanced online users events with organization filtering
     this.socket.on("online_count_updated", (data) => {
-      console.log("Received online_count_updated:", data);
+      // console.log("Received online_count_updated:", data);
       
       // Check if this online count update should be processed based on organization filtering
       if (!this.shouldProcessEvent(data)) {
@@ -549,9 +549,9 @@ class SocketManager {
           organizationId: data.organizationId,
           count: data.count
         }));
-        console.log(
-          `Organization ${data.organizationId} has ${data.count} users online`
-        );
+        // console.log(
+        //   `Organization ${data.organizationId} has ${data.count} users online`
+        // );
       }
     });
 

@@ -80,7 +80,7 @@ const Medications = ({ patient, setActiveTab }) => {
                     <div
                       className="med-info righty"
                       data-tooltip-id="normal-tooltip"
-                      data-tooltip-content={med.medication_purpose}
+                      data-tooltip-content={med.medicationPurpose}
                     >
                       <FaInfo />
                       <Tooltip
@@ -113,7 +113,7 @@ const Medications = ({ patient, setActiveTab }) => {
           )}
         </div>
         <div className="button" onClick={() => setActiveTab("medication")}>
-          View Medications
+          View All Medications
         </div>
       </div>
     </div>

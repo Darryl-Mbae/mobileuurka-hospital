@@ -226,7 +226,7 @@ function MainSearch({ user }) {
         )}
       </div>
 
-      <div
+      {/* <div
         className="notification"
         style={{ cursor: "pointer" }}
         onClick={openMail}
@@ -238,7 +238,7 @@ function MainSearch({ user }) {
       <Tooltip
         id="my-search-tooltip"
         style={{ fontSize: ".8em", zIndex: "9999" }}
-      />
+      /> */}
 
       <div className="profile">
         <div className="circle">

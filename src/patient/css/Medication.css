@@ -1,9 +1,10 @@
 .medication .med-grid {
   width: 100%;
-  min-height: 78vh;
+  min-height: auto;
   display: grid;
   grid-template-columns: 68.5% 31.5%;
   gap: 1%;
+  margin-bottom: 20px;
 }
 .medication .buttonz {
   height: 50px;
@@ -86,4 +87,10 @@
 .medication .warning .allergy-button.active {
   display: flex;
   opacity: 1;
+}
+
+/* Pagination positioning for medication */
+.medication .pagination {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }

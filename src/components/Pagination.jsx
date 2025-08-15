@@ -86,6 +86,7 @@ const Pagination = ({
   showItemsPerPageSelector = true,
   itemsPerPageOptions = [10, 25, 50, 100],
   showPageInfo = true,
+  width,
   maxVisiblePages = 7,
   isLoading = false,
   ariaLabel = 'Pagination Navigation'
@@ -207,6 +208,7 @@ const Pagination = ({
       className={`pagination ${className}`} 
       aria-label={ariaLabel}
       role="navigation"
+      style={width  &&  { width: width } }
     >
       <div className="pagination-container">
         {/* Page Info Display */}

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useRef } from "react";
 import "../patient/css/Doc.css";
-import { data } from "react-router-dom";
+import { IoPrintOutline } from "react-icons/io5";
+import FormTemplate from "../components/FormTemplate";
 
 // Format object keys into readable labels
 const formatKey = (key) =>
@@ -9,15 +9,6 @@ const formatKey = (key) =>
     .replace(/_/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/\b\w/g, (l) => l.toUpperCase());
-
-// Split into chunks of N
-const chunkArray = (arr, chunkSize) => {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    chunks.push(arr.slice(i, i + chunkSize));
-  }
-  return chunks;
-};
 
 // Helper function to format values, converting -1 to "Unknown"
 const formatValue = (value) => {
@@ -44,93 +35,610 @@ const formatDate = (iso) => {
   });
 };
 
-const Document = ({ document, title }) => {
-  const SERVER = import.meta.env.VITE_SERVER_URL;
-  const [users, setUsers] = useState([]);
-
-  useEffect(() => {
-    getUsers();
-  });
-
-  async function getUsers() {
-    try {
-      const response = await fetch(`${SERVER}/user/all`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
+// Format "updated_at" and similar fields to exact human readable dates
+const formatHumanDate = (key, value) => {
+  if (
+    key.toLowerCase().includes("updated") ||
+    key.toLowerCase().includes("created") ||
+    key.toLowerCase().includes("date") ||
+    key.toLowerCase().includes("time")
+  ) {
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      // Always return exact date and time for printing purposes
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
       });
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
     }
   }
+  return value;
+};
+
+const Document = ({ document, title, patient }) => {
+  const [useFormTemplate, setUseFormTemplate] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const componentRef = useRef();
+
+  // Optimized items per page for A4 layout - conservative to prevent overflow
+  const ITEMS_FIRST_PAGE = 6;  // First page has patient info, so fewer items
+  const ITEMS_OTHER_PAGES = 18; // Reduced to prevent page overflow and header misplacement
+
+  // PDF download handler - opens new window with instruction to save as PDF
+  const handlePrint = () => {
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+      alert("Please allow popups to download PDF");
+      return;
+    }
+
+    // Generate all pages HTML
+    const generateAllPagesHTML = () => {
+      let allPagesHTML = "";
+
+      for (let page = 1; page <= totalPages; page++) {
+        let pageItems;
+        if (page === 1) {
+          pageItems = allItems.slice(0, ITEMS_FIRST_PAGE);
+        } else {
+          const startIndex = ITEMS_FIRST_PAGE + (page - 2) * ITEMS_OTHER_PAGES;
+          const endIndex = startIndex + ITEMS_OTHER_PAGES;
+          pageItems = allItems.slice(startIndex, endIndex);
+        }
+
+        if (useFormTemplate) {
+          // Form Template view - each page is a complete document
+          allPagesHTML += `
+            <div style="${styles.formTemplate}">
+              <!-- Header Section -->
+              <div style="${styles.header}">
+                <div style="${styles.logo}">
+                  <div style="${styles.logoImage}">
+                    <img src="/logo.png" alt="logo" style="width: 100%; height: 100%; object-fit: contain;" />
+                  </div>
+                  <div>
+                    <h3 style="${styles.orgInfoH3}">Mobileuurka</h3>
+                    <p style="${styles.orgInfoP}">Healthcare Services</p>
+                  </div>
+                </div>
+                <div style="${styles.documentInfo}">
+                  <h2 style="${styles.documentInfoH2}">${title}</h2>
+                  <p style="${styles.recordDate}">Date: ${new Date(
+            formData.recordDate
+          ).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}</p>
+                </div>
+              </div>
+
+              <!-- Patient Information Section - Only on first page -->
+              ${
+                page === 1
+                  ? `
+              <div style="${styles.section}">
+                <h3 style="${styles.sectionTitle}">Patient Information</h3>
+                <div style="${styles.patientGrid}">
+                  <div style="${styles.fieldGroup}">
+                    <label style="${styles.fieldLabel}">Full Name</label>
+                    <div style="${styles.fieldValue}">${patientData.name}</div>
+                  </div>
+                  <div style="${styles.fieldGroup}">
+                    <label style="${styles.fieldLabel}">Patient ID</label>
+                    <div style="${styles.fieldValue}">${patientData.patientId}</div>
+                  </div>
+                  <div style="${styles.fieldGroup}">
+                    <label style="${styles.fieldLabel}">Phone Number</label>
+                    <div style="${styles.fieldValue}">${patientData.phone}</div>
+                  </div>
+                  <div style="${styles.fieldGroup}">
+                    <label style="${styles.fieldLabel}">Email Address</label>
+                    <div style="${styles.fieldValue}">${patientData.email}</div>
+                  </div>
+                </div>
+                <div style="${styles.fieldGroupFullWidth}">
+                  <label style="${styles.fieldLabel}">Address</label>
+                  <div style="${styles.fieldValue}">${patientData.address}</div>
+                </div>
+              </div>
+              `
+                  : ""
+              }
+
+              <!-- Document Details Section -->
+              <div style="${styles.section}">
+                <h3 style="${styles.sectionTitle}">
+                  Document Details
+                  ${
+                    totalPages > 1
+                      ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>`
+                      : ""
+                  }
+                </h3>
+                <div style="${styles.documentGrid}">
+                  ${pageItems
+                    .map(
+                      (item) => `
+                    <div style="${styles.fieldGroup}">
+                      <label style="${styles.fieldLabel}">${item.label}</label>
+                      <div style="${styles.fieldValue}">
+                        ${
+                          item.value === "Not provided"
+                            ? `<span style="${styles.emptyValue}">` +
+                              item.value +
+                              "</span>"
+                            : item.value
+                        }
+                      </div>
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
+              </div>
+
+              ${page === 1 ? `
+              <div style="${styles.footer}">
+                <div style="${styles.signatureSection}">
+                  <div style="${styles.signatureBox}">
+                    <div style="${styles.signatureLine}"></div>
+                    <label style="${styles.signatureLabel}">Healthcare Provider Signature</label>
+                  </div>
+                  <div style="${styles.signatureBox}">
+                    <div style="${styles.signatureLine}"></div>
+                    <label style="${styles.signatureLabel}">Date</label>
+                  </div>
+                </div>
+                <div style="${styles.footerInfo}">
+                  <p style="${styles.footerInfoP}">This document is confidential and contains protected health information.</p>
+                  <p style="${styles.footerInfoP}">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                </div>
+              </div>
+              ` : ''}
+          `;
+        } else {
+          // Legacy view
+          allPagesHTML += `
+            <div class="doc-main" style="page-break-after: ${
+              page < totalPages ? "always" : "auto"
+            };">
+              <h3>${title} ${
+            totalPages > 1 ? `(Page ${page} of ${totalPages})` : ""
+          }</h3>
+              <section>
+                <div class="container">
+                  ${pageItems
+                    .map(
+                      (item) => `
+                    <div class="list">
+                      <div class="label">${item.label}</div>
+                      <div class="value">
+                        ${
+                          item.value === "Not provided"
+                            ? '<span class="placeholder">' +
+                              item.value +
+                              "</span>"
+                            : item.value
+                        }
+                      </div>
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
+              </section>
+            </div>
+          `;
+        }
+      }
+
+      return allPagesHTML;
+    };
+
+    // Use inline styles for perfect consistency
+    const getInlineStyles = () => {
+      return {
+        formTemplate:
+          "max-width: 800px; margin: 30px auto; padding: 40px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #2d3748; page-break-after: always;",
+        header:
+          "display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 30px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px;",
+        logo: "display: flex; align-items: center; gap: 15px;",
+        logoImage:
+          "width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #f7fafc; border-radius: 8px; overflow: hidden;",
+        orgInfoH3:
+          "margin: 0; font-size: 1.25rem; font-weight: 600; color: #1a202c;",
+        orgInfoP: "margin: 2px 0 0 0; font-size: 0.875rem; color: #718096;",
+        documentInfo: "text-align: right;",
+        documentInfoH2:
+          "margin: 0; font-size: 1.5rem; font-weight: 700; color: #2d3748;",
+        recordDate: "margin: 5px 0 0 0; font-size: 0.875rem; color: #718096;",
+        section: "margin-bottom: 25px;",
+        sectionTitle:
+          "margin: 0 0 15px 0; font-size: 0.95rem; font-weight: 600; color: #2d3748; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0;",
+        grid: "display: grid; gap: 12px;",
+        patientGrid:
+          "display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr);",
+        documentGrid:
+          "display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr);",
+        fieldGroup: "display: flex; flex-direction: column; gap: 6px;",
+        fieldGroupFullWidth:
+          "display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1; margin-top: 8px;",
+        fieldLabel:
+          "font-size: 0.75rem; font-weight: 500; color: #4a5568; text-transform: uppercase; letter-spacing: 0.025em;",
+        fieldValue:
+          "padding: 8px 12px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.85rem; color: #2d3748; min-height: 16px; display: flex; align-items: center;",
+        emptyValue: "color: #a0aec0; font-style: italic;",
+        footer:
+          "margin-top: 50px; padding-top: 40px; border-top: 1px solid #e2e8f0;",
+        signatureSection:
+          "display: grid; grid-template-columns: 1fr 250px; gap: 40px; margin-bottom: 20px;",
+        signatureBox: "display: flex; flex-direction: column; gap: 15px;",
+        signatureLine:
+          "height: 1px; background: #2d3748; margin-bottom: 8px; margin-top: 15px;",
+        signatureLabel:
+          "font-size: 0.875rem; color: #4a5568; text-align: center;",
+        footerInfo:
+          "text-align: center; padding-top: 20px; border-top: 1px solid #e2e8f0;",
+        footerInfoP: "margin: 5px 0; font-size: 0.75rem; color: #718096;",
+        pageIndicator:
+          "font-size: 0.75rem; color: #718096; font-weight: normal; margin-left: 10px;",
+      };
+    };
+
+    const styles = getInlineStyles();
+
+    // Write the document with PDF download instruction
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title} - ${
+      patient?.name || "Patient"
+    } - ${new Date().toLocaleDateString()}</title>
+          <meta charset="UTF-8">
+          <style>
+            * { box-sizing: border-box; }
+            body { 
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background: white;
+            }
+            
+            .pdf-instruction {
+              position: fixed;
+              top: 10px;
+              right: 10px;
+              background: #008540;
+              color: white;
+              padding: 15px 20px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 500;
+              z-index: 1000;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            }
+            
+            @media print {
+              .pdf-instruction {
+                display: none !important;
+              }
+              body {
+                padding: 0 !important;
+              }
+            }
+            
+            @page {
+              margin: 0.5in;
+              size: A4;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="pdf-instruction">
+            Press Ctrl+P (Cmd+P on Mac) and select "Save as PDF" to download
+          </div>
+          ${generateAllPagesHTML()}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    // Show instruction and auto-trigger print dialog
+    setTimeout(() => {
+      printWindow.focus();
+
+      printWindow.print();
+    }, 500);
+  };
 
   if (!document) return null;
 
-  // Step 1: Format values
-  const transformed = { ...document };
+  // Prepare data for FormTemplate
+  const prepareDocumentData = () => {
+    const transformed = { ...document };
 
-  // Replace user_id with editor name
-  // Format date
-  if (transformed.date) {
-    transformed.date = formatDate(transformed.date);
-  }
-
-  // Remove user_id field
-  delete transformed.user_id;
-  // delete transformed.patient_id;
-  // delete transformed.date;
-  // delete transformed.visit_id;
-  // delete transformed.editor;
-
-  if (transformed.infections_id) {
-    delete transformed.infections_id;
-  }
-
-  // Step 2: Move editor to top
-  const reordered = {};
-  if ("editor" in transformed) {
-    reordered.editor = transformed.editor;
-  }
-  for (const key in transformed) {
-    if (key !== "editor") {
-      reordered[key] = transformed[key];
+    // Clean up unwanted fields first
+    delete transformed.user_id;
+    delete transformed.id; // Remove id to avoid duplication with patient_id
+    if (transformed.infections_id) {
+      delete transformed.infections_id;
     }
-  }
 
-  const allItems = Object.entries(reordered).map(([key, value]) => ({
+    return transformed;
+  };
+
+  const documentData = prepareDocumentData();
+
+  // Prepare patient data for FormTemplate
+  const patientData = {
+    name: patient?.name || "N/A",
+    patientId: patient?.patientId || patient?.id || "N/A",
+    phone: patient?.phone || "N/A",
+    email: patient?.email || "N/A",
+    address: patient?.address || "N/A",
+  };
+
+  // Prepare form data - fix date handling
+  const getRecordDate = () => {
+    if (document?.date) {
+      // Check if it's already a valid date string
+      const testDate = new Date(document.date);
+      if (!isNaN(testDate.getTime())) {
+        return document.date;
+      }
+    }
+    return new Date().toISOString();
+  };
+
+  const formData = {
+    recordDate: getRecordDate(),
+    recordType: title || "Health Record",
+    provider: documentData.editor || "Healthcare Provider",
+  };
+
+  // Legacy view data preparation with human-readable dates
+  const allItems = Object.entries(documentData).map(([key, value]) => ({
     label: formatKey(key),
-    value: formatValue(value), // Apply formatValue to the raw value
+    value: formatValue(formatHumanDate(key, value)),
   }));
 
-  // Step 3: Chunk into groups of 15
-  const chunks = chunkArray(allItems, 12);
+  // Calculate pagination with different page sizes
+  const calculatePagination = () => {
+    if (allItems.length <= ITEMS_FIRST_PAGE) {
+      return { totalPages: 1, currentItems: allItems };
+    }
 
-  // Step 4: Render
+    const remainingItems = allItems.length - ITEMS_FIRST_PAGE;
+    const additionalPages = Math.ceil(remainingItems / ITEMS_OTHER_PAGES);
+    const totalPages = 1 + additionalPages;
+
+    let currentItems;
+    if (currentPage === 1) {
+      currentItems = allItems.slice(0, ITEMS_FIRST_PAGE);
+    } else {
+      const startIndex =
+        ITEMS_FIRST_PAGE + (currentPage - 2) * ITEMS_OTHER_PAGES;
+      const endIndex = startIndex + ITEMS_OTHER_PAGES;
+      currentItems = allItems.slice(startIndex, endIndex);
+    }
+
+    return { totalPages, currentItems };
+  };
+
+  const { totalPages, currentItems } = calculatePagination();
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
-    <div className="doc-main">
-      <h3>{title}</h3>
-      <section>
-        <div className="container">
-          {allItems.map((item, index) => (
-            <div className="list" key={index}>
-              <div className="label">{item.label}</div>
-              <div className="value">
-                {item.value === "Not provided" ? (
-                  <span className="placeholder">{item.value}</span>
-                ) : (
-                  <span>{item.value}</span>
-                )}
-              </div>
-            </div>
-          ))}
+    <div className="document-viewer">
+      {/* Header with controls */}
+      <div className="document-header">
+        <div className="header-left">
+          <h2>{title}</h2>
         </div>
-      </section>
+        <div className="header-right">
+          <button
+            className="view-toggle"
+            onClick={() => setUseFormTemplate(!useFormTemplate)}
+          >
+            {useFormTemplate ? "Legacy View" : "Form View"}
+          </button>
+          <button className="download-button" onClick={handlePrint}>
+            <IoPrintOutline />
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Document Content */}
+      <div ref={componentRef} className="document-content">
+        {useFormTemplate ? (
+          <>
+            {/* Pagination Controls - Outside the FormTemplate */}
+            {totalPages > 1 && (
+              <div className="pagination-controls document-pagination">
+                <button
+                  className="page-btn"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous Page
+                </button>
+
+                <div className="page-numbers">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        className={`page-btn ${
+                          page === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  className="page-btn"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next Page
+                </button>
+              </div>
+            )}
+            {/* Complete FormTemplate for each page */}
+            <FormTemplate
+              title={title}
+              patientData={currentPage === 1 ? patientData : null}
+              formData={formData}
+              organizationName="Mobileuurka"
+              logoSrc="/logo.png"
+            >
+              {/* Custom content section for document data - only this changes per page */}
+              <div className="section">
+                <h3 className="section-title">
+                  Document Details
+                  {totalPages > 1 && (
+                    <span className="page-indicator">
+                      (Page {currentPage} of {totalPages})
+                    </span>
+                  )}
+                </h3>
+                <div className="grid document-grid">
+                  {currentItems.map((item, index) => (
+                    <div key={index} className="field-group">
+                      <label>{item.label}</label>
+                      <div className="field-value">
+                        {item.value === "Not provided" ? (
+                          <span className="empty-value">{item.value}</span>
+                        ) : (
+                          <span>{item.value}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </FormTemplate>
+
+            {/* Pagination Controls - Outside the FormTemplate */}
+            {totalPages > 1 && (
+              <div className="pagination-controls document-pagination">
+                <button
+                  className="page-btn"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous Page
+                </button>
+
+                <div className="page-numbers">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        className={`page-btn ${
+                          page === currentPage ? "active" : ""
+                        }`}
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  className="page-btn"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next Page
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          // Legacy view
+          <div className="doc-main">
+            <h3>
+              {title}
+              {totalPages > 1 && (
+                <span className="page-indicator">
+                  (Page {currentPage} of {totalPages})
+                </span>
+              )}
+            </h3>
+            <section>
+              <div className="container">
+                {currentItems.map((item, index) => (
+                  <div className="list" key={index}>
+                    <div className="label">{item.label}</div>
+                    <div className="value">
+                      {item.value === "Not provided" ? (
+                        <span className="placeholder">{item.value}</span>
+                      ) : (
+                        <span>{item.value}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination Controls for Legacy View */}
+              {totalPages > 1 && (
+                <div className="pagination-controls legacy">
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+
+                  <div className="page-numbers">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          className={`page-btn ${
+                            page === currentPage ? "active" : ""
+                          }`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

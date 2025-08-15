@@ -4,6 +4,8 @@ import { IoDocumentTextOutline } from "react-icons/io5";
 import "./css/Document.css";
 import { IoMdAdd } from "react-icons/io";
 import { useSelector } from "react-redux";
+import { usePagination } from "../hooks/usePagination";
+import Pagination from "../components/Pagination";
 
 const Notes = ({ setNotes, setActiveTitle, patient }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,9 +13,6 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
   const [loading, setLoading] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
-
-
-
 
   // useEffect(() => {
   //   async function getUsers() {
@@ -36,14 +35,10 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
   //     }
   //   }
   //   getUsers();
-    
+
   //   window.scrollTo({ top: 0, behavior: "smooth" });
   // }, []);
   // Dummy Notes Data
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -54,19 +49,35 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
     });
   };
 
-
-  const filteredNotes = patient?.notes.filter((note) =>
+  const filteredNotes = (patient?.notes || []).filter((note) =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Add pagination hook
+  const {
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    handlePageChange,
+    handleItemsPerPageChange,
+    getPaginatedData,
+  } = usePagination({
+    totalItems: filteredNotes.length,
+    initialItemsPerPage: 10,
+    initialPage: 1,
+  });
+
+  const currentPageNotes = getPaginatedData(filteredNotes);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    handlePageChange(1); // Reset to first page when searching
+  };
 
   const handleAddNote = () => {
     // Switch to notepad page instead of showing inline form
     setActiveTitle("notepad");
   };
-
-
-
 
   return (
     <div id="notes" className="content">
@@ -88,8 +99,6 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
         </div>
       </div>
 
-
-
       <div className="documents">
         <div className="title">
           <div className="title-name">Title</div>
@@ -97,7 +106,7 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
           <div className="date">Date</div>
         </div>
 
-        {filteredNotes.map((note, index) => (
+        {currentPageNotes.map((note, index) => (
           <div
             key={index}
             className="record"
@@ -120,6 +129,21 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
           </div>
         ))}
       </div>
+
+      {/* Add Pagination Component */}
+      {filteredNotes?.length > 0 && (
+        <Pagination
+          width="125%"
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          showPageInfo={true}
+          showItemsPerPageSelector={true}
+          itemsPerPageOptions={[5, 10, 15, 20]}
+        />
+      )}
     </div>
   );
 };

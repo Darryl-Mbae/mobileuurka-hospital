@@ -290,10 +290,10 @@
 }
 .medication .button {
   z-index: 999;
-  width: 100%;
+  width: 95%;
   position: absolute;
   bottom: 15px;
-  margin: -2.5px auto;
+  margin: auto;
   height: 50px;
   background: #ffc187;
   border-radius: 5px;
@@ -313,30 +313,30 @@
   overflow: hidden;
 }
 
-.notes-small{
+.notes-small {
   width: 90%;
   margin: 0px auto;
-  height:70%;
+  height: 70%;
   display: flex;
   flex-direction: column;
   cursor: pointer;
 }
-.nonote{
-  font-size: .8em;
+.nonote {
+  font-size: 0.8em;
   text-align: center;
   margin: 30% auto;
   color: #5d5d5d;
 }
-.notes-small .title{
+.notes-small .title {
   display: flex;
   flex-direction: row;
   gap: 10px;
   align-items: center;
-  font-size: .9em;
+  font-size: 0.9em;
   color: #333;
   text-transform: capitalize;
 }
-.notes-small .title .dot{
+.notes-small .title .dot {
   width: 8px;
   aspect-ratio: 1;
   border-radius: 50%;
@@ -347,20 +347,19 @@
   color: #5d5d5d;
   margin: 10px 0;
   display: -webkit-box;
-  -webkit-line-clamp: 6;        /* ⬅️ Number of lines before truncating */
+  -webkit-line-clamp: 6; /* ⬅️ Number of lines before truncating */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-
-.notes-small .editor{
-  font-size: .8em;
+.notes-small .editor {
+  font-size: 0.8em;
   text-align: left;
   margin: 10px 0px;
   color: #5d5d5d;
 }
-.notes-small .time{
-  font-size: .8em;
+.notes-small .time {
+  font-size: 0.8em;
   text-align: right;
   margin: 10px 0px;
   color: #5d5d5d;
@@ -381,7 +380,6 @@
 .symptoms .symptom .flag {
   height: 60%;
 }
-
 
 /********************** predisposition **************************/
 
@@ -444,7 +442,7 @@
   justify-content: center;
   align-items: center;
   color: white;
-  font-size: .8em;
+  font-size: 0.8em;
 }
 .predisposition .line-container .results:first-child .r-icon {
   background: #5bc48d;
@@ -466,8 +464,8 @@
   font-weight: 800;
 }
 .predisposition .button {
-  width: 100%;
-  margin: -2.5px auto;
+  width: 90%;
+  margin: 0px auto;
   height: 50px;
   background: #ffc187;
   border-radius: 5px;
@@ -477,6 +475,10 @@
   align-items: center;
   cursor: pointer;
   font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+.predisposition .button:hover {
+  transform: translateY(3px);
 }
 
 @media screen and (max-width: 1280px) {
@@ -525,5 +527,4 @@
   .predisposition .button {
     display: none;
   }
-
 }
