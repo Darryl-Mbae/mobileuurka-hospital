@@ -214,7 +214,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     getPaginatedData,
   } = usePagination({
     totalItems: filteredRecords.length,
-    initialItemsPerPage:8,
+    initialItemsPerPage:7,
     initialPage: 1,
   });
 
