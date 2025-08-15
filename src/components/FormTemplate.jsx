@@ -8,6 +8,8 @@ const FormTemplate = ({
   organizationName = "Mobileuurka",
   logoSrc = "/logo.png",
   children,
+  showPatientInfo = true,
+  className = "",
 }) => {
   // Helper function to format date
   const formatDate = (dateString) => {
@@ -63,7 +65,7 @@ const FormTemplate = ({
   };
 
   return (
-    <div className="form-template">
+    <div className={`form-template ${className}`}>
       {/* Header Section */}
       <div className="header">
         <div className="logo">
@@ -83,42 +85,44 @@ const FormTemplate = ({
         </div>
       </div>
 
-      {/* Patient Information Section */}
-      <div className="section">
-        <h3 className="section-title">Patient Information</h3>
-        <div className="grid patient-grid">
-          <div className="field-group">
-            <label>Full Name</label>
-            <div className="field-value">
-              {renderFieldValue(defaultPatientData.name)}
+      {/* Patient Information Section - Only show when requested */}
+      {showPatientInfo && (
+        <div className="section">
+          <h3 className="section-title">Patient Information</h3>
+          <div className="grid patient-grid">
+            <div className="field-group">
+              <label>Full Name</label>
+              <div className="field-value">
+                {renderFieldValue(defaultPatientData.name)}
+              </div>
+            </div>
+            <div className="field-group">
+              <label>Patient ID</label>
+              <div className="field-value">
+                {renderFieldValue(defaultPatientData.patientId)}
+              </div>
+            </div>
+            <div className="field-group">
+              <label>Phone Number</label>
+              <div className="field-value">
+                {renderFieldValue(defaultPatientData.phone)}
+              </div>
+            </div>
+            <div className="field-group">
+              <label>Email Address</label>
+              <div className="field-value">
+                {renderFieldValue(defaultPatientData.email)}
+              </div>
             </div>
           </div>
-          <div className="field-group">
-            <label>Patient ID</label>
+          <div className="field-group full-width">
+            <label>Address</label>
             <div className="field-value">
-              {renderFieldValue(defaultPatientData.patientId)}
-            </div>
-          </div>
-          <div className="field-group">
-            <label>Phone Number</label>
-            <div className="field-value">
-              {renderFieldValue(defaultPatientData.phone)}
-            </div>
-          </div>
-          <div className="field-group">
-            <label>Email Address</label>
-            <div className="field-value">
-              {renderFieldValue(defaultPatientData.email)}
+              {renderFieldValue(defaultPatientData.address)}
             </div>
           </div>
         </div>
-        <div className="field-group full-width">
-          <label>Address</label>
-          <div className="field-value">
-            {renderFieldValue(defaultPatientData.address)}
-          </div>
-        </div>
-      </div>
+      )}
 
 
 

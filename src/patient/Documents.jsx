@@ -138,60 +138,66 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const buildRecord = (array, title) => {
     // Handle case where array might not be an array (like SymptomReasoningReport)
     if (!array) return [];
-    
+
     // If it's not an array, make it an array
     const dataArray = Array.isArray(array) ? array : [array];
-    
-    return dataArray.map((item) => {
-      let result = "";
 
-      if (title === "Lab Work") {
-        result = item.diagnosis || "No diagnosis";
-      }
+    return (
+      dataArray.map((item) => {
+        let result = "";
 
-      if (title === "Infections") {
-        const resultMessage = generateInfectionMessage(item);
-        result = resultMessage || "No Positive infections";
-      }
-      if (title === "AI Analysis") {
-        result = ""
-      }
+        if (title === "Lab Work") {
+          result = item.diagnosis || "No diagnosis";
+        }
 
-      if (title === "Pregnancy Journey") {
-        // Match explanations by visit_id
-        const relatedExplanations = patient?.explanations?.filter((exp) => {
-          const expDate = new Date(exp.date).toISOString().split("T")[0];
-          const itemDate = new Date(item.date).toISOString().split("T")[0];
-          return expDate === itemDate;
-        });
+        if (title === "Infections") {
+          const resultMessage = generateInfectionMessage(item);
+          result = resultMessage || "No Positive infections";
+        }
+        if (title === "AI Analysis") {
+          // For AI Analysis, show a summary of the risk level and key findings
+          const record = item.records?.[0] || item;
+          if (record.risk_level) {
+            result = `Risk Level: ${record.risk_level}`;
+          } else {
+            result = "AI Analysis Available";
+          }
+        }
 
-        // Join risk_levels found
-        result = relatedExplanations?.length
-          ? relatedExplanations
-              .map((exp) => exp.risklevel || "No risk level")
-              .join(", ")
-          : "No explanations";
-      }
+        if (title === "Pregnancy Journey") {
+          // Match explanations by visit_id
+          const relatedExplanations = patient?.explanations?.filter((exp) => {
+            const expDate = new Date(exp.date).toISOString().split("T")[0];
+            const itemDate = new Date(item.date).toISOString().split("T")[0];
+            return expDate === itemDate;
+          });
 
-      return {
-        title,
-        // visit_id: item.id || "-",
-        date_of_visit: item.date || item.timestamp || "N/A",
-        editor: item.editor || getUserName(item.user_id),
-        source: item,
-        result,
-      };
-    }) || [];
-  }
+          // Join risk_levels found
+          result = relatedExplanations?.length
+            ? relatedExplanations
+                .map((exp) => exp.risklevel || "No risk level")
+                .join(", ")
+            : "No explanations";
+        }
+
+        return {
+          title,
+          // visit_id: item.id || "-",
+          date_of_visit: item.date || item.timestamp || "N/A",
+          editor: item.editor || getUserName(item.user_id),
+          source: item,
+          result,
+        };
+      }) || []
+    );
+  };
   // Combine all patient data arrays into one flat record list
   const realRecords = [
     ...buildRecord(patient?.triages, "Triage"),
     ...buildRecord(patient?.labworks, "Lab Work"),
     ...buildRecord(patient?.currentPregnancies, "Pregnancy Journey"),
     ...buildRecord(patient?.infections, "Infections"),
-    ...buildRecord(patient?.SymptomReasoningReport
-      , "AI Analysis"),
-
+    ...buildRecord(patient?.SymptomReasoningReport, "AI Analysis"),
   ];
 
   const filteredRecords = realRecords.filter((record) =>
@@ -223,8 +229,8 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     <div id="notes" className="content">
       {document?.title ? (
         <>
-          <Document 
-            document={document?.source} 
+          <Document
+            document={document?.source}
             title={document?.title}
             patient={patient}
             onBack={() => setDocument(null)}
@@ -297,8 +303,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           {/* Add Pagination Component */}
           {filteredRecords?.length > 0 && (
             <Pagination
-
-              width='125%'
+              width="125%"
               totalItems={totalItems}
               itemsPerPage={itemsPerPage}
               currentPage={currentPage}

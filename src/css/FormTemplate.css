@@ -297,6 +297,100 @@
   }
 }
 
+/* AI Analysis Document Styles - Clean document appearance */
+.form-template.ai-analysis {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 20px 0;
+}
+
+.form-template.ai-analysis .header {
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+}
+
+.form-template.ai-analysis .section {
+  margin-bottom: 20px;
+}
+
+.form-template.ai-analysis .section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 10px;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.form-template.ai-analysis .content-area {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #2d3748;
+}
+
+.form-template.ai-analysis .content-area p {
+  margin: 0;
+  text-align: justify;
+}
+
+.form-template.ai-analysis .field-value {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #2d3748;
+}
+
+.form-template.ai-analysis .grid {
+  gap: 15px;
+}
+
+.form-template.ai-analysis .field-group {
+  gap: 5px;
+}
+
+.form-template.ai-analysis .field-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Risk level styling for AI Analysis */
+.form-template.ai-analysis .risk-critical {
+  background: transparent;
+  color: #e53e3e;
+  font-weight: 600;
+  padding: 0;
+}
+
+.form-template.ai-analysis .risk-high {
+  background: transparent;
+  color: #dd6b20;
+  font-weight: 600;
+  padding: 0;
+}
+
+.form-template.ai-analysis .risk-moderate {
+  background: transparent;
+  color: #3182ce;
+  font-weight: 600;
+  padding: 0;
+}
+
+.form-template.ai-analysis .risk-low {
+  background: transparent;
+  color: #38a169;
+  font-weight: 600;
+  padding: 0;
+}
+
 /* Print Styles */
 @media print {
   * {

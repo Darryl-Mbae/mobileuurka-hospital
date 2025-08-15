@@ -65,7 +65,7 @@ const Document = ({ document, title, patient }) => {
   const componentRef = useRef();
 
   // Optimized items per page for A4 layout - conservative to prevent overflow
-  const ITEMS_FIRST_PAGE = 6;  // First page has patient info, so fewer items
+  const ITEMS_FIRST_PAGE = 6; // First page has patient info, so fewer items
   const ITEMS_OTHER_PAGES = 18; // Reduced to prevent page overflow and header misplacement
 
   // PDF download handler - opens new window with instruction to save as PDF
@@ -152,7 +152,9 @@ const Document = ({ document, title, patient }) => {
               }
 
               <!-- Document Details Section -->
-              ${isSymptomReasoningReport ? `
+              ${
+                isSymptomReasoningReport
+                  ? `
                 <!-- Risk Assessment Section -->
                 <div style="${styles.section}">
                   <h3 style="${styles.sectionTitle}">Risk Assessment</h3>
@@ -231,31 +233,51 @@ const Document = ({ document, title, patient }) => {
                     <p>${documentData.records[0].follow_up_timing}</p>
                   </div>
                 </div>
-              ` : `
+              `
+                  : `
                 <div style="${styles.section}">
                   <h3 style="${styles.sectionTitle}">
                     Document Details
-                    ${totalPages > 1 ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>` : ""}
+                    ${
+                      totalPages > 1
+                        ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>`
+                        : ""
+                    }
                   </h3>
                   <div style="${styles.documentGrid}">
-                    ${pageItems.map(item => `
+                    ${pageItems
+                      .map(
+                        (item) => `
                       <div style="${styles.fieldGroup}">
-                        <label style="${styles.fieldLabel}">${item.label}</label>
+                        <label style="${styles.fieldLabel}">${
+                          item.label
+                        }</label>
                         <div style="${styles.fieldValue}">
-                          ${item.value === "Not provided" ? `<span style="${styles.emptyValue}">${item.value}</span>` : item.value}
+                          ${
+                            item.value === "Not provided"
+                              ? `<span style="${styles.emptyValue}">${item.value}</span>`
+                              : item.value
+                          }
                         </div>
                       </div>
-                    `).join("")}
+                    `
+                      )
+                      .join("")}
                   </div>
                 </div>
-              `}
+              `
+              }
 
-              ${page === 1 ? `
+              ${
+                page === 1
+                  ? `
               <div style="${styles.footer}">
                 <div style="${styles.signatureSection}">
                   <div style="${styles.signatureBox}">
                     <div style="${styles.signatureLine}"></div>
-                    <label style="${styles.signatureLabel}">Healthcare Provider Signature</label>
+                    <label style="${
+                      styles.signatureLabel
+                    }">Healthcare Provider Signature</label>
                   </div>
                   <div style="${styles.signatureBox}">
                     <div style="${styles.signatureLine}"></div>
@@ -263,11 +285,17 @@ const Document = ({ document, title, patient }) => {
                   </div>
                 </div>
                 <div style="${styles.footerInfo}">
-                  <p style="${styles.footerInfoP}">This document is confidential and contains protected health information.</p>
-                  <p style="${styles.footerInfoP}">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                  <p style="${
+                    styles.footerInfoP
+                  }">This document is confidential and contains protected health information.</p>
+                  <p style="${
+                    styles.footerInfoP
+                  }">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
                 </div>
               </div>
-              ` : ''}
+              `
+                  : ""
+              }
           `;
         } else {
           // Legacy view
@@ -341,11 +369,16 @@ const Document = ({ document, title, patient }) => {
         fieldValue:
           "padding: 8px 12px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.85rem; color: #2d3748; min-height: 16px; display: flex; align-items: center;",
         emptyValue: "color: #a0aec0; font-style: italic;",
-        riskCritical: "background: #fed7d7; color: #742a2a; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
-        riskHigh: "background: #fef5e7; color: #744210; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
-        riskModerate: "background: #e6fffa; color: #234e52; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
-        riskLow: "background: #c6f6d5; color: #22543d; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
-        contentArea: "background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; line-height: 1.6;",
+        riskCritical:
+          "background: #fed7d7; color: #742a2a; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskHigh:
+          "background: #fef5e7; color: #744210; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskModerate:
+          "background: #e6fffa; color: #234e52; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskLow:
+          "background: #c6f6d5; color: #22543d; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        contentArea:
+          "background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; line-height: 1.6;",
         footer:
           "margin-top: 50px; padding-top: 40px; border-top: 1px solid #e2e8f0;",
         signatureSection:
@@ -434,7 +467,9 @@ const Document = ({ document, title, patient }) => {
   if (!document) return null;
 
   // Check if this is a SymptomReasoningReport
-  const isSymptomReasoningReport = document?.modelName === "symptomreasoningreport";
+  console.log(title)
+  const isSymptomReasoningReport =
+    title === "AI Analysis";
 
   // Prepare data for FormTemplate
   const prepareDocumentData = () => {
@@ -485,7 +520,7 @@ const Document = ({ document, title, patient }) => {
   };
 
   // Legacy view data preparation with human-readable dates
-  const allItems = isSymptomReasoningReport 
+  const allItems = isSymptomReasoningReport
     ? [] // SymptomReasoningReport doesn't use the table format
     : Object.entries(documentData).map(([key, value]) => ({
         label: formatKey(key),
@@ -519,10 +554,11 @@ const Document = ({ document, title, patient }) => {
 
   // Render SymptomReasoningReport as a summary
   const renderSymptomReasoningSummary = () => {
-    if (!isSymptomReasoningReport || !documentData.records?.[0]) return null;
-    
-    const record = documentData.records[0];
-    
+    if (!isSymptomReasoningReport) return null;
+
+    // Handle both direct record and nested records structure
+    const record = documentData.records?.[0] || documentData;
+
     return (
       <>
         {/* Risk Assessment Section */}
@@ -531,7 +567,9 @@ const Document = ({ document, title, patient }) => {
           <div className="grid document-grid">
             <div className="field-group">
               <label>Risk Level</label>
-              <div className={`field-value risk-${record.risk_level?.toLowerCase()}`}>
+              <div
+                className={`field-value risk-${record.risk_level?.toLowerCase()}`}
+              >
                 {record.risk_level}
               </div>
             </div>
@@ -542,67 +580,41 @@ const Document = ({ document, title, patient }) => {
             <div className="field-group">
               <label>Gestation</label>
               <div className="field-value">
-                {record.gestation_weeks_int} weeks (of {record.gestation_weeks_total})
+                {record.gestation_weeks_int} weeks (of{" "}
+                {record.gestation_weeks_total})
               </div>
             </div>
           </div>
         </div>
 
-        {/* Clinical Summary Section */}
-        <div className="section">
-          <h3 className="section-title">Clinical Reasoning</h3>
-          <div className="content-area">
-            <p>{record.clinical_reasoning}</p>
-          </div>
-        </div>
-
-        {/* Key Risk Factors Section */}
-        <div className="section">
-          <h3 className="section-title">Key Risk Factors</h3>
-          <div className="content-area">
-            <p>{record.key_risk_factors}</p>
-          </div>
-        </div>
-
-        {/* Primary Concerns Section */}
-        <div className="section">
-          <h3 className="section-title">Primary Concerns</h3>
-          <div className="content-area">
-            <p>{record.primary_concerns}</p>
-          </div>
-        </div>
-
-        {/* Recommendations Section */}
-        <div className="section">
-          <h3 className="section-title">Recommendations</h3>
-          <div className="content-area">
-            <p>{record.recommendations}</p>
-          </div>
-        </div>
-
-        {/* Monitoring Requirements Section */}
-        <div className="section">
-          <h3 className="section-title">Monitoring Requirements</h3>
-          <div className="content-area">
-            <p>{record.monitoring_requirements}</p>
-          </div>
-        </div>
-
-        {/* Immediate Actions Section */}
-        <div className="section">
-          <h3 className="section-title">Immediate Actions</h3>
-          <div className="content-area">
-            <p>{record.immediate_actions}</p>
-          </div>
-        </div>
-
-        {/* Follow-up Section */}
-        <div className="section">
-          <h3 className="section-title">Follow-up</h3>
-          <div className="content-area">
-            <p>{record.follow_up_timing}</p>
-          </div>
-        </div>
+        {/* Dynamic sections for all text fields */}
+        {Object.entries(record)
+          .filter(
+            ([key, value]) =>
+              typeof value === "string" &&
+              value.length > 50 && // Only show substantial text content
+              ![
+                "id",
+                "patient_id",
+                "risk_score",
+                "risk_score_raw",
+                "risk_level",
+                "gestation_weeks_int",
+                "gestation_weeks_total",
+                "prompt_version",
+                "raw_model_response",
+                "input_hash",
+                "created_at",
+              ].includes(key)
+          )
+          .map(([key, value]) => (
+            <div key={key} className="section">
+              <h3 className="section-title">{formatKey(key)}</h3>
+              <div className="content-area">
+                <p>{value}</p>
+              </div>
+            </div>
+          ))}
       </>
     );
   };
@@ -675,7 +687,9 @@ const Document = ({ document, title, patient }) => {
             {/* Complete FormTemplate for each page */}
             <FormTemplate
               title={title}
-              patientData={currentPage === 1 ? patientData : null}
+              patientData={patientData}
+              showPatientInfo={currentPage === 1}
+              className={isSymptomReasoningReport ? "ai-analysis" : ""}
               formData={formData}
               organizationName="Mobileuurka"
               logoSrc="/logo.png"
