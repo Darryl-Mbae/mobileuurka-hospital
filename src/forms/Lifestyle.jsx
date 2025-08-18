@@ -101,7 +101,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
 
     try {
       const response = await fetch(
-        `${SERVER}/patients/medical/patientLifestyle`,
+        `${SERVER}/patients/medical/patientlifestyle`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
