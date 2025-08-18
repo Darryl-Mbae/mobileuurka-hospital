@@ -365,28 +365,28 @@
 /* Risk level styling for AI Analysis */
 .form-template.ai-analysis .risk-critical {
   background: transparent;
-  color: #e53e3e;
+  /* color: #e53e3e; */
   font-weight: 600;
   padding: 0;
 }
 
 .form-template.ai-analysis .risk-high {
   background: transparent;
-  color: #dd6b20;
+  /* color: #dd6b20; */
   font-weight: 600;
   padding: 0;
 }
 
 .form-template.ai-analysis .risk-moderate {
   background: transparent;
-  color: #3182ce;
+  /* color: #3182ce; */
   font-weight: 600;
   padding: 0;
 }
 
 .form-template.ai-analysis .risk-low {
   background: transparent;
-  color: #38a169;
+  /* color: #38a169; */
   font-weight: 600;
   padding: 0;
 }
@@ -423,19 +423,16 @@
     position: relative !important;
   }
 
-  /* Print Header - Fixed at top */
+  /* Print Header - Static positioning to avoid overlap */
   .form-template .header {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    position: static !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: flex-start !important;
-    padding: 15px 0.75in !important;
+    padding: 15px 0 !important;
     border-bottom: 2px solid #000 !important;
     background: white !important;
-    z-index: 1000 !important;
+    margin-bottom: 20px !important;
     page-break-inside: avoid !important;
   }
 
@@ -501,16 +498,13 @@
     margin: 3px 0 0 0 !important;
   }
 
-  /* Print Footer - Fixed at bottom */
+  /* Print Footer - Static positioning */
   .form-template .footer {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    padding: 15px 0.75in !important;
+    position: static !important;
+    padding: 15px 0 !important;
     border-top: 2px solid #000 !important;
     background: white !important;
-    z-index: 1000 !important;
+    margin-top: 30px !important;
     page-break-inside: avoid !important;
   }
 
@@ -566,13 +560,13 @@
     margin: 3px 0 !important;
   }
 
-  /* Body content - Add margins for fixed header/footer */
+  /* Body content - Normal margins since header/footer are static */
   .form-template .section:first-of-type {
-    margin-top: 120px !important; /* Space for fixed header */
+    margin-top: 0 !important;
   }
 
   .form-template .section:last-of-type {
-    margin-bottom: 140px !important; /* Space for fixed footer */
+    margin-bottom: 0 !important;
   }
 
   .form-template .section {
@@ -663,7 +657,7 @@
   }
 
   /* Page breaks */
-  .form-template .section:nth-child(n+4) {
+  .form-template .section:nth-child(n + 4) {
     page-break-before: auto !important;
   }
 

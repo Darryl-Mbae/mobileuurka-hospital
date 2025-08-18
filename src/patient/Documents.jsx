@@ -135,6 +135,17 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     }
   }
 
+  // Helper function to get the correct date field based on document type
+  const getDocumentDate = (item, title) => {
+    if (title === "AI Analysis") {
+      // SymptomReasoningReport uses created_at or updated_at
+      return item.created_at || item.updated_at || item.date || item.timestamp;
+    } else {
+      // Triage, Lab Work, Pregnancy Journey, Infections use date or updatedAt
+      return item.date || item.updatedAt || item.updated_at || item.timestamp;
+    }
+  };
+
   const buildRecord = (array, title) => {
     // Handle case where array might not be an array (like SymptomReasoningReport)
     if (!array) return [];
@@ -180,13 +191,18 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
             : "No explanations";
         }
 
+        // Get the appropriate date field for this document type
+        const documentDate = getDocumentDate(item, title);
+
         return {
           title,
           // visit_id: item.id || "-",
-          date_of_visit: item.date || item.timestamp || "N/A",
+          date_of_visit: documentDate || "N/A",
           editor: item.editor || getUserName(item.user_id),
           source: item,
           result,
+          // Add raw date for sorting
+          sortDate: documentDate ? new Date(documentDate) : new Date(0),
         };
       }) || []
     );
@@ -200,7 +216,13 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     ...buildRecord(patient?.SymptomReasoningReport, "AI Analysis"),
   ];
 
-  const filteredRecords = realRecords.filter((record) =>
+  // Sort records by date (latest first) and then filter
+  const sortedRecords = realRecords.sort((a, b) => {
+    // Sort by date descending (latest first)
+    return b.sortDate - a.sortDate;
+  });
+
+  const filteredRecords = sortedRecords.filter((record) =>
     record.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -214,7 +236,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     getPaginatedData,
   } = usePagination({
     totalItems: filteredRecords.length,
-    initialItemsPerPage:7,
+    initialItemsPerPage: 7,
     initialPage: 1,
   });
 

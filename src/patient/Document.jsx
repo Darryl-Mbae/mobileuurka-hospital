@@ -92,10 +92,10 @@ const Document = ({ document, title, patient }) => {
         }
 
         if (useFormTemplate) {
-          // Form Template view - each page is a complete document
+          // Form Template view - each page is a complete document with proper page breaks
           allPagesHTML += `
-            <div style="${styles.formTemplate}">
-              <!-- Header Section -->
+            <div style="${styles.formTemplate}" class="print-page">
+              <!-- Header Section - Show on every page -->
               <div style="${styles.header}">
                 <div style="${styles.logo}">
                   <div style="${styles.logoImage}">
@@ -115,6 +115,7 @@ const Document = ({ document, title, patient }) => {
             month: "long",
             day: "numeric",
           })}</p>
+                  ${totalPages > 1 ? `<p style="${styles.pageNumber}">Page ${page} of ${totalPages}</p>` : ''}
                 </div>
               </div>
 
@@ -155,84 +156,53 @@ const Document = ({ document, title, patient }) => {
               ${
                 isSymptomReasoningReport
                   ? `
-                <!-- Risk Assessment Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Risk Assessment</h3>
-                  <div style="${styles.documentGrid}">
-                    <div style="${styles.fieldGroup}">
-                      <label style="${styles.fieldLabel}">Risk Level</label>
-                      <div style="${styles.fieldValue}; ${styles.riskCritical}">
-                        ${documentData.records[0].risk_level}
+                ${(() => {
+                  // Handle both direct record and nested records structure
+                  const record = documentData.records?.[0] || documentData;
+                  
+                  return `
+                    <!-- Risk Assessment Section -->
+                    <div style="${styles.section}">
+                      <h3 style="${styles.sectionTitle}">Risk Assessment</h3>
+                      <div style="${styles.documentGrid}">
+                        <div style="${styles.fieldGroup}">
+                          <label style="${styles.fieldLabel}">Risk Level</label>
+                          <div style="${styles.fieldValue}; ${styles.riskCritical}">
+                            ${record.risk_level || 'N/A'}
+                          </div>
+                        </div>
+                        <div style="${styles.fieldGroup}">
+                          <label style="${styles.fieldLabel}">Risk Score</label>
+                          <div style="${styles.fieldValue}">${record.risk_score || 'N/A'}</div>
+                        </div>
+                        <div style="${styles.fieldGroup}">
+                          <label style="${styles.fieldLabel}">Gestation</label>
+                          <div style="${styles.fieldValue}">
+                            ${record.gestation_weeks_int || 'N/A'} weeks (of ${record.gestation_weeks_total || 'N/A'})
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div style="${styles.fieldGroup}">
-                      <label style="${styles.fieldLabel}">Risk Score</label>
-                      <div style="${styles.fieldValue}">${documentData.records[0].risk_score}</div>
-                    </div>
-                    <div style="${styles.fieldGroup}">
-                      <label style="${styles.fieldLabel}">Gestation</label>
-                      <div style="${styles.fieldValue}">
-                        ${documentData.records[0].gestation_weeks_int} weeks (of ${documentData.records[0].gestation_weeks_total})
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                <!-- Clinical Reasoning Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Clinical Reasoning</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].clinical_reasoning}</p>
-                  </div>
-                </div>
-
-                <!-- Key Risk Factors Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Key Risk Factors</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].key_risk_factors}</p>
-                  </div>
-                </div>
-
-                <!-- Primary Concerns Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Primary Concerns</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].primary_concerns}</p>
-                  </div>
-                </div>
-
-                <!-- Recommendations Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Recommendations</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].recommendations}</p>
-                  </div>
-                </div>
-
-                <!-- Monitoring Requirements Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Monitoring Requirements</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].monitoring_requirements}</p>
-                  </div>
-                </div>
-
-                <!-- Immediate Actions Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Immediate Actions</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].immediate_actions}</p>
-                  </div>
-                </div>
-
-                <!-- Follow-up Section -->
-                <div style="${styles.section}">
-                  <h3 style="${styles.sectionTitle}">Follow-up</h3>
-                  <div style="${styles.contentArea}">
-                    <p>${documentData.records[0].follow_up_timing}</p>
-                  </div>
-                </div>
+                    ${Object.entries(record)
+                      .filter(([key, value]) => 
+                        typeof value === 'string' && 
+                        value.length > 50 && 
+                        !['id', 'patient_id', 'risk_score', 'risk_score_raw', 'risk_level', 'gestation_weeks_int', 'gestation_weeks_total', 'prompt_version', 'raw_model_response', 'input_hash', 'created_at'].includes(key)
+                      )
+                      .map(([key, value]) => {
+                        const formattedKey = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (l) => l.toUpperCase());
+                        return `
+                          <div style="${styles.section}">
+                            <h3 style="${styles.sectionTitle}">${formattedKey}</h3>
+                            <div style="${styles.contentArea}">
+                              <p>${value}</p>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                  `;
+                })()}
               `
                   : `
                 <div style="${styles.section}">
@@ -338,9 +308,13 @@ const Document = ({ document, title, patient }) => {
 
     // Use inline styles for perfect consistency
     const getInlineStyles = () => {
+      const baseFormTemplate = isSymptomReasoningReport 
+        ? "max-width: 800px; margin: 30px auto; padding: 20px 0; background: transparent; border: none; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #2d3748; page-break-after: always;"
+        : "max-width: 800px; margin: 30px auto; padding: 40px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #2d3748; page-break-after: always;";
+      
       return {
-        formTemplate:
-          "max-width: 800px; margin: 30px auto; padding: 40px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #2d3748; page-break-after: always;",
+        formTemplate: baseFormTemplate,
+        pageNumber: "margin: 3px 0 0 0; font-size: 0.8rem; color: #718096; font-weight: normal;",
         header:
           "display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 30px; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px;",
         logo: "display: flex; align-items: center; gap: 15px;",
@@ -354,8 +328,9 @@ const Document = ({ document, title, patient }) => {
           "margin: 0; font-size: 1.5rem; font-weight: 700; color: #2d3748;",
         recordDate: "margin: 5px 0 0 0; font-size: 0.875rem; color: #718096;",
         section: "margin-bottom: 25px;",
-        sectionTitle:
-          "margin: 0 0 15px 0; font-size: 0.95rem; font-weight: 600; color: #2d3748; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0;",
+        sectionTitle: isSymptomReasoningReport
+          ? "margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 600; color: #1a202c; padding-bottom: 0; border-bottom: none;"
+          : "margin: 0 0 15px 0; font-size: 0.95rem; font-weight: 600; color: #2d3748; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0;",
         grid: "display: grid; gap: 12px;",
         patientGrid:
           "display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr);",
@@ -366,19 +341,22 @@ const Document = ({ document, title, patient }) => {
           "display: flex; flex-direction: column; gap: 6px; grid-column: 1 / -1; margin-top: 8px;",
         fieldLabel:
           "font-size: 0.75rem; font-weight: 500; color: #4a5568; text-transform: uppercase; letter-spacing: 0.025em;",
-        fieldValue:
-          "padding: 8px 12px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.85rem; color: #2d3748; min-height: 16px; display: flex; align-items: center;",
+        fieldValue: isSymptomReasoningReport
+          ? "padding: 0; background: transparent; border: none; font-size: 0.9rem; color: #2d3748; display: flex; align-items: center;"
+          : "padding: 8px 12px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.85rem; color: #2d3748; min-height: 16px; display: flex; align-items: center;",
         emptyValue: "color: #a0aec0; font-style: italic;",
-        riskCritical:
-          "background: #fed7d7; color: #742a2a; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
+        riskCritical: isSymptomReasoningReport
+          ? "background: transparent; color: #e53e3e; font-weight: 600; padding: 0;"
+          : "background: #fed7d7; color: #742a2a; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
         riskHigh:
           "background: #fef5e7; color: #744210; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
         riskModerate:
           "background: #e6fffa; color: #234e52; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
         riskLow:
           "background: #c6f6d5; color: #22543d; font-weight: 600; padding: 4px 8px; border-radius: 4px;",
-        contentArea:
-          "background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; line-height: 1.6;",
+        contentArea: isSymptomReasoningReport
+          ? "background: transparent; border: none; padding: 0; font-size: 0.9rem; line-height: 1.6; color: #2d3748; text-align: justify;"
+          : "background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; line-height: 1.6;",
         footer:
           "margin-top: 50px; padding-top: 40px; border-top: 1px solid #e2e8f0;",
         signatureSection:
@@ -631,12 +609,12 @@ const Document = ({ document, title, patient }) => {
           <h2>{title}</h2>
         </div>
         <div className="header-right">
-          <button
+          {/* <button
             className="view-toggle"
             onClick={() => setUseFormTemplate(!useFormTemplate)}
           >
             {useFormTemplate ? "Legacy View" : "Form View"}
-          </button>
+          </button> */}
           <button className="download-button" onClick={handlePrint}>
             <IoPrintOutline />
             Download PDF
