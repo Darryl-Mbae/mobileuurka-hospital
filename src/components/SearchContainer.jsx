@@ -6,6 +6,7 @@ const SearchContainer = ({
   placeholder = "Search...", 
   onSearch, 
   onAdd, 
+  showAddButton = true,
   addButtonText = "Add",
   searchValue = "",
   onSearchChange,
@@ -56,13 +57,16 @@ const SearchContainer = ({
             <FiRefreshCw className="refresh-icon" />
           </div>
         )}
-        <div className="add-button" onClick={handleAddClick}>
-          <FiPlus className="add-icon" />
-          <span>{addButtonText}</span>
-        </div>
+        {showAddButton && (
+          <div className="add-button" onClick={handleAddClick}>
+            <FiPlus className="add-icon" />
+            <span>{addButtonText}</span>
+          </div>
+        )}
       </div>
     </div>
   )
+      
 }
 
 export default SearchContainer

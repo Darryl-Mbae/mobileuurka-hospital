@@ -11,11 +11,17 @@ import { useNavigate } from "react-router-dom";
 import { BsChatDots } from "react-icons/bs";
 import { LuUserRound } from "react-icons/lu";
 import { TbUserSquare } from "react-icons/tb";
+import { MdOutlineHistory } from "react-icons/md";
+import { useSelector } from "react-redux";
 
 const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [active, setActive] = useState(false);
   const navigate = useNavigate();
+
+  // Get user role from Redux store
+  const user = useSelector((state) => state.user.currentUser);
+  const isAdmin = user?.userTenants?.[0].role === "admin" || user?.userTenants?.[0].role === "owner" ;
 
   useEffect(() => {
     if (activeItem === "Patient") {
@@ -41,6 +47,7 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
   ];
 
   const activityItems = [
+    ...(isAdmin ? [{ name: "Logs", icon: <MdOutlineHistory /> }] : []),
     { name: "Settings", icon: <IoSettingsOutline /> },
     { name: "Feedback", icon: <BsChatDots /> },
     { name: "Alerts", icon: <FiBell />, showBadge: true },

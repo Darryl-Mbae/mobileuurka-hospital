@@ -52,6 +52,55 @@ const columns = [
   },
 
   {
+    label: "Last Login",
+    key: "lastLogin",
+    render: ({ user }) => {
+      if (!user.lastLogin) return "Never";
+
+      const lastLoginDate = new Date(user.lastLogin);
+      const now = new Date();
+
+      // Get time part
+      const timeString = lastLoginDate.toLocaleString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      // Check if it's today
+      const isToday =
+        lastLoginDate.getDate() === now.getDate() &&
+        lastLoginDate.getMonth() === now.getMonth() &&
+        lastLoginDate.getFullYear() === now.getFullYear();
+
+      if (isToday) {
+        return `${timeString}`;
+      }
+
+      // Check if it's yesterday
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+
+      const isYesterday =
+        lastLoginDate.getDate() === yesterday.getDate() &&
+        lastLoginDate.getMonth() === yesterday.getMonth() &&
+        lastLoginDate.getFullYear() === yesterday.getFullYear();
+
+      if (isYesterday) {
+        return `Yesterday ${timeString}`;
+      }
+
+      // For other days, show date without year + time
+      const dateString = lastLoginDate.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+
+      return `${dateString} ${timeString}`;
+    },
+  },
+
+  {
     label: "Joined",
     key: "joined",
     render: ({ user }) =>
@@ -75,7 +124,6 @@ const Users = ({ setActiveItem }) => {
   const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
 
-
   // Add pagination hook
   const {
     currentPage,
@@ -95,6 +143,7 @@ const Users = ({ setActiveItem }) => {
   useEffect(() => {
     if (organisations && organisations.length > 0) {
       // Extract users directly from organizations
+      console.log(organisations);
       const allUsers = organisations.flatMap(
         (org) =>
           org.users?.map((userTenant) => ({
@@ -104,6 +153,10 @@ const Users = ({ setActiveItem }) => {
             org: org.name,
             role: userTenant.role,
             createdAt: userTenant.joinedAt,
+            lastLogin:
+              userTenant.user?.lastLoginAt ||
+              userTenant.user?.lastLogin ||
+              userTenant.user?.last_login,
           })) || []
       );
 

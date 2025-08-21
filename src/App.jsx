@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "./reducers/Slices/userSlice.js";
 import Users from "./pages/Users.jsx";
+import Audit from "./pages/Audit.jsx";
 import Screening from "./pages/Screening.jsx";
 import { setOrganisations } from "./reducers/Slices/organizationSlice.js";
 import Patient from "./pages/Patient.jsx";
@@ -175,6 +176,8 @@ function App() {
       case "Staff":
       case "Users":
         return <Users setActiveItem={setActiveItem} />;
+      case "Logs":
+        return <Audit />;
       case "PatientIntake":
         return <PatientIntake setActiveItem={setActiveItem} />;
       case "Feedback":
