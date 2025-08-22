@@ -49,9 +49,14 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
     });
   };
 
-  const filteredNotes = (patient?.notes || []).filter((note) =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredNotes = (patient?.notes || []).filter((note) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      note.title.toLowerCase().includes(term) ||
+      note.notes.toLowerCase().includes(term)
+    );
+  });
+  
 
   // Add pagination hook
   const {
