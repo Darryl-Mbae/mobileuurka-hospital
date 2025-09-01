@@ -33,6 +33,7 @@ const Chat = ({ patient, user }) => {
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+  const secret = import.meta.env.VITE_CHATBOT_API
   const chats = useSelector((state) => state.chats.chats);
   const dispatch = useDispatch();
   const endpoint = 'https://healthcare-worker-chatbot-864851114868.europe-west4.run.app'
@@ -41,11 +42,11 @@ const Chat = ({ patient, user }) => {
   const API_ENDPOINTS = {
     research: {
       url: `${endpoint}/assistant_chat`, // General Research API
-      apiKey: "bc7d31f103ffe36489b4441471b8548ee0ba0b7f9c8db8b865a429ed1d0569aa46d4cb119399ca2418122dd8ee89f0d77af183904f6d7af0c5d849c96ed33e16"
+      apiKey: secret
     },
     assistant: {
       url: `${endpoint}/clinical_chat`, // Clinical Assistant API
-      apiKey: "bc7d31f103ffe36489b4441471b8548ee0ba0b7f9c8db8b865a429ed1d0569aa46d4cb119399ca2418122dd8ee89f0d77af183904f6d7af0c5d849c96ed33e16"
+      apiKey:secret
     }
   };
 
@@ -55,7 +56,7 @@ const Chat = ({ patient, user }) => {
 
   // WhatsApp message templates
   const [showWhatsAppTemplates, setShowWhatsAppTemplates] = useState(false);
-  
+
   const whatsappTemplates = [
     {
       id: 1,
@@ -69,7 +70,7 @@ const Chat = ({ patient, user }) => {
     },
     {
       id: 3,
-      title: "Post-Checkup Medication Reminder",
+      title: "Post Medication Checkup",
       message: "Hello {{1}}, We hope you're recovering well after your visit on {{VisitDate}}. This is a quick check-in to see how you're feeling after starting your new medication. Have you noticed any changes in your symptoms?"
     }
   ];
@@ -287,7 +288,7 @@ const Chat = ({ patient, user }) => {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
 
         botResponseText = `✅ WhatsApp message sent successfully to ${patient?.name || 'patient'}!\n\n**Message sent:** "${message}"`;
-        
+
         // Show templates again after sending
         setTimeout(() => {
           setShowWhatsAppTemplates(true);
@@ -412,17 +413,17 @@ const Chat = ({ patient, user }) => {
   // Handle WhatsApp template selection
   const handleTemplateSelection = (template) => {
     let personalizedMessage = template.message;
-    
+
     // Replace placeholders with actual values
     if (patient) {
       personalizedMessage = personalizedMessage.replace('{{1}}', patient.name || '[Patient Name]');
     }
-    
+
     // Replace doctor name with current user
     if (user) {
       personalizedMessage = personalizedMessage.replace('{{2}}', user.name || '[Doctor Name]');
     }
-    
+
     // For appointment date/time placeholders, use generic placeholders for now
     personalizedMessage = personalizedMessage
       .replace('{{3}}', '[Date]')
@@ -456,7 +457,7 @@ const Chat = ({ patient, user }) => {
       };
 
       setMessages((prev) => [...prev, botMessage]);
-      
+
       // Show templates again after sending
       setTimeout(() => {
         setShowWhatsAppTemplates(true);
@@ -523,7 +524,7 @@ const Chat = ({ patient, user }) => {
           )}
         </div>
       </div>
-      
+
       <div className="mid">
         {selectedOption === "whatsapp" ? (
           // WhatsApp Mode - Show messages and templates
@@ -596,43 +597,35 @@ const Chat = ({ patient, user }) => {
                     >
                       {`**WhatsApp Message Templates**
 
-Choose a template to send to ${patient?.name || 'the patient'}:`}
+Choose a template to send to ${patient?.name || 'the patient'}`}
                     </ReactMarkdown>
 
                     <div style={{
                       display: "flex",
                       flexDirection: "column",
                       gap: "10px",
-                      marginTop: "15px"
+                      marginTop: "15px",
+                      marginBottom:"12px"
                     }}>
                       {whatsappTemplates.map((template) => (
                         <button
                           key={template.id}
                           onClick={() => handleTemplateSelection(template)}
                           style={{
-                            padding: "12px 16px",
-                            backgroundColor: "#25D366",
-                            color: "white",
+                            padding: "10px 20px",
+                            backgroundColor: "whitesmoke",
+                            color: "black",
                             border: "none",
                             borderRadius: "8px",
                             cursor: "pointer",
                             fontSize: "14px",
                             fontWeight: "500",
-                            textAlign: "left",
-                            transition: "background-color 0.2s",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                            transition: "background-color 0.2s"
                           }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = "#128C7E"}
-                          onMouseOut={(e) => e.target.style.backgroundColor = "#25D366"}
+                          onMouseOver={(e) => e.target.style.backgroundColor = "#E6E6FA"}
+                          onMouseOut={(e) => e.target.style.backgroundColor = "whitesmoke"}
                         >
-                          <div style={{ fontWeight: "600", marginBottom: "4px" }}>
-                            {template.title}
-                          </div>
-                          <div style={{ fontSize: "12px", opacity: "0.9" }}>
-                            {template.message.length > 80 
-                              ? template.message.substring(0, 80) + "..." 
-                              : template.message}
-                          </div>
+                          {template.title}
                         </button>
                       ))}
                     </div>
@@ -701,7 +694,7 @@ Choose a template to send to ${patient?.name || 'the patient'}:`}
                         }
                       }}
                     >
-                      🔬 Research Mode
+                       Research Mode
                     </button>
                     <button
                       onClick={() => handleModeSelection("assistant")}
@@ -728,7 +721,7 @@ Choose a template to send to ${patient?.name || 'the patient'}:`}
                         }
                       }}
                     >
-                      🩺 Assistant Mode
+                       Assistant Mode
                     </button>
                   </div>
 
@@ -742,7 +735,7 @@ Choose a template to send to ${patient?.name || 'the patient'}:`}
                     <div><strong>Research:</strong> In-depth analysis, literature reviews, evidence-based research</div>
                     <div style={{ marginTop: "5px" }}><strong>Assistant:</strong> Clinical decision support, patient care guidance, practical help</div>
                   </div>
-                </div>               
+                </div>
               )}
 
               {/* Show WhatsApp templates for empty state when using WhatsApp */}
@@ -769,50 +762,34 @@ Choose a template to send to ${patient?.name || 'the patient'}:`}
                     color: "#666",
                     fontSize: "14px"
                   }}>
-                    Choose a template to send to {patient?.name || 'the patient'}:
+                    Choose a template to send to {patient?.name || 'the patient'}
                   </p>
 
                   <div style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "12px"
+                    gap: "12px",
+                    paddingBottom:"12px"
                   }}>
                     {whatsappTemplates.map((template) => (
                       <button
                         key={template.id}
                         onClick={() => handleTemplateSelection(template)}
                         style={{
-                          padding: "15px 18px",
-                          backgroundColor: "#25D366",
-                          color: "white",
+                          padding: "10px 20px",
+                          backgroundColor: "whitesmoke",
+                          color: "black",
                           border: "none",
-                          borderRadius: "10px",
+                          borderRadius: "8px",
                           cursor: "pointer",
                           fontSize: "14px",
                           fontWeight: "500",
-                          textAlign: "left",
-                          transition: "all 0.2s",
-                          boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+                          transition: "background-color 0.2s"
                         }}
-                        onMouseOver={(e) => {
-                          e.target.style.backgroundColor = "#128C7E";
-                          e.target.style.transform = "translateY(-1px)";
-                          e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
-                        }}
-                        onMouseOut={(e) => {
-                          e.target.style.backgroundColor = "#25D366";
-                          e.target.style.transform = "translateY(0)";
-                          e.target.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)";
-                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = "#E6E6FA"}
+                        onMouseOut={(e) => e.target.style.backgroundColor = "whitesmoke"}
                       >
-                        <div style={{ fontWeight: "600", marginBottom: "6px" }}>
-                          {template.title}
-                        </div>
-                        <div style={{ fontSize: "12px", opacity: "0.9", lineHeight: "1.3" }}>
-                          {template.message.length > 100 
-                            ? template.message.substring(0, 100) + "..." 
-                            : template.message}
-                        </div>
+                        {template.title}
                       </button>
                     ))}
                   </div>
@@ -850,7 +827,6 @@ Choose a template to send to ${patient?.name || 'the patient'}:`}
                               {...props}
                             />
                           ),
-                          // Customize how certain elements are rendered
                           strong: ({ node, ...props }) => (
                             <strong style={{ fontWeight: 600 }} {...props} />
                           ),
@@ -891,7 +867,6 @@ Choose a template to send to ${patient?.name || 'the patient'}:`}
                               {...props}
                             />
                           ),
-                          // Table components with proper spacing
                           table: ({ node, ...props }) => (
                             <table
                               style={{
@@ -990,8 +965,8 @@ How would you like me to assist you today?`}
                           onClick={() => handleModeSelection("research")}
                           style={{
                             padding: "10px 20px",
-                            backgroundColor: "#007bff",
-                            color: "white",
+                            backgroundColor: "whitesmoke",
+                            color: "black",
                             border: "none",
                             borderRadius: "8px",
                             cursor: "pointer",
@@ -999,17 +974,17 @@ How would you like me to assist you today?`}
                             fontWeight: "500",
                             transition: "background-color 0.2s"
                           }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = "#0056b3"}
-                          onMouseOut={(e) => e.target.style.backgroundColor = "#007bff"}
+                          onMouseOver={(e) => e.target.style.backgroundColor = "#E6E6FA"}
+                          onMouseOut={(e) => e.target.style.backgroundColor = "whitesmoke"}
                         >
-                          🔬 Research Mode
+                          Research Mode
                         </button>
                         <button
                           onClick={() => handleModeSelection("assistant")}
                           style={{
                             padding: "10px 20px",
-                            backgroundColor: "#28a745",
-                            color: "white",
+                            backgroundColor: "whitesmoke",
+                            color: "black",
                             border: "none",
                             borderRadius: "8px",
                             cursor: "pointer",
@@ -1017,18 +992,18 @@ How would you like me to assist you today?`}
                             fontWeight: "500",
                             transition: "background-color 0.2s"
                           }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = "#1e7e34"}
-                          onMouseOut={(e) => e.target.style.backgroundColor = "#28a745"}
+                          onMouseOver={(e) => e.target.style.backgroundColor = "#E6E6FA"}
+                          onMouseOut={(e) => e.target.style.backgroundColor = "whitesmoke"}
                         >
-                          🩺 Assistant Mode
+                          Assistant Mode
                         </button>
                       </div>
 
                       <div style={{
-                        marginTop: "10px",
+                        marginTop: "30px",
                         fontSize: "12px",
                         color: "#666",
-                        fontStyle: "italic"
+                        // fontStyle: "italic"
                       }}>
                         <strong>Research:</strong> In-depth analysis, literature reviews, evidence-based research<br />
                         <strong>Assistant:</strong> Clinical decision support, patient care guidance, practical help
@@ -1049,6 +1024,7 @@ How would you like me to assist you today?`}
           )
         )}
       </div>
+
       <div className="bottom">
         <div className="search-container">
           <div className="attach">
