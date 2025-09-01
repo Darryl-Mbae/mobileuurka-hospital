@@ -104,7 +104,12 @@ const LoginForm = memo(({
           />
           <span>Remember me</span>
         </label>
-        <a href="/forgot-password">Forgot password?</a>
+        <span 
+          onClick={() => window.location.href = "/forgot-password"}
+          style={{ cursor: "pointer", color: "var(--primary-color)" }}
+        >
+          Forgot password?
+        </span>
       </div>
 
       {error && <p className="error-message">{error}</p>}

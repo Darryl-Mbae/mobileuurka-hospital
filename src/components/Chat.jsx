@@ -12,6 +12,7 @@ import { setChats } from "../reducers/Slices/chatSlice";
 import DropdownMenu from "./DropdownMenu";
 import Articles from "../assets/images/Articles.png";
 import Whatsapp from "../assets/images/whatsapplogo.png";
+
 // Function to clean up text by replacing multiple line breaks with single ones
 const cleanText = (text) => {
   if (!text) return text;
@@ -34,17 +35,54 @@ const Chat = ({ patient, user }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const chats = useSelector((state) => state.chats.chats);
   const dispatch = useDispatch();
+  const endpoint = 'https://healthcare-worker-chatbot-864851114868.europe-west4.run.app'
+
+  // API endpoints for different modes - easy to change
+  const API_ENDPOINTS = {
+    research: {
+      url: `${endpoint}/assistant_chat`, // General Research API
+      apiKey: "bc7d31f103ffe36489b4441471b8548ee0ba0b7f9c8db8b865a429ed1d0569aa46d4cb119399ca2418122dd8ee89f0d77af183904f6d7af0c5d849c96ed33e16"
+    },
+    assistant: {
+      url: `${endpoint}/clinical_chat`, // Clinical Assistant API
+      apiKey: "bc7d31f103ffe36489b4441471b8548ee0ba0b7f9c8db8b865a429ed1d0569aa46d4cb119399ca2418122dd8ee89f0d77af183904f6d7af0c5d849c96ed33e16"
+    }
+  };
 
   const [selectedOption, setSelectedOption] = useState("sabi"); // Default option
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [sabiMode, setSabiMode] = useState("assistant"); // Default Sabi mode: "research" or "assistant"
+  const [showModeSelection, setShowModeSelection] = useState(false);
 
-  // Coming soon mode - only for WhatsApp, Sabi works normally
-  const [isWhatsAppEnabled, setIsWhatsAppEnabled] = useState(false);
+  // WhatsApp message templates
+  const [showWhatsAppTemplates, setShowWhatsAppTemplates] = useState(false);
+  
+  const whatsappTemplates = [
+    {
+      id: 1,
+      title: "Appointment Reminder",
+      message: "Hello {{1}}, This is a reminder of your appointment with Dr. {{2}} on {{3}} at {{4}}. Please confirm or reschedule below."
+    },
+    {
+      id: 2,
+      title: "Weekly Checkup",
+      message: "Hello {{1}}, How have you been feeling this week? Have you been having any complaints or aches?"
+    },
+    {
+      id: 3,
+      title: "Post-Checkup Medication Reminder",
+      message: "Hello {{1}}, We hope you're recovering well after your visit on {{VisitDate}}. This is a quick check-in to see how you're feeling after starting your new medication. Have you noticed any changes in your symptoms?"
+    }
+  ];
 
-  // Chat history loading - works for Sabi, disabled for WhatsApp
+  // Chat history loading - works for Sabi, show templates for WhatsApp
   useEffect(() => {
     if (selectedOption === "sabi" && user && user.id) {
       getChats();
+    } else if (selectedOption === "whatsapp") {
+      // Show WhatsApp templates after a brief delay
+      setTimeout(() => {
+        setShowWhatsAppTemplates(true);
+      }, 500);
     }
   }, [user, selectedOption]);
 
@@ -52,6 +90,12 @@ const Chat = ({ patient, user }) => {
     if (selectedOption === "sabi" && chats && chats.length > 0) {
       const transformedMessages = transformChatsToMessages(chats);
       setMessages(transformedMessages);
+
+      // Check if we should show mode selection
+      checkAndShowModeSelection(transformedMessages);
+    } else if (selectedOption === "whatsapp") {
+      // For WhatsApp, show templates after messages are loaded or if no messages
+      setShowWhatsAppTemplates(true);
     }
   }, [chats, selectedOption]);
 
@@ -59,6 +103,10 @@ const Chat = ({ patient, user }) => {
   useEffect(() => {
     if (selectedOption === "sabi" && user && user.id) {
       getChats();
+    } else if (selectedOption === "whatsapp") {
+      // Reset messages and show templates for WhatsApp
+      setMessages([]);
+      setShowWhatsAppTemplates(true);
     }
   }, [selectedOption, patient?.id]); // Refetch when type or patient changes
 
@@ -120,6 +168,54 @@ const Chat = ({ patient, user }) => {
     });
 
     return result;
+  };
+
+  // Check if last message was more than an hour ago
+  const checkAndShowModeSelection = (messages) => {
+    if (messages.length === 0) return;
+
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.sender === "bot") {
+      // Get the last chat from the original data to get the full timestamp
+      const lastChat = chats[chats.length - 1];
+      if (lastChat) {
+        const lastMessageTime = new Date(lastChat.date);
+        const currentTime = new Date();
+        const hoursDifference = (currentTime - lastMessageTime) / (1000 * 60 * 60);
+
+        if (hoursDifference > 1) {
+          setShowModeSelection(true);
+        }
+      }
+    }
+  };
+
+  // Handle mode selection
+  const handleModeSelection = (mode) => {
+    setSabiMode(mode);
+    setShowModeSelection(false);
+
+    // Add a bot message confirming the mode selection
+    const modeMessage = {
+      id: Date.now(),
+      text: `Great! I've switched to **${mode.charAt(0).toUpperCase() + mode.slice(1)} mode**. ${mode === "research"
+        ? "I'll help you with in-depth research and analysis of medical topics, literature reviews, and evidence-based information."
+        : "I'll assist you with clinical decision-making, patient care guidance, and practical healthcare support."
+        }`,
+      sender: "bot",
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setMessages((prev) => [...prev, modeMessage]);
+  };
+
+  // Toggle between modes when clicking the badge
+  const toggleSabiMode = () => {
+    const newMode = sabiMode === "research" ? "assistant" : "research";
+    handleModeSelection(newMode);
   };
 
   // Auto-resize textarea function
@@ -187,42 +283,58 @@ const Chat = ({ patient, user }) => {
       let botResponseText;
 
       if (selectedOption === "whatsapp") {
-        // Handle WhatsApp message - dummy response for testing
+        // Handle WhatsApp message - simulate sending
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
 
-        const whatsappResponses = [
-          "✅ WhatsApp message sent successfully to patient!",
-          "📱 Message delivered via WhatsApp",
-          "✉️ WhatsApp notification sent to patient's phone",
-          "🔔 Patient will receive this message on WhatsApp shortly",
-          "📲 WhatsApp message queued for delivery",
-        ];
-
-        // Get random response
-        botResponseText =
-          whatsappResponses[
-            Math.floor(Math.random() * whatsappResponses.length)
-          ];
+        botResponseText = `✅ WhatsApp message sent successfully to ${patient?.name || 'patient'}!\n\n**Message sent:** "${message}"`;
+        
+        // Show templates again after sending
+        setTimeout(() => {
+          setShowWhatsAppTemplates(true);
+        }, 2000);
       } else {
-        // Handle Sabi message - existing chatbot logic
-        const res = await fetch(
-          "https://healthcare-worker-chatbot-864851114868.europe-west4.run.app",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-API-Key": "EKg84btQ8ySs3bbbUIm8Ut5y9uznO4Ookmsd-PGxwdg",
-            },
-            body: JSON.stringify({
-              user_id: user.id,
-              user_chat: message,
-              schema_name: "org",
-            }),
-          }
-        );
+        // Handle Sabi message - use different API based on mode
+        const apiConfig = API_ENDPOINTS[sabiMode];
+        let requestBody;
+
+        if (sabiMode === "assistant") {
+          // Clinical chat API for assistant mode (clinical decision support)
+          requestBody = {
+            user_id: user.id,
+            patient_id: patient?.id,
+            schema_name: "org",
+            question: message
+          };
+        } else {
+          // Assistant chat API for research mode (general research)
+          requestBody = {
+            user_id: user.id,
+            user_chat: message,
+            schema_name: "org"
+          };
+        }
+
+        const res = await fetch(apiConfig.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": apiConfig.apiKey,
+          },
+          body: JSON.stringify(requestBody),
+        });
 
         const data = await res.json();
-        botResponseText = data.response || "Okay, I've noted that!";
+
+        if (sabiMode === "assistant") {
+          // Clinical chat response format (for assistant mode)
+          botResponseText = data.answer || "I couldn't find an answer to your clinical question.";
+
+          // The clinical API already returns well-formatted text with sections
+          // No need to reformat since your example shows it's already properly structured
+        } else {
+          // Assistant chat response format (for research mode)
+          botResponseText = data.response || "I couldn't find information on that topic.";
+        }
       }
 
       // Clean the bot response text to remove excessive line breaks
@@ -297,78 +409,60 @@ const Chat = ({ patient, user }) => {
     }
   };
 
-  const handleExampleClick = (exampleText) => {
-    setMessage(exampleText);
-    setShowSuggestions(false); // Hide suggestions after clicking
-    // Optionally auto-send the message
-    // handleSendMessage();
-  };
+  // Handle WhatsApp template selection
+  const handleTemplateSelection = (template) => {
+    let personalizedMessage = template.message;
+    
+    // Replace placeholders with actual values
+    if (patient) {
+      personalizedMessage = personalizedMessage.replace('{{1}}', patient.name || '[Patient Name]');
+    }
+    
+    // Replace doctor name with current user
+    if (user) {
+      personalizedMessage = personalizedMessage.replace('{{2}}', user.name || '[Doctor Name]');
+    }
+    
+    // For appointment date/time placeholders, use generic placeholders for now
+    personalizedMessage = personalizedMessage
+      .replace('{{3}}', '[Date]')
+      .replace('{{4}}', '[Time]')
+      .replace('{{VisitDate}}', '[Visit Date]');
 
-  const renderSuggestions = () => (
-    <div className="examples">
-      {selectedOption === "sabi" ? (
-        <>
-          <div
-            className="example"
-            onClick={() =>
-              handleExampleClick("Generate a clinical summary for this patient")
-            }
-          >
-            <div className="smlogo">
-              <MdBubbleChart />
-            </div>
-            <div className="title">Generate a clinical summary</div>
-            <div className="subtitle">
-              Analyzing symptoms, meds, allergies and labwork
-            </div>
-          </div>
-          <div
-            className="example"
-            onClick={() =>
-              handleExampleClick(
-                "What are the latest vital signs for this patient?"
-              )
-            }
-          >
-            <div className="smlogo">
-              <MdBubbleChart />
-            </div>
-            <div className="title">Check vital signs</div>
-            <div className="subtitle">
-              Review recent measurements and trends
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div
-            className="example"
-            onClick={() =>
-              handleExampleClick("Send appointment reminder to patient")
-            }
-          >
-            <div className="smlogo">
-              <MdBubbleChart />
-            </div>
-            <div className="title">Appointment reminder</div>
-            <div className="subtitle">Send via WhatsApp to patient</div>
-          </div>
-          <div
-            className="example"
-            onClick={() =>
-              handleExampleClick("Send medication reminder to patient")
-            }
-          >
-            <div className="smlogo">
-              <MdBubbleChart />
-            </div>
-            <div className="title">Medication reminder</div>
-            <div className="subtitle">Remind patient to take medications</div>
-          </div>
-        </>
-      )}
-    </div>
-  );
+    // Add the template message as a user message
+    const userMessage = {
+      id: Date.now(),
+      text: personalizedMessage,
+      sender: "user",
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setShowWhatsAppTemplates(false);
+
+    // Simulate sending WhatsApp message
+    setTimeout(() => {
+      const botMessage = {
+        id: Date.now() + 1,
+        text: `✅ WhatsApp message sent successfully to ${patient?.name || 'patient'}!\n\n**Message sent:** "${personalizedMessage}"`,
+        sender: "bot",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+      
+      // Show templates again after sending
+      setTimeout(() => {
+        setShowWhatsAppTemplates(true);
+      }, 2000);
+    }, 1000);
+  };
 
   const logonOptions = [
     {
@@ -386,7 +480,7 @@ const Chat = ({ patient, user }) => {
   return (
     <div className="chat-page">
       <div className="top">
-        <div className="chat-header">
+        <div className="chat-header" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <DropdownMenu
             data={logonOptions}
             selected={selectedOption}
@@ -395,158 +489,49 @@ const Chat = ({ patient, user }) => {
             fontSize="1em"
             bg="transparent"
           />
-        </div>
-        <div className="header-actions">
-          <button
-            className="suggestions-toggle"
-            onClick={() => setShowSuggestions(!showSuggestions)}
-            title="Toggle suggestions"
-          >
-            <MdBubbleChart />
-          </button>
-          {/* <HiDotsHorizontal style={{ fontSize: "20px" }} /> */}
+          {selectedOption === "sabi" && (
+            <div
+              onClick={toggleSabiMode}
+              style={{
+                padding: "4px 8px",
+                backgroundColor: sabiMode === "research" ? "#e3f2fd" : "#e8f5e8",
+                color: sabiMode === "research" ? "#1976d2" : "#2e7d32",
+                borderRadius: "12px",
+                fontSize: "12px",
+                fontWeight: "500",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                userSelect: "none",
+                border: "1px solid",
+                borderColor: sabiMode === "research" ? "#bbdefb" : "#c8e6c8"
+              }}
+              onMouseOver={(e) => {
+                e.target.style.opacity = "0.8";
+                e.target.style.transform = "scale(0.98)";
+              }}
+              onMouseOut={(e) => {
+                e.target.style.opacity = "1";
+                e.target.style.transform = "scale(1)";
+              }}
+              title={`Click to switch to ${sabiMode === "research" ? "Assistant" : "Research"} mode`}
+            >
+              {sabiMode === "research" ? "🔬" : "🩺"} {sabiMode.charAt(0).toUpperCase() + sabiMode.slice(1)}
+            </div>
+          )}
         </div>
       </div>
+      
       <div className="mid">
-        {/* Suggestions section - always available when toggled */}
-        {showSuggestions && (
-          <div className="suggestions-overlay">{renderSuggestions()}</div>
-        )}
-
-        {selectedOption === "whatsapp" && !isWhatsAppEnabled ? (
-          // WhatsApp Coming Soon - Show as bot message
-          <div className="messages">
-            <div className="message bot-message">
-              <div className="message-content">
-                <div className="message-text">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw]}
-                    components={{
-                      h3: ({ node, ...props }) => (
-                        <h3
-                          style={{ fontSize: "1.1em", fontWeight: 800 }}
-                          {...props}
-                        />
-                      ),
-                      h2: ({ node, ...props }) => (
-                        <h3
-                          style={{ fontSize: "1.1em", fontWeight: 800 }}
-                          {...props}
-                        />
-                      ),
-                      h1: ({ node, ...props }) => (
-                        <h3
-                          style={{ fontSize: "1.1em", fontWeight: 800 }}
-                          {...props}
-                        />
-                      ),
-                      strong: ({ node, ...props }) => (
-                        <strong style={{ fontWeight: 600 }} {...props} />
-                      ),
-                      em: ({ node, ...props }) => (
-                        <em style={{ fontStyle: "italic" }} {...props} />
-                      ),
-                      p: ({ node, ...props }) => (
-                        <p
-                          style={{
-                            margin: "0.8em 0",
-                            wordWrap: "break-word",
-                            wordBreak: "break-word",
-                            overflowWrap: "break-word",
-                            lineHeight: "1.5",
-                          }}
-                          {...props}
-                        />
-                      ),
-                      ul: ({ node, ...props }) => (
-                        <ul
-                          style={{
-                            margin: "0.7rem",
-                            padding: "0",
-                            wordWrap: "break-word",
-                            wordBreak: "break-word",
-                          }}
-                          {...props}
-                        />
-                      ),
-                      li: ({ node, ...props }) => (
-                        <li
-                          style={{
-                            margin: "0",
-                            padding: "0",
-                            wordWrap: "break-word",
-                            wordBreak: "break-word",
-                          }}
-                          {...props}
-                        />
-                      ),
-                    }}
-                  >
-                    {
-`#  WhatsApp Integration - Coming Soon!
-
-Hi there! I'm excited to let you know that **WhatsApp integration** is currently under development and will be available soon.
-
-##  Expected Features:
-
-###  **Appointment Management**
-- Automated appointment reminders
-- Confirmation requests
-- Rescheduling notifications
-
-###  **Direct Patient Communication**
-- Send personalized messages
-- Secure patient messaging
-- Two-way communication
-
-### **Health Alerts**
-- Important health updates
-- Emergency notifications
-- Preventive care reminders
-
----
-
-**We're working hard to bring you seamless WhatsApp integration for better patient communication. Stay tuned for updates!**
-
-*In the meantime, feel free to switch to the Sabi tab for AI-powered clinical assistance.*`
-}
-                  </ReactMarkdown>
-                </div>
-                <div className="message-time">
-                  {new Date().toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : // Regular Chat Mode (when isChatEnabled is true)
-        messages.length === 0 ? (
-          <div className="new">
-            <div className="b-logo">
-              <img src="/logo.png" alt="logo" />
-            </div>
-            <h3 className="gradient-text">Hi, {user?.name?.split(" ")[0]}</h3>
-            <h4>Can I help you with anything?</h4>
-            <div className="bouncing-loader">
-              <div className="bouncing-dot"></div>
-              <div className="bouncing-dot"></div>
-              <div className="bouncing-dot"></div>
-            </div>
-
-            {/* Show suggestions by default when no messages */}
-            {renderSuggestions()}
-          </div>
-        ) : (
+        {selectedOption === "whatsapp" ? (
+          // WhatsApp Mode - Show messages and templates
           <div className="messages">
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`message ${
-                  msg.sender === "user" ? "user-message" : "bot-message"
-                }`}
+                className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}
               >
                 <div className="message-content">
                   <div className="message-text">
@@ -572,7 +557,6 @@ Hi there! I'm excited to let you know that **WhatsApp integration** is currently
                             {...props}
                           />
                         ),
-                        // Customize how certain elements are rendered
                         strong: ({ node, ...props }) => (
                           <strong style={{ fontWeight: 600 }} {...props} />
                         ),
@@ -591,82 +575,6 @@ Hi there! I'm excited to let you know that **WhatsApp integration** is currently
                             {...props}
                           />
                         ),
-                        ul: ({ node, ...props }) => (
-                          <ul
-                            style={{
-                              margin: "0.7rem",
-                              padding: "0",
-                              wordWrap: "break-word",
-                              wordBreak: "break-word",
-                            }}
-                            {...props}
-                          />
-                        ),
-                        li: ({ node, ...props }) => (
-                          <li
-                            style={{
-                              margin: "0",
-                              padding: "0",
-                              wordWrap: "break-word",
-                              wordBreak: "break-word",
-                            }}
-                            {...props}
-                          />
-                        ),
-                        // Table components with proper spacing
-                        table: ({ node, ...props }) => (
-                          <table
-                            style={{
-                              margin: "8px 0",
-                              borderCollapse: "collapse",
-                              width: "100%",
-                              fontSize: "0.85em",
-                              border: "1px solid #ddd",
-                              borderRadius: "6px",
-                              overflow: "hidden",
-                            }}
-                            {...props}
-                          />
-                        ),
-                        th: ({ node, ...props }) => (
-                          <th
-                            style={{
-                              padding: "8px 12px",
-                              textAlign: "left",
-                              backgroundColor: "#f8f9fa",
-                              fontWeight: 600,
-                              borderBottom: "2px solid #dee2e6",
-                              wordWrap: "break-word",
-                              wordBreak: "break-word",
-                            }}
-                            {...props}
-                          />
-                        ),
-                        td: ({ node, ...props }) => (
-                          <td
-                            style={{
-                              padding: "8px 12px",
-                              textAlign: "left",
-                              borderBottom: "1px solid #eee",
-                              wordWrap: "break-word",
-                              wordBreak: "break-word",
-                              verticalAlign: "top",
-                            }}
-                            {...props}
-                          />
-                        ),
-                        tr: ({ node, ...props }) => (
-                          <tr
-                            style={{
-                              backgroundColor:
-                                props.children &&
-                                props.children.length % 2 === 0
-                                  ? "#f9f9f9"
-                                  : "transparent",
-                            }}
-                            {...props}
-                          />
-                        ),
                       }}
                     >
                       {msg.text}
@@ -676,19 +584,469 @@ Hi there! I'm excited to let you know that **WhatsApp integration** is currently
                 </div>
               </div>
             ))}
-            {isBotTyping && (
+
+            {/* WhatsApp Message Templates */}
+            {showWhatsAppTemplates && (
               <div className="message bot-message">
                 <div className="message-content">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                  <div className="message-text">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                    >
+                      {`**WhatsApp Message Templates**
+
+Choose a template to send to ${patient?.name || 'the patient'}:`}
+                    </ReactMarkdown>
+
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                      marginTop: "15px"
+                    }}>
+                      {whatsappTemplates.map((template) => (
+                        <button
+                          key={template.id}
+                          onClick={() => handleTemplateSelection(template)}
+                          style={{
+                            padding: "12px 16px",
+                            backgroundColor: "#25D366",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            textAlign: "left",
+                            transition: "background-color 0.2s",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                          }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = "#128C7E"}
+                          onMouseOut={(e) => e.target.style.backgroundColor = "#25D366"}
+                        >
+                          <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                            {template.title}
+                          </div>
+                          <div style={{ fontSize: "12px", opacity: "0.9" }}>
+                            {template.message.length > 80 
+                              ? template.message.substring(0, 80) + "..." 
+                              : template.message}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="message-time">
+                    {new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
+        ) : (
+          // Regular Chat Mode for Sabi
+          messages.length === 0 ? (
+            <div className="new">
+              {/* Show mode selection for empty state when using Sabi */}
+              {selectedOption === "sabi" && (
+                <div style={{
+                  marginTop: "30px",
+                  padding: "20px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "12px",
+                  maxWidth: "400px",
+                  margin: "30px auto 0"
+                }}>
+                  <h5 style={{
+                    textAlign: "center",
+                    marginBottom: "15px",
+                    color: "#333",
+                    fontWeight: "600"
+                  }}>
+                    Choose your assistance mode:
+                  </h5>
+
+                  <div style={{
+                    display: "flex",
+                    gap: "10px",
+                    justifyContent: "center",
+                    flexWrap: "wrap"
+                  }}>
+                    <button
+                      onClick={() => handleModeSelection("research")}
+                      style={{
+                        padding: "12px 20px",
+                        backgroundColor: sabiMode === "research" ? "#007bff" : "#e9ecef",
+                        color: sabiMode === "research" ? "white" : "#495057",
+                        border: "none",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        transition: "all 0.2s",
+                        minWidth: "140px"
+                      }}
+                      onMouseOver={(e) => {
+                        if (sabiMode !== "research") {
+                          e.target.style.backgroundColor = "#dee2e6";
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (sabiMode !== "research") {
+                          e.target.style.backgroundColor = "#e9ecef";
+                        }
+                      }}
+                    >
+                      🔬 Research Mode
+                    </button>
+                    <button
+                      onClick={() => handleModeSelection("assistant")}
+                      style={{
+                        padding: "12px 20px",
+                        backgroundColor: sabiMode === "assistant" ? "#28a745" : "#e9ecef",
+                        color: sabiMode === "assistant" ? "white" : "#495057",
+                        border: "none",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        transition: "all 0.2s",
+                        minWidth: "140px"
+                      }}
+                      onMouseOver={(e) => {
+                        if (sabiMode !== "assistant") {
+                          e.target.style.backgroundColor = "#dee2e6";
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (sabiMode !== "assistant") {
+                          e.target.style.backgroundColor = "#e9ecef";
+                        }
+                      }}
+                    >
+                      🩺 Assistant Mode
+                    </button>
+                  </div>
+
+                  <div style={{
+                    marginTop: "15px",
+                    fontSize: "12px",
+                    color: "#666",
+                    textAlign: "center",
+                    lineHeight: "1.4"
+                  }}>
+                    <div><strong>Research:</strong> In-depth analysis, literature reviews, evidence-based research</div>
+                    <div style={{ marginTop: "5px" }}><strong>Assistant:</strong> Clinical decision support, patient care guidance, practical help</div>
+                  </div>
+                </div>               
+              )}
+
+              {/* Show WhatsApp templates for empty state when using WhatsApp */}
+              {selectedOption === "whatsapp" && showWhatsAppTemplates && (
+                <div style={{
+                  marginTop: "30px",
+                  padding: "20px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "12px",
+                  maxWidth: "500px",
+                  margin: "30px auto 0"
+                }}>
+                  <h5 style={{
+                    textAlign: "center",
+                    marginBottom: "15px",
+                    color: "#333",
+                    fontWeight: "600"
+                  }}>
+                    WhatsApp Message Templates
+                  </h5>
+                  <p style={{
+                    textAlign: "center",
+                    marginBottom: "20px",
+                    color: "#666",
+                    fontSize: "14px"
+                  }}>
+                    Choose a template to send to {patient?.name || 'the patient'}:
+                  </p>
+
+                  <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px"
+                  }}>
+                    {whatsappTemplates.map((template) => (
+                      <button
+                        key={template.id}
+                        onClick={() => handleTemplateSelection(template)}
+                        style={{
+                          padding: "15px 18px",
+                          backgroundColor: "#25D366",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "10px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          textAlign: "left",
+                          transition: "all 0.2s",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.backgroundColor = "#128C7E";
+                          e.target.style.transform = "translateY(-1px)";
+                          e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.backgroundColor = "#25D366";
+                          e.target.style.transform = "translateY(0)";
+                          e.target.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)";
+                        }}
+                      >
+                        <div style={{ fontWeight: "600", marginBottom: "6px" }}>
+                          {template.title}
+                        </div>
+                        <div style={{ fontSize: "12px", opacity: "0.9", lineHeight: "1.3" }}>
+                          {template.message.length > 100 
+                            ? template.message.substring(0, 100) + "..." 
+                            : template.message}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="messages">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}
+                >
+                  <div className="message-content">
+                    <div className="message-text">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          h3: ({ node, ...props }) => (
+                            <h3
+                              style={{ fontSize: "1.1em", fontWeight: 800 }}
+                              {...props}
+                            />
+                          ),
+                          h2: ({ node, ...props }) => (
+                            <h3
+                              style={{ fontSize: "1.1em", fontWeight: 800 }}
+                              {...props}
+                            />
+                          ),
+                          h1: ({ node, ...props }) => (
+                            <h3
+                              style={{ fontSize: "1.1em", fontWeight: 800 }}
+                              {...props}
+                            />
+                          ),
+                          // Customize how certain elements are rendered
+                          strong: ({ node, ...props }) => (
+                            <strong style={{ fontWeight: 600 }} {...props} />
+                          ),
+                          em: ({ node, ...props }) => (
+                            <em style={{ fontStyle: "italic" }} {...props} />
+                          ),
+                          p: ({ node, ...props }) => (
+                            <p
+                              style={{
+                                margin: "0.8em 0",
+                                wordWrap: "break-word",
+                                wordBreak: "break-word",
+                                overflowWrap: "break-word",
+                                lineHeight: "1.5",
+                              }}
+                              {...props}
+                            />
+                          ),
+                          ul: ({ node, ...props }) => (
+                            <ul
+                              style={{
+                                margin: "0.7rem",
+                                padding: "0",
+                                wordWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                              {...props}
+                            />
+                          ),
+                          li: ({ node, ...props }) => (
+                            <li
+                              style={{
+                                margin: "0",
+                                padding: "0",
+                                wordWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                              {...props}
+                            />
+                          ),
+                          // Table components with proper spacing
+                          table: ({ node, ...props }) => (
+                            <table
+                              style={{
+                                margin: "8px 0",
+                                borderCollapse: "collapse",
+                                width: "100%",
+                                fontSize: "0.85em",
+                                border: "1px solid #ddd",
+                                borderRadius: "6px",
+                                overflow: "hidden",
+                              }}
+                              {...props}
+                            />
+                          ),
+                          th: ({ node, ...props }) => (
+                            <th
+                              style={{
+                                padding: "8px 12px",
+                                textAlign: "left",
+                                backgroundColor: "#f8f9fa",
+                                fontWeight: 600,
+                                borderBottom: "2px solid #dee2e6",
+                                wordWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                              {...props}
+                            />
+                          ),
+                          td: ({ node, ...props }) => (
+                            <td
+                              style={{
+                                padding: "8px 12px",
+                                textAlign: "left",
+                                borderBottom: "1px solid #eee",
+                                wordWrap: "break-word",
+                                wordBreak: "break-word",
+                                verticalAlign: "top",
+                              }}
+                              {...props}
+                            />
+                          ),
+                          tr: ({ node, ...props }) => (
+                            <tr
+                              style={{
+                                backgroundColor:
+                                  props.children &&
+                                    props.children.length % 2 === 0
+                                    ? "#f9f9f9"
+                                    : "transparent",
+                              }}
+                              {...props}
+                            />
+                          ),
+                        }}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
+                    <div className="message-time">{msg.timestamp}</div>
+                  </div>
+                </div>
+              ))}
+              {isBotTyping && (
+                <div className="message bot-message">
+                  <div className="message-content">
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Show mode selection if last message was more than an hour ago */}
+              {selectedOption === "sabi" && showModeSelection && (
+                <div className="message bot-message">
+                  <div className="message-content">
+                    <div className="message-text">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                      >
+                        {`**Welcome back!** It's been a while since our last conversation. 
+
+How would you like me to assist you today?`}
+                      </ReactMarkdown>
+
+                      <div style={{
+                        display: "flex",
+                        gap: "10px",
+                        marginTop: "15px",
+                        flexWrap: "wrap"
+                      }}>
+                        <button
+                          onClick={() => handleModeSelection("research")}
+                          style={{
+                            padding: "10px 20px",
+                            backgroundColor: "#007bff",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            transition: "background-color 0.2s"
+                          }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = "#0056b3"}
+                          onMouseOut={(e) => e.target.style.backgroundColor = "#007bff"}
+                        >
+                          🔬 Research Mode
+                        </button>
+                        <button
+                          onClick={() => handleModeSelection("assistant")}
+                          style={{
+                            padding: "10px 20px",
+                            backgroundColor: "#28a745",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "8px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            transition: "background-color 0.2s"
+                          }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = "#1e7e34"}
+                          onMouseOut={(e) => e.target.style.backgroundColor = "#28a745"}
+                        >
+                          🩺 Assistant Mode
+                        </button>
+                      </div>
+
+                      <div style={{
+                        marginTop: "10px",
+                        fontSize: "12px",
+                        color: "#666",
+                        fontStyle: "italic"
+                      }}>
+                        <strong>Research:</strong> In-depth analysis, literature reviews, evidence-based research<br />
+                        <strong>Assistant:</strong> Clinical decision support, patient care guidance, practical help
+                      </div>
+                    </div>
+                    <div className="message-time">
+                      {new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          )
         )}
       </div>
       <div className="bottom">

@@ -100,20 +100,20 @@ const columns = [
     },
   },
 
-  {
-    label: "Joined",
-    key: "joined",
-    render: ({ user }) =>
-      user.createdAt
-        ? new Date(user.createdAt).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : // ➜ "July 11, 2025"
+  // {
+  //   label: "Joined",
+  //   key: "joined",
+  //   render: ({ user }) =>
+  //     user.createdAt
+  //       ? new Date(user.createdAt).toLocaleDateString("en-US", {
+  //           year: "numeric",
+  //           month: "long",
+  //           day: "numeric",
+  //         })
+  //       : // ➜ "July 11, 2025"
 
-          "—",
-  },
+  //         "—",
+  // },
 ];
 
 const Users = ({ setActiveItem }) => {
