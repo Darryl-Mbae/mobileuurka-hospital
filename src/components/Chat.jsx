@@ -560,9 +560,7 @@ const Chat = ({ patient, user }) => {
           }
         } else if (msg.webhookData) {
           // Handle webhook data using config
-          console.log('Processing webhook data:', msg.webhookData);
           const messageType = detectMessageType(msg.webhookData);
-          console.log('Detected message type:', messageType);
           const handler = getMessageHandler(messageType);
           console.log('Handler found:', handler);
 
@@ -571,6 +569,7 @@ const Chat = ({ patient, user }) => {
             const flowData = msg.webhookData.FlowData;
 
             const flowResponses = parseFlowData(flowData);
+            console.log(flowResponses)
 
             if (flowResponses.length > 0) {
               // Create a structured flow response using config
@@ -589,13 +588,16 @@ const Chat = ({ patient, user }) => {
               });
 
               messageText += `
-                <div class="flow-timestamp">
-                  Submitted via WhatsApp Flow
-                </div>
+              
               </div>`;
 
-              // Save flow data to database
-              saveFlowDataToDB(msg.webhookData, patient?.id, SERVER, messageType).then(result => {
+              // Save flow data to database (only if not already saved)
+              const messageId = msg.webhookData.MessageSid || msg.id;
+              const savedKey = `flow_saved_${messageId}`;
+              
+              if (!localStorage.getItem(savedKey)) {
+                localStorage.setItem(savedKey, 'true');
+                saveFlowDataToDB(msg.webhookData, patient?.id, SERVER, messageType).then(result => {
                 if (result.success) {
                   // Add a success message to chat
                   const successMessage = {
@@ -616,6 +618,9 @@ const Chat = ({ patient, user }) => {
                   console.error('Failed to save flow data:', result.error);
                 }
               });
+              } else {
+                console.log('Flow data already saved for this message');
+              }
             } else {
               // Show a basic card even if no responses parsed
               messageText = `<div class="${handler.cardClass}">

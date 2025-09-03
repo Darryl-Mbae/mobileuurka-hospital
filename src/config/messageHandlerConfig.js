@@ -126,42 +126,64 @@ export const getMessageHandler = (messageType) => {
 };
 
 // Helper function to parse flow data from webhook
-export const parseFlowData = (flowDataString) => {
+export const parseFlowData = (flowDataInput) => {
     try {
-        // Handle if it's already an object
-        let flowData;
-        if (typeof flowDataString === 'string') {
-            flowData = JSON.parse(flowDataString);
+        console.log('Input type:', typeof flowDataInput);
+        console.log('Input value:', flowDataInput);
+        console.log('Input constructor:', flowDataInput.constructor.name);
+
+        // Parse the input to get a proper object
+        let parsedData;
+        if (typeof flowDataInput === 'string') {
+            console.log('Attempting to parse string...');
+            let firstParse = JSON.parse(flowDataInput);
+            console.log('First parse result type:', typeof firstParse);
+
+            // If first parse is still a string, parse again (double-encoded JSON)
+            if (typeof firstParse === 'string') {
+                console.log('Double-encoded JSON detected, parsing again...');
+                parsedData = JSON.parse(firstParse);
+            } else {
+                parsedData = firstParse;
+            }
+            console.log('Final parse result type:', typeof parsedData);
+            console.log('Final parse result:', parsedData);
         } else {
-            flowData = flowDataString;
+            parsedData = flowDataInput;
         }
+
+        console.log('Final parsedData type:', typeof parsedData);
+        console.log('Final parsedData:', parsedData);
+        console.log('Is array?', Array.isArray(parsedData));
+        console.log('Object.keys result:', Object.keys(parsedData));
 
         const responses = [];
 
-        // Parse each section of the flow
-        Object.keys(flowData).forEach(sectionKey => {
-            if (sectionKey !== 'flow_token') {
-                const sectionData = flowData[sectionKey];
+        // Process Lifestyle_assessment_a
+        if (parsedData.Lifestyle_assessment_a) {
+            const section = parsedData.Lifestyle_assessment_a;
+            Object.keys(section).forEach(questionKey => {
+                const question = questionKey.replace(/_/g, ' ').replace(/\?/g, '?');
+                const answer = section[questionKey];
+                responses.push({ question, answer });
+            });
+        }
 
-                // Handle nested objects (like Lifestyle_assessment_a, Lifestyle_assessment_b)
-                if (typeof sectionData === 'object' && sectionData !== null) {
-                    Object.keys(sectionData).forEach(questionKey => {
-                        const question = questionKey.replace(/_/g, ' ').replace(/\?/g, '?');
-                        const answer = sectionData[questionKey];
-                        responses.push({ question, answer });
-                    });
-                } else if (typeof sectionData === 'string') {
-                    // Handle direct key-value pairs
-                    const question = sectionKey.replace(/_/g, ' ').replace(/\?/g, '?');
-                    responses.push({ question, answer: sectionData });
-                }
-            }
-        });
+        // Process Lifestyle_assessment_b  
+        if (parsedData.Lifestyle_assessment_b) {
+            const section = parsedData.Lifestyle_assessment_b;
+            Object.keys(section).forEach(questionKey => {
+                const question = questionKey.replace(/_/g, ' ').replace(/\?/g, '?');
+                const answer = section[questionKey];
+                responses.push({ question, answer });
+            });
+        }
 
-        console.log('Parsed responses:', responses.length, 'items');
+        console.log('Parsed responses count:', responses.length);
         return responses;
     } catch (error) {
         console.error('Error parsing flow data:', error);
+        console.error('Input was:', flowDataInput);
         return [];
     }
 };
@@ -215,14 +237,12 @@ export const saveFlowDataToDB = async (webhookData, patientId, serverUrl, messag
         const requestBody = {
             patientId: patientId,
             ...dbData,
-            source: 'whatsapp_flow',
-            whatsappMessageId: webhookData.MessageSid,
-            date: new Date().toISOString()
+            editor: "self assessment"
         };
 
 
 
-        const response = await fetch(`${serverUrl}/api/patients/medical/${handler.dbConfig.modelName}`, {
+        const response = await fetch(`${serverUrl}/patients/medical/${handler.dbConfig.modelName}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
