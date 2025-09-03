@@ -143,7 +143,6 @@ const Users = ({ setActiveItem }) => {
   useEffect(() => {
     if (organisations && organisations.length > 0) {
       // Extract users directly from organizations
-      console.log(organisations);
       const allUsers = organisations.flatMap(
         (org) =>
           org.users?.map((userTenant) => ({
@@ -164,8 +163,7 @@ const Users = ({ setActiveItem }) => {
     }
   }, [organisations, dispatch]);
 
-  console.log("users", users);
-  console.log("onlineUsers", onlineUsers);
+
 
   useEffect(() => {
     if (users) {

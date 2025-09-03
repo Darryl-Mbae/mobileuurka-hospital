@@ -206,7 +206,7 @@ const Audit = () => {
     getPaginatedData,
   } = usePagination({
     totalItems: filteredLogs.length,
-    initialItemsPerPage: 15,
+    initialItemsPerPage: 6,
     initialPage: 1,
   });
 
@@ -479,7 +479,7 @@ const Audit = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
           showPageInfo={true}
           showItemsPerPageSelector={true}
-          itemsPerPageOptions={[10, 15, 25, 50]}
+          itemsPerPageOptions={[6, 10, 15, 25, 50]}
         />
       )}
     </div>

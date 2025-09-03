@@ -6,7 +6,7 @@
   display: grid;
   margin-top: 10vh;
   grid-template-columns: 25% 75%;
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-out;
   position: relative;
   font-family: "Inter", sans-serif !important;
   /* overflow: hidden; */
@@ -121,7 +121,6 @@
 .patient.active {
   transform: translateX(-26%);
   grid-template-columns: 25% 75%;
-
 }
 
 .patient.active .tabs {

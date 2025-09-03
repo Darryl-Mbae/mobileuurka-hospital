@@ -20,7 +20,7 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
     caffeineQuantity: "",
     sugarDrink: "",
   });
-  
+
   const clearForm = () => {
     setFormData({});
   }
@@ -117,8 +117,8 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
 
       const result = await response.json();
       console.log("Lifestyle record created:", result);
-       // Show success message
-       showSuccessMessage({
+      // Show success message
+      showSuccessMessage({
         title: "Lifestyle Completed Successfully!",
         message: `Visit details recorded for ${formData.name || 'the patient'}.`,
         showRedoButton: true,

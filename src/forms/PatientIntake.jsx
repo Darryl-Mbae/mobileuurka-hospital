@@ -49,6 +49,7 @@ const PatientIntake = ({ setInternalTab }) => {
       ...prev,
       editor: currentUser?.name || "",
     }));
+    console.log(currentUser)
   }, [currentUser]);
 
   useEffect(() => {
@@ -70,11 +71,30 @@ const PatientIntake = ({ setInternalTab }) => {
 
   const fetchHospitals = async () => {
     try {
-      const response = await fetch(`${SERVER}/tenants/names`, {
+      const response = await fetch(`${SERVER}/organisations/my`, {
         credentials: "include",
       });
       const data = await response.json();
-      setHospitals(data);
+      console.log(data);
+
+      // Extract hospital names from organizationTenants
+      const hospitalNames = [];
+      if (Array.isArray(data)) {
+        data.forEach(org => {
+          if (org.organizationTenants && Array.isArray(org.organizationTenants)) {
+            org.organizationTenants.forEach(orgTenant => {
+              if (orgTenant.tenant && orgTenant.tenant.name) {
+                hospitalNames.push({
+                  id: orgTenant.tenant.id,
+                  name: orgTenant.tenant.name
+                });
+              }
+            });
+          }
+        });
+      }
+
+      setHospitals(hospitalNames);
     } catch (error) {
       console.error("Error fetching hospitals:", error);
     }
@@ -117,9 +137,25 @@ const PatientIntake = ({ setInternalTab }) => {
   const handleSubmit = async (e) => {
     setLoading(true);
 
+    // Validate phone number format
+    if (formData.phone && !formData.phone.startsWith('+')) {
+      alert('Phone number must be in international format starting with + (e.g., +254712345678)');
+      setLoading(false);
+      return;
+    }
+
+    if (formData.phone) {
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+        alert('Invalid phone number format. Please use international format: +[country code][number]');
+        setLoading(false);
+        return;
+      }
+    }
+
     console.log(formData);
 
-   
+
     try {
       const response = await fetch(`${SERVER}/patients`, {
         method: "POST",
@@ -142,9 +178,8 @@ const PatientIntake = ({ setInternalTab }) => {
       // Show success message
       showSuccessMessage({
         title: "Registration Completed Successfully!",
-        message: `Patient intake form completed for ${
-          formData?.name || "the patient"
-        }. Thank you for capturing their details.`,
+        message: `Patient intake form completed for ${formData?.name || "the patient"
+          }. Thank you for capturing their details.`,
         showScreeningButton: true,
         nextButtonAction: () => {
           clearForm();
@@ -181,7 +216,7 @@ const PatientIntake = ({ setInternalTab }) => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Patient National ID</label>
+                  <label>Patient National ID (NA if unavailable)</label>
                   <input
                     type="text"
                     name="patientId"
@@ -225,7 +260,11 @@ const PatientIntake = ({ setInternalTab }) => {
                     type="text"
                     value={formData?.phone}
                     onChange={handleChange}
+                    placeholder="+254712345678"
+                    pattern="^\+[1-9]\d{1,14}$"
+                    title="Phone number must be in international format starting with + (e.g., +254712345678)"
                   />
+
                 </div>
                 <div className="form-group">
                   <label>Email</label>

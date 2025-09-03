@@ -188,7 +188,7 @@ const Document = ({ document, title, patient }) => {
                       .filter(([key, value]) => 
                         typeof value === 'string' && 
                         value.length > 50 && 
-                        !['id', 'patient_id', 'risk_score', 'risk_score_raw', 'risk_level', 'gestation_weeks_int', 'gestation_weeks_total', 'prompt_version', 'raw_model_response', 'input_hash', 'created_at'].includes(key)
+                        !['id', 'patient_id', 'risk_score', 'risk_score_raw', 'risk_level', 'gestation_weeks_int', 'gestation_weeks_total', 'prompt_version', 'raw_model_response', 'input_hash', 'created_at', 'recommendations', 'recommendation', 'recommended_actions', 'next_steps'].includes(key)
                       )
                       .map(([key, value]) => {
                         const formattedKey = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (l) => l.toUpperCase());

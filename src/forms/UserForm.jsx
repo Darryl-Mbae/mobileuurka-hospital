@@ -129,6 +129,20 @@ const UserForm = ({ setActiveItem }) => {
       setError("Please enter a valid email address");
       return false;
     }
+    
+    // Validate phone number if provided
+    if (formData.phone && formData.phone.trim()) {
+      if (!formData.phone.startsWith('+')) {
+        setError('Phone number must be in international format starting with + (e.g., +254712345678)');
+        return false;
+      }
+      const phoneRegex = /^\+[1-9]\d{1,14}$/;
+      if (!phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+        setError('Invalid phone number format. Please use international format: +[country code][number]');
+        return false;
+      }
+    }
+    
     if (!formData.role) {
       setError("Role is required");
       return false;
@@ -323,8 +337,13 @@ const UserForm = ({ setActiveItem }) => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="Enter phone number"
+                placeholder="+254712345678"
+                pattern="^\+[1-9]\d{1,14}$"
+                title="Phone number must be in international format starting with + (e.g., +254712345678)"
               />
+              <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                Optional. If provided, must start with + followed by country code
+              </small>
             </div>
 
             <div className="form-group">

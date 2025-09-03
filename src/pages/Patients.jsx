@@ -14,7 +14,13 @@ const columns = [
   {
     label: "National ID",
     key: "patientId",
-    render: ({ patient }) => maskId(patient.patientId),
+    render: ({ patient }) => {
+      // If no National ID or National ID is "NA", show phone number (unmasked)
+      if (!patient.patientId || patient.patientId === "NA" || patient.patientId === "na") {
+        return patient.phone || "—";
+      }
+      return maskId(patient.patientId);
+    },
   },
   {
     label: "Hospital",
@@ -148,12 +154,36 @@ function maskId(id) {
   return `*****${lastFour}`;
 }
 
+function maskPhone(phone) {
+  if (!phone) return "—"; // fallback for missing/null/undefined
+  if (typeof phone !== "string") phone = String(phone);
+
+  // Remove any non-digit characters for processing
+  const digits = phone.replace(/\D/g, '');
+
+  if (digits.length < 4) return phone; // Don't mask if too short
+
+  const lastFour = digits.slice(-4);
+  const maskedPart = '*'.repeat(Math.max(0, digits.length - 4));
+
+  // Try to preserve original formatting if it exists
+  if (phone.includes('-') || phone.includes(' ') || phone.includes('(')) {
+    return `${maskedPart}${lastFour}`;
+  }
+
+  return `${maskedPart}${lastFour}`;
+}
+
 const Patients = ({ setActiveItem }) => {
   const dispatch = useDispatch();
   const patients = useSelector((state) => state.patient.patients);
   const [filteredPatients, setFilteredPatients] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [refreshing, setRefreshing] = React.useState(false);
+  const [filters, setFilters] = React.useState({
+    risk: "",
+    hospital: "",
+  });
   const navigate = useNavigate();
 
 
@@ -179,24 +209,34 @@ const Patients = ({ setActiveItem }) => {
       const safeUsers = Array.isArray(patients)
         ? patients
         : patients
-        ? [patients]
-        : [];
+          ? [patients]
+          : [];
 
-      const filtered = safeUsers.filter(
-        (patient) =>
+      const filtered = safeUsers.filter((patient) => {
+        // Search filter
+        const matchesSearch =
           patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           patient.patientId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           patient.hospital?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           patient.reasonForVisit
             ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
-      );
-      
+            .includes(searchTerm.toLowerCase());
+
+        // Risk filter
+        const patientRisk = patient?.explanations?.[patient.explanations.length - 1]?.risklevel?.toLowerCase();
+        const matchesRisk = !filters.risk || patientRisk === filters.risk.toLowerCase();
+
+        // Hospital filter
+        const matchesHospital = !filters.hospital || patient.hospital === filters.hospital;
+
+        return matchesSearch && matchesRisk && matchesHospital;
+      });
+
       setFilteredPatients(filtered);
     } else {
       setFilteredPatients([]);
     }
-  }, [patients, searchTerm]);
+  }, [patients, searchTerm, filters]);
 
   const handleClick = (patientId) => {
     navigate(`/Patient/${patientId}`);
@@ -208,6 +248,43 @@ const Patients = ({ setActiveItem }) => {
     setSearchTerm(searchValue);
     handlePageChange(1); // Reset to first page when searching
   };
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+    handlePageChange(1); // Reset to first page when filtering
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      risk: "",
+      hospital: "",
+    });
+    handlePageChange(1);
+  };
+
+  // Get unique values for filter dropdowns
+  const getUniqueRiskLevels = () => {
+    if (!patients) return [];
+    const risks = patients
+      .map(patient => patient?.explanations?.[patient.explanations.length - 1]?.risklevel)
+      .filter(Boolean)
+      .map(risk => risk.toLowerCase());
+    return [...new Set(risks)];
+  };
+
+  const getUniqueHospitals = () => {
+    if (!patients) return [];
+    const hospitals = patients
+      .map(patient => patient.hospital)
+      .filter(Boolean);
+    return [...new Set(hospitals)];
+  };
+
+  const uniqueRiskLevels = getUniqueRiskLevels();
+  const uniqueHospitals = getUniqueHospitals();
 
   const handleAddPatient = () => {
     setActiveItem("PatientIntake");
@@ -246,6 +323,65 @@ const Patients = ({ setActiveItem }) => {
             refreshing={refreshing}
           />
         </div>
+      </div>
+
+      {/* Modern Filters */}
+      <div className="filters-container">
+        <div className="filters-row">
+          <div className="filter-group">
+            <select
+              value={filters.risk}
+              onChange={(e) => handleFilterChange("risk", e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Risk Levels</option>
+              {uniqueRiskLevels.map((risk) => (
+                <option key={risk} value={risk}>
+                  {risk.charAt(0).toUpperCase() + risk.slice(1)} Risk
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <select
+              value={filters.hospital}
+              onChange={(e) => handleFilterChange("hospital", e.target.value)}
+              className="filter-select"
+            >
+              <option value="">All Hospitals</option>
+              {uniqueHospitals.map((hospital) => (
+                <option key={hospital} value={hospital}>
+                  {hospital}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {(filters.risk || filters.hospital) && (
+            <button className="clear-filters-btn" onClick={clearFilters}>
+              Clear Filters
+            </button>
+          )}
+        </div>
+
+        {(filters.risk || filters.hospital) && (
+          <div className="active-filters">
+            <span className="filter-label">Active filters:</span>
+            {filters.risk && (
+              <span className="filter-tag">
+                Risk: {filters.risk.charAt(0).toUpperCase() + filters.risk.slice(1)}
+                <button onClick={() => handleFilterChange("risk", "")}>×</button>
+              </span>
+            )}
+            {filters.hospital && (
+              <span className="filter-tag">
+                Hospital: {filters.hospital}
+                <button onClick={() => handleFilterChange("hospital", "")}>×</button>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="lists">

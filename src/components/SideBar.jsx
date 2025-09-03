@@ -13,6 +13,7 @@ import { LuUserRound } from "react-icons/lu";
 import { TbUserSquare } from "react-icons/tb";
 import { MdOutlineHistory } from "react-icons/md";
 import { useSelector } from "react-redux";
+import { GoSignOut } from "react-icons/go";
 
 const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -21,7 +22,7 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
 
   // Get user role from Redux store
   const user = useSelector((state) => state.user.currentUser);
-  const isAdmin = user?.userTenants?.[0].role === "admin" || user?.userTenants?.[0].role === "owner" ;
+  const isAdmin = user?.userTenants?.[0].role === "admin" || user?.userTenants?.[0].role === "owner";
 
   useEffect(() => {
     if (activeItem === "Patient") {
@@ -53,17 +54,42 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
     { name: "Alerts", icon: <FiBell />, showBadge: true },
   ];
 
+  const SERVER = import.meta.env.VITE_SERVER_URL;
+
+
+  async function signout() {
+    try {
+      const res = await fetch(`${SERVER}/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+      });
+
+      if (res.ok) {
+        // Redirect to login or home page after successful logout
+        window.location.href = "/auth";
+      }
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
+
+
   return (
     <div className={`sidebar ${active ? "active" : ""}`}>
       <div className="company">
         <div className="logo">
           <img src={CompanyConfig.logoUrl} alt="Company Logo" />
         </div>
-        <div className="name">{CompanyConfig.name}</div>
+        <div className="name">{CompanyConfig.name}
+          <div className="signout" onClick={signout}>
+            <GoSignOut />
+
+          </div>
+        </div>
         <div
-          className={`hamburger hamburger--collapse ${
-            isSidebarOpen ? "is-active" : ""
-          }`}
+          className={`hamburger hamburger--collapse ${isSidebarOpen ? "is-active" : ""
+            }`}
           onClick={toggleSidebar}
         >
           <span className="hamburger-box">
@@ -80,7 +106,7 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
               key={item.name}
               className={
                 activeItem === item.name ||
-                (item.name === "Patients" && activeItem === "Patient")
+                  (item.name === "Patients" && activeItem === "Patient")
                   ? "active"
                   : ""
               }
