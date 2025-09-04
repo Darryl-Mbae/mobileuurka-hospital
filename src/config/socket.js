@@ -142,12 +142,19 @@ class SocketManager {
         return userOrganizations.includes(user.organizationId);
       }
       
+      // Check by organization name (for Users.jsx structure)
+      if (user.org) {
+        const currentUser = state.user.currentUser;
+        const currentUserOrg = allUsers.find(u => u.id === currentUser?.id)?.org;
+        return user.org === currentUserOrg;
+      }
+      
       // If user has multiple organizations, check for overlap
       if (user.organizationIds && Array.isArray(user.organizationIds)) {
         return user.organizationIds.some(orgId => userOrganizations.includes(orgId));
       }
       
-      return false;
+      return true; // Show all users if no organization filtering can be applied
     });
   }
 
@@ -241,7 +248,9 @@ class SocketManager {
       }
       
       const userIds = usersArray.map((user) => user.userId || user.id || user);
+      console.log('Raw online user IDs from server:', userIds);
       const filteredUserIds = this.filterOnlineUsersByOrganization(userIds);
+      console.log('Filtered online user IDs:', filteredUserIds);
       
       // Update backward compatibility array
       store.dispatch(setOnlineUsers(filteredUserIds));
