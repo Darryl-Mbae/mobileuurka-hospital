@@ -6,6 +6,7 @@ import { FaTimes } from "react-icons/fa";
 import { RiInformation2Line } from "react-icons/ri";
 import { IoMdInformationCircle } from "react-icons/io";
 import { MdError } from "react-icons/md";
+import NextScreeningButton from "./NextScreeningButton";
 
 const SuccessMessage = ({
   title = "Success!",
@@ -20,6 +21,12 @@ const SuccessMessage = ({
   proceedButtonText = "Proceed",
   proceedButtonAction = null,
   onClose = null,
+  // New props for screening flow
+  showNextScreening = false,
+  flowId = 'PATIENT_SCREENING',
+  currentStepId = null,
+  patientId = null,
+  onNextScreening = null,
 }) => {
   const navigate = useNavigate();
 
@@ -64,6 +71,17 @@ const SuccessMessage = ({
 
         <h2 className="success-title">{title}</h2>
         <p className="success-message">{message}</p>
+
+        {/* Next Screening Flow Button */}
+        {showNextScreening && (
+          <NextScreeningButton
+            flowId={flowId}
+            currentStepId={currentStepId}
+            patientId={patientId}
+            onNext={onNextScreening}
+            className="success-next-screening"
+          />
+        )}
 
         <div className="success-buttons">
           {showScreeningButton && (

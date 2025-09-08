@@ -4,10 +4,18 @@ import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import SuccessMessage from "../components/SuccessMessage";
 import useSuccessMessage from "../hooks/useSuccessMessage";
+import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
+  const { getScreeningContext, navigateToNextStep, getCurrentStepInfo } = useScreeningFlow(setInternalTab);
+  const screeningContext = getScreeningContext();
+  const screeningInfo = getCurrentStepInfo('PatientVisit');
+  
+  // Use selectedPatientId prop first, then fall back to screening context
+  const initialPatientId = selectedPatientId || screeningContext.patientId || "";
+  
   const [formData, setFormData] = useState({
-    patientId: selectedPatientId || "",
+    patientId: initialPatientId,
     editor: "",
     date: new Date().toISOString().split("T")[0],
     visitNumber: 1,
@@ -23,8 +31,9 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
 
   // Clear form function
   const clearForm = () => {
+    const patientId = selectedPatientId || screeningContext.patientId || "";
     setFormData({
-      patientId: selectedPatientId || "",
+      patientId: patientId,
       editor: currentUser?.name || "",
       date: new Date().toISOString().split("T")[0],
       visitNumber: 1,
@@ -42,16 +51,17 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
+    const patientId = selectedPatientId || screeningContext.patientId || "";
     setFormData((prev) => ({
       ...prev,
       editor: currentUser?.name || "",
-      patientId: selectedPatientId || "",
+      patientId: patientId,
     }));
 
-    if (selectedPatientId) {
-      fetchPatientName(selectedPatientId);
+    if (patientId) {
+      fetchPatientName(patientId);
     }
-  }, [currentUser, selectedPatientId]);
+  }, [currentUser, selectedPatientId, screeningContext.patientId]);
 
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
@@ -111,15 +121,23 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
         throw new Error(errorData.error || "Submission failed");
       }
 
+  
+
       const result = await response.json();
       console.log("Visit created:", result);
       
-      // Show success message
+      // Show success message with next screening step
       showSuccessMessage({
         title: "Visit Recorded Successfully!",
-        message: `Visit details recorded for ${formData.name || 'the patient'}.`,
-        showScreeningButton: true,
-        patientId: formData.patientId
+        message: `Visit details recorded for ${patientName || 'the patient'}.`,
+        showNextScreening: true,
+        flowId: screeningInfo.flowId,
+        currentStepId: screeningInfo.stepId,
+        patientId: result.id || result.patientId ||  formData.patientId,
+        onNextScreening: navigateToNextStep,
+        nextButtonAction: () => {
+          clearForm();
+        },
       });
     } catch (error) {
       console.error("Error submitting form:", error);

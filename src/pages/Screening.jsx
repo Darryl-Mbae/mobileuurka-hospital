@@ -12,6 +12,7 @@ import Prescription from "../forms/Prescription";
 import Allergies from "../forms/Allergies";
 import Pregnancy from "../forms/Pregnancy";
 import Labwork from "../forms/Labwork";
+import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const testCategories = [
   {
@@ -92,6 +93,8 @@ const testCategories = [
 ];
 
 const Screening = ({ internalTab, setInternalTab}) => {
+  const { getScreeningContext } = useScreeningFlow(setInternalTab);
+  const screeningContext = getScreeningContext();
 
   return (
     <div className="screening">
@@ -121,7 +124,10 @@ const Screening = ({ internalTab, setInternalTab}) => {
           )}
           {internalTab === 2.3 && <Lifestyle setInternalTab={setInternalTab} />}
           {internalTab === 2.4 && (
-            <PatientVisit setInternalTab={setInternalTab} />
+            <PatientVisit 
+              setInternalTab={setInternalTab} 
+              selectedPatientId={screeningContext.patientId}
+            />
           )}
           {internalTab === 2.5 && <Allergies setInternalTab={setInternalTab} />}
           {internalTab === 2.6 && <Triage setInternalTab={setInternalTab} />}

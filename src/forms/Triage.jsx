@@ -3,10 +3,15 @@ import { useSelector } from "react-redux";
 import "../css/Form.css";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
+import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const Triage = ({ setInternalTab, selectedPatientId }) => {
+  const { navigateToNextStep, getCurrentStepInfo, getScreeningContext } = useScreeningFlow(setInternalTab);
+  const screeningInfo = getCurrentStepInfo('Triage');
+  
+  const screeningContext = getScreeningContext();
   const [formData, setFormData] = useState({
-    patientId: selectedPatientId || "",
+    patientId: selectedPatientId || screeningContext.patientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
     gestationWeek: "",
@@ -25,6 +30,7 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
+  const [patientGweek, setPatientGweek] = useState("");
   const [success, setSuccess] = useState(false); 
   const [fetchingPatient, setFetchingPatient] = useState(false);
 
@@ -54,16 +60,18 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
   useEffect(() => {
+    const patientId = selectedPatientId || screeningContext.patientId || "";
     setFormData((prev) => ({
       ...prev,
       editor: currentUser?.name || "",
-      patientId: selectedPatientId || "",
+      patientId: patientId,
     }));
 
-    if (selectedPatientId) {
-      fetchPatientName(selectedPatientId);
+    if (patientId) {
+      fetchPatientName(patientId);
     }
-  }, [currentUser, selectedPatientId]);
+  }, [currentUser, selectedPatientId, screeningContext.patientId]);
+
 
   // Calculate BMI when height or weight changes
   useEffect(() => {
@@ -97,7 +105,16 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
 
       if (response.ok) {
         const patient = await response.json();
-        setPatientName(patient.name || "Unknown Patient");
+        setFormData(prev => ({
+          ...prev,
+          gestationWeek : parseInt(
+            patient?.visits[patient.visits.length - 1]?.gestationWeek ?? 0,
+            10
+          )
+        }));
+        
+                setPatientName(patient.name || "Unknown Patient");
+
       } else {
         setPatientName("Patient not found");
       }
@@ -149,12 +166,15 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
       const result = await response.json();
       console.log("Triage created:", result);
       
-      // Show success message
+      // Show success message with next screening step
       showSuccessMessage({
         title: "Triage Completed Successfully!",
         message: `Vital signs recorded for ${patientName || 'the patient'}.`,
-        showScreeningButton: true,
-        patientId: formData.patientId
+        showNextScreening: true,
+        flowId: screeningInfo.flowId,
+        currentStepId: screeningInfo.stepId,
+        patientId: formData.patientId,
+        onNextScreening: navigateToNextStep,
       });
       setSuccess(true);
     } catch (error) {

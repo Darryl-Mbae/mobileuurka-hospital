@@ -6,6 +6,7 @@ import useSuccessMessage from "../hooks/useSuccessMessage";
 const Notepad = ({ patient, user }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const [loading, setLoading] = useState(false);
+  console.log(patient)
 
   // Clear form function
   const clearForm = () => {
@@ -17,7 +18,7 @@ const Notepad = ({ patient, user }) => {
         ? patient.notes[patient.notes.length]
         : "1",
       notes: "",
-      gestationweek: "",
+      gestationweek: patient ? patient?.visits[patient.visits?.length -  1].gestationWeek : "",
       date: new Date().toISOString().split("T")[0],
       visit_id: "",
       user_id: user ? user.user_id : "",
@@ -37,7 +38,7 @@ const Notepad = ({ patient, user }) => {
       ? patient.notes[patient.notes.length]
       : "1",
     notes: "",
-    gestationweek: "",
+    gestationweek: patient ? patient?.visits[patient.visits?.length -  1].gestationWeek : "",
     date: new Date().toISOString().split("T")[0],
     visit_id: "",
     user_id: user ? user.user_id : "",

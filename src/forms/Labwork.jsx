@@ -114,6 +114,13 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
         const patient = await response.json();
         setPatient(patient);
         setPatientName(patient.name || "Unknown Patient");
+        setFormData(prev => ({
+          ...prev,
+          gestationweek : parseInt(
+            patient?.visits[patient.visits.length - 1]?.gestationWeek ?? 0,
+            10
+          )
+        }));
       } else {
         setPatientName("Patient not found");
       }

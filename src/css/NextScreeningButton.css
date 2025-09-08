@@ -1,0 +1,101 @@
+/* Next Screening Button Styles - Minimalistic Design */
+.next-screening-container {
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  font-family: "Inter", sans-serif;
+  text-align: center;
+}
+
+
+
+
+
+.next-screening-btn {
+  width: 100%;
+  background: rgb(0, 133, 64);
+  color: white;
+  border: none;
+  border-radius: 11px;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  font-family: "Inter", sans-serif;
+  min-height: 48px;
+}
+
+.next-screening-btn:hover:not(.disabled) {
+  background: rgba(0, 133, 64, 0.9);
+  transform: translateY(-1px);
+}
+
+.next-screening-btn.disabled {
+  background: rgba(144, 144, 144, 0.4);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.next-screening-btn .arrow {
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.next-screening-btn:hover:not(.disabled) .arrow {
+  transform: translateX(2px);
+}
+
+/* Completion Styles */
+.screening-completion {
+  background: transparent;
+  border: none;
+  text-align: center;
+}
+
+.completion-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: rgb(0, 133, 64);
+}
+
+.completion-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  font-family: "Inter", sans-serif;
+}
+
+.completion-text p {
+  margin: 0 0 20px 0;
+  font-size: 0.8rem;
+  color: #686868;
+  font-family: "Inter", sans-serif;
+}
+
+
+
+/* Success message integration */
+.success-next-screening {
+  margin: 20px 0 10px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .next-screening-container {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .next-screening-btn {
+    padding: 14px 16px;
+    font-size: 0.9rem;
+  }
+}

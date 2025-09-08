@@ -53,6 +53,13 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
       if (response.ok) {
         const patient = await response.json();
         setPatientName(patient.name || "Unknown Patient");
+        setFormData(prev => ({
+          ...prev,
+          gestationWeek : parseInt(
+            patient?.visits[patient.visits.length - 1]?.gestationWeek ?? 0,
+            10
+          )
+        }));
       } else {
         setPatientName("Patient not found");
       }

@@ -7,8 +7,12 @@ import SuccessMessage from "../components/SuccessMessage";
 import { useSocket } from "../hooks/useSocket";
 import { alertService } from "../services/alertService.js";
 import { addPatient } from "../reducers/Slices/patientsSlice";
+import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const PatientIntake = ({ setInternalTab }) => {
+  const { navigateToNextStep, getCurrentStepInfo } = useScreeningFlow(setInternalTab);
+  const screeningInfo = getCurrentStepInfo('PatientIntake');
+  const socket = useSelector((state) => state.socket.socket);
   // Initialize form state to match your desired output structure
   const [formData, setFormData] = useState({
     patientId: "",
@@ -35,6 +39,7 @@ const PatientIntake = ({ setInternalTab }) => {
   const [success, setSuccess] = useState(false);
   const [hospitals, setHospitals] = useState([]);
   const [ids, setIds] = useState([]);
+  const [createdPatientId, setCreatedPatientId] = useState(null);
   const clearForm = () => {
     setFormData({});
   };
@@ -56,6 +61,34 @@ const PatientIntake = ({ setInternalTab }) => {
     fetchHospitals();
     getIds();
   }, []);
+
+  // Listen for patient creation events via socket
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePatientCreated = (eventData) => {
+      console.log('🔍 Socket patient_created event:', eventData);
+      
+      // Extract patient data from the event
+      const patientData = eventData.patient || eventData;
+      console.log('🔍 Extracted patient data:', patientData);
+      console.log('🔍 Patient ID from socket:', patientData.id || patientData.patientId);
+      
+      // Check if this is the patient we just created (match by name or other fields)
+      if (patientData.name === formData.name || 
+          patientData.patientId === formData.patientId ||
+          patientData.phone === formData.phone) {
+        console.log('🎯 Found matching patient from socket event!');
+        setCreatedPatientId(patientData.id || patientData.patientId);
+      }
+    };
+
+    socket.on('patient_created', handlePatientCreated);
+
+    return () => {
+      socket.off('patient_created', handlePatientCreated);
+    };
+  }, [socket, formData.name, formData.patientId, formData.phone]);
 
   const getIds = async () => {
     try {
@@ -167,6 +200,15 @@ const PatientIntake = ({ setInternalTab }) => {
       if (!response.ok) throw new Error("Submission failed");
 
       const data = await response.json();
+      console.log('🔍 Patient creation API response:', data);
+      console.log('🔍 Available fields:', Object.keys(data));
+      console.log('🔍 Checking ID fields:', {
+        'data.id': data.id,
+        'data.patientId': data.patientId,
+        'data._id': data._id,
+        'formData.patientId': formData.patientId
+      });
+      
       if (formData.rh == "-") {
         const alertData = {
           alert:
@@ -175,16 +217,20 @@ const PatientIntake = ({ setInternalTab }) => {
         };
         alertService.createAlert(data.id, alertData);
       }
-      // Show success message
+      // Show success message with next screening step
       showSuccessMessage({
         title: "Registration Completed Successfully!",
         message: `Patient intake form completed for ${formData?.name || "the patient"
           }. Thank you for capturing their details.`,
-        showScreeningButton: true,
+        showNextScreening: true,
+        flowId: screeningInfo.flowId,
+        currentStepId: screeningInfo.stepId,
+        patientId: data.id || createdPatientId || data.patientId ||  formData.patientId,
+        onNextScreening: navigateToNextStep,
         nextButtonAction: () => {
           clearForm();
+          setCreatedPatientId(null); // Reset for next use
         },
-        patientId: formData.patientId,
       });
       setSuccess(true);
     } catch (error) {

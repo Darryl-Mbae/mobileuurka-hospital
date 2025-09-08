@@ -4,11 +4,19 @@ import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
+import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
   // Initialize form state to match PatientHistory model
+  
+  const { navigateToNextStep, getCurrentStepInfo, getScreeningContext } = useScreeningFlow(setInternalTab);
+  const screeningInfo = getCurrentStepInfo('Triage');
+
+  const screeningContext = getScreeningContext();
+
+
   const [formData, setFormData] = useState({
-    patientId: selectedPatientId || "",
+    patientId: selectedPatientId || screeningContext.patientId || "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
 
@@ -93,16 +101,18 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
 
 
   useEffect(() => {
+    const patientId = selectedPatientId || screeningContext.patientId || "";
     setFormData((prev) => ({
       ...prev,
       editor: currentUser?.name || "",
-      patientId: selectedPatientId || "",
+      patientId: patientId,
     }));
 
-    if (selectedPatientId) {
-      fetchPatientName(selectedPatientId);
+    if (patientId) {
+      fetchPatientName(patientId);
     }
-  }, [currentUser, selectedPatientId]);
+  }, [currentUser, selectedPatientId, screeningContext.patientId]);
+
 
   const fetchPatientName = async (patientId) => {
     if (!patientId || patientId.length < 6) return;

@@ -180,7 +180,13 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
         const patient = await response.json();
         setPatient(patient);
         setPatientName(patient.name || "Unknown Patient");
-      } else {
+        setFormData(prev => ({
+          ...prev,
+          gestationweek : parseInt(
+            patient?.visits[patient.visits.length - 1]?.gestationWeek ?? 0,
+            10
+          )
+        }));
         setPatientName("Patient not found");
       }
     } catch (error) {
