@@ -31,7 +31,7 @@ const Medication = ({ setActiveTab, patient }) => {
         patientId: patient?.id,
         formType: "prescription",
         returnTo: "medication",
-        internalTab: 2.9, // Prescription form tab
+        internalTab: 2.13, // Prescription form tab
       },
     });
   }
@@ -91,7 +91,7 @@ const Medication = ({ setActiveTab, patient }) => {
           data-tooltip-content="Click to add a new medication"
         >
           <IoMdAdd />
-          Add Medicine
+          Add Medication
         </div>
       </div>
 

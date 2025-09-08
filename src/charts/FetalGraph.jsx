@@ -44,22 +44,45 @@ const FetalGraph = ({ patient = [], selectedOption }) => {
   const normalizedData = normalizeFetalData(patient);
 
   const handleMouseMove = (e) => {
-    if (e && e.activePayload && e.activePayload.length > 0) {
+    if (!e) return;
+  
+    const chartContainer = chartRef.current;
+  
+    // First try the usual payload
+    if (e.activePayload && e.activePayload.length > 0) {
       const payload = e.activePayload[0].payload;
-      setHoveredPoint(payload);
-      
-      // Get better positioning relative to chart container
-      const chartContainer = chartRef.current;
-      if (chartContainer) {
-        setTooltipPos({ 
-          x: e.chartX || 0, 
-          y: e.chartY || 0 
-        });
+      if (payload && payload.value !== null) {
+        setHoveredPoint(payload);
+        if (chartContainer) {
+          setTooltipPos({
+            x: e.chartX || e.activeCoordinate?.x || 0,
+            y: e.chartY || e.activeCoordinate?.y || 0,
+          });
+        }
+        return;
       }
-    } else {
-      setHoveredPoint(null);
     }
+  
+    // Fallback: use activeIndex to pick from normalizedData
+    if (e.isTooltipActive && e.activeTooltipIndex != null) {
+      const index = Number(e.activeTooltipIndex);
+      const payload = normalizedData[index];
+      if (payload && payload.value !== null) {
+        setHoveredPoint(payload);
+        if (chartContainer) {
+          setTooltipPos({
+            x: e.chartX || e.activeCoordinate?.x || 0,
+            y: e.chartY || e.activeCoordinate?.y || 0,
+          });
+        }
+        return;
+      }
+    }
+  
+    // Otherwise hide tooltip
+    setHoveredPoint(null);
   };
+  
 
   const handleMouseLeave = () => setHoveredPoint(null);
 

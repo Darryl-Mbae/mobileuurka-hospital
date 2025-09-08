@@ -306,7 +306,7 @@ const PatientIntake = ({ setInternalTab }) => {
                     type="text"
                     value={formData?.phone}
                     onChange={handleChange}
-                    placeholder="+254712345678"
+                    placeholder="e.g. +254712345678"
                     pattern="^\+[1-9]\d{1,14}$"
                     title="Phone number must be in international format starting with + (e.g., +254712345678)"
                   />

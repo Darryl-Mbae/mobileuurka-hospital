@@ -5,9 +5,9 @@ import { FiChevronDown } from "react-icons/fi";
 import SuccessMessage from "../components/SuccessMessage";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 
-const Prescription = ({ setInternalTab, selectedPatientId }) => {
+const Prescription = ({ setInternalTab, selectedPatientId,patientId }) => {
   const [formData, setFormData] = useState({
-    patientId: selectedPatientId || "",
+    patientId: patientId || selectedPatientId  ||  "",
     editor: "",
     date: new Date().toISOString().split("T")[0],
     gestationWeek: "",
@@ -28,7 +28,7 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
   // Clear form function
   const clearForm = () => {
     setFormData({
-      patientId: selectedPatientId || "",
+      patientId: patientId || selectedPatientId || "",
       editor: currentUser?.name || "",
       date: new Date().toISOString().split("T")[0],
       gestationWeek: 0,
@@ -55,13 +55,13 @@ const Prescription = ({ setInternalTab, selectedPatientId }) => {
     setFormData((prev) => ({
       ...prev,
       editor: currentUser?.name || "",
-      patientId: selectedPatientId || "",
+      patientId: patientId || selectedPatientId || "",
     }));
 
-    if (selectedPatientId) {
-      fetchPatientName(selectedPatientId);
+    if (selectedPatientId || patientId) {
+      fetchPatientName(selectedPatientId || patientId);
     }
-  }, [currentUser, selectedPatientId]);
+  }, [currentUser, selectedPatientId,patientId]);
 
   // Auto-calculate trimester based on gestation week
   useEffect(() => {

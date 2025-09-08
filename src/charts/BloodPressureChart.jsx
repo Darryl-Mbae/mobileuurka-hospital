@@ -1,13 +1,11 @@
 import React, { useState, useRef } from "react";
 import { IoFlagSharp } from "react-icons/io5";
-import { Tooltip as ReactTooltip } from "react-tooltip";
 import {
   AreaChart,
   Area,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
   ResponsiveContainer,
 } from "recharts";
 
@@ -27,16 +25,13 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
 
   const calculateYAxisDomain = (data) => {
     const values = data.map((item) => item.value).filter((val) => val !== null);
-    if (values.length === 0) return [0, 100]; // Default range if no data
+    if (values.length === 0) return [0, 100];
 
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
-
-    // Calculate padding (10% of the range or fixed amount for small ranges)
     const range = maxValue - minValue;
-    const padding = Math.max(range * 0.1, 5); // Use at least 5 units padding
+    const padding = Math.max(range * 0.1, 5);
 
-    // For specific measurement ranges
     if (selectedOption === "diastolic") {
       return [
         Math.max(50, Math.floor(minValue - padding)),
@@ -59,7 +54,6 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
 
   const isAbnormalValue = (value) => {
     if (value === null || value === undefined) return false;
-    
     switch (selectedOption) {
       case "systolic":
         return value >= 140 || value < 90;
@@ -106,10 +100,8 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
       }))
       .sort((a, b) => a.rawDate - b.rawDate);
 
-    // Strip rawDate for recharts
     const cleaned = formatted.map(({ rawDate, ...rest }) => rest);
 
-    // Pad with nulls if less than 5
     while (cleaned.length < 5) {
       cleaned.push({ date: "--", value: null, isAbnormal: false });
     }
@@ -121,15 +113,42 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
   const yAxisDomain = calculateYAxisDomain(normalizedData);
 
   const handleMouseMove = (e) => {
-    if (e && e.activePayload && e.activePayload.length > 0) {
-      const payload = e.activePayload[0].payload;
-      setHoveredBar(payload);
-      setTooltipPos({ 
-        x: e.chartX || 0, 
-        y: e.chartY || 0 
+    if (!e) return;
+
+    const rawIndex = e.activeTooltipIndex ?? e.activeIndex;
+    const index = rawIndex != null ? Number(rawIndex) : null;
+
+    let payload = null;
+    if (e.activePayload && e.activePayload.length > 0) {
+      payload = e.activePayload[0].payload;
+    } else if (index !== null && Number.isFinite(index) && normalizedData[index]) {
+      payload = normalizedData[index];
+    }
+
+    if (!payload || payload.value == null) {
+      setHoveredBar(null);
+      return;
+    }
+
+    setHoveredBar(payload);
+
+    const rawX = e.chartX ?? (e.activeCoordinate && e.activeCoordinate.x) ?? 0;
+    const rawY = e.chartY ?? (e.activeCoordinate && e.activeCoordinate.y) ?? 0;
+
+    const container = chartRef.current;
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      const tooltipApproxWidth = 150;
+      const tooltipApproxHeight = 70;
+      const maxX = Math.max(8, rect.width - tooltipApproxWidth - 8);
+      const maxY = Math.max(8, rect.height - tooltipApproxHeight - 8);
+
+      setTooltipPos({
+        x: Math.max(8, Math.min(rawX - 50, maxX)),
+        y: Math.max(8, Math.min(rawY - 60, maxY)),
       });
     } else {
-      setHoveredBar(null);
+      setTooltipPos({ x: rawX - 50, y: rawY - 60 });
     }
   };
 
@@ -144,8 +163,8 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
       <div
         style={{
           position: "absolute",
-          top: Math.max(0, position.y - 50),
-          left: Math.max(0, position.x - 60),
+          top: position.y,
+          left: position.x,
           backgroundColor: "rgba(0, 0, 0, 0.8)",
           color: "white",
           padding: "8px 12px",
@@ -164,10 +183,7 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
             {selectedOption}: {data.value}
             {data.isAbnormal && (
               <IoFlagSharp
-                style={{
-                  marginLeft: "5px",
-                  marginBottom: "-2px",
-                }}
+                style={{ marginLeft: "5px", marginBottom: "-2px" }}
                 color="red"
               />
             )}
@@ -185,15 +201,9 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
 
   return (
     <div
-      style={{
-        width: "100%",
-        height: "90%",
-        position: "relative",
-        paddingTop: 10,
-      }}
+      style={{ width: "100%", height: "90%", position: "relative", paddingTop: 10 }}
       ref={chartRef}
     >
-      <ReactTooltip id="bp-tooltip" style={{ fontSize: ".8em", zIndex: "99999" }} />
       <ResponsiveContainer>
         <AreaChart
           data={normalizedData}
@@ -229,7 +239,6 @@ const BloodPressureChart = ({ patient = [], selectedOption }) => {
               );
             }}
           />
-
           <YAxis
             domain={yAxisDomain}
             axisLine={false}

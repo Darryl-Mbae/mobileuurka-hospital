@@ -13,6 +13,7 @@ import Allergies from "../forms/Allergies";
 import Pregnancy from "../forms/Pregnancy";
 import Labwork from "../forms/Labwork";
 import { useScreeningFlow } from "../hooks/useScreeningFlow";
+import { useLocation } from "react-router-dom";
 
 const testCategories = [
   {
@@ -96,6 +97,17 @@ const Screening = ({ internalTab, setInternalTab}) => {
   const { getScreeningContext } = useScreeningFlow(setInternalTab);
   const screeningContext = getScreeningContext();
 
+  const location = useLocation();
+  const { patientId, formType, returnTo, internalTab: internalTabFromNav } = location.state || {};
+
+  // If internalTab (prop) is empty, set it from navigation state
+  useEffect(() => {
+    console.log(patientId)
+    if (!internalTab && internalTabFromNav) {
+      setInternalTab(internalTabFromNav);
+    }
+  }, [internalTab, internalTabFromNav, setInternalTab]);
+
   return (
     <div className="screening">
       {internalTab === null ? (
@@ -138,7 +150,7 @@ const Screening = ({ internalTab, setInternalTab}) => {
           )}
           {internalTab === 2.11 && <Fetal setInternalTab={setInternalTab} />}
           {internalTab === 2.13 && (
-            <Prescription setInternalTab={setInternalTab} />
+            <Prescription setInternalTab={setInternalTab} patientId={patientId}/>
           )}
           {internalTab === 2.12 && (
             <Ultrasound setInternalTab={setInternalTab} />
