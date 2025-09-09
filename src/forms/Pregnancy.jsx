@@ -187,6 +187,9 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
             10
           )
         }));
+        
+      }
+      else{
         setPatientName("Patient not found");
       }
     } catch (error) {

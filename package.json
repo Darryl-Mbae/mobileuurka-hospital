@@ -16,9 +16,15 @@
     "docs:cross-references": "node .kiro/docs/scripts/validate-cross-references.js"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@lottiefiles/dotlottie-react": "^0.14.3",
+    "@mui/material": "^7.3.2",
+    "@mui/x-date-pickers": "^8.11.1",
     "@reduxjs/toolkit": "^2.8.2",
     "cuid": "^3.0.0",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.18",
     "prop-types": "^15.8.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

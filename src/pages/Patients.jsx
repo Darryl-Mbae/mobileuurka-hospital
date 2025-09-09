@@ -198,7 +198,7 @@ const Patients = ({ setActiveItem }) => {
     getPaginatedData,
   } = usePagination({
     totalItems: filteredPatients.length,
-    initialItemsPerPage: 10,
+    initialItemsPerPage: 7,
     initialPage: 1,
   });
 

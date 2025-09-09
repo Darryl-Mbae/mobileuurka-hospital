@@ -300,3 +300,45 @@
     margin-top: 15px;
   }
 }
+
+input.special-date{
+  border: none !important;
+  background: transparent !important;
+  font-family: "Inter", sans-serif;
+  color: #585858;
+  font-size: .9em;
+
+}
+
+/* Hover state */
+input.special-date:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Focus state */
+input.special-date:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Active state */
+input.special-date:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Placeholder text */
+input.special-date::placeholder {
+  color: rgba(0,0,0,0.5); /* or your preferred placeholder color */
+}
+
+/* Autofill styles for Chrome/Safari */
+input.special-date:-webkit-autofill {
+  box-shadow: 0 0 0px 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+}

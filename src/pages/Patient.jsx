@@ -20,7 +20,7 @@ import Note from "../patient/Note";
 import Notepad from "./Notepad";
 import { FaRegCopy } from "react-icons/fa";
 import { TiTick } from "react-icons/ti";
-import { HiBellAlert } from "react-icons/hi2";
+import { HiBellAlert, HiMiniPencilSquare } from "react-icons/hi2";
 import Alerts from "../dialog/Alerts.jsx";
 import { FaRegBell } from "react-icons/fa6";
 
@@ -36,33 +36,86 @@ const Patient = ({ id }) => {
   const [copied, setCopied] = useState(false);
   const [document, setDocument] = useState([]);
   const [note, setNote] = useState("");
+  const [nextVisitChange, setNextVisitChange] = useState(false)
+  const [nextVisitValue, setNextVisitValue] = useState(null)
+  const SERVER = import.meta.env.VITE_SERVER_URL;
 
   // Get patient from Redux store instead of local state
   const patient = useSelector((state) =>
     state.patient?.patients?.find((p) => p.id === id)
   );
 
-  useEffect(()=>{
-    if(patient){
-      console.log("patient",patient)
+  useEffect(() => {
+    if (patient) {
+      console.log("patient", patient)
     }
-  },[patient])
+  }, [patient])
   useEffect(() => {
     if (id) {
       // Only fetch if patient is not in Redux store
       if (!patient) {
         fetchPatientById(id);
       }
-      
+
     }
   }, [id, patient]);
 
   const alertsRef = useRef();
 
   const handleShowAlert = () => {
-    alertsRef.current.show();
+    setNextVisitChange(true)
   };
 
+
+  const handleNextVisitChange = (nextVisitValue) => {
+    if (!nextVisitValue) return;
+
+    // Format the date nicely: e.g., "Thursday, 9 September 2025"
+    const formattedDate = new Date(nextVisitValue).toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const confirmed = window.confirm(`Are you changing the next visit to ${formattedDate}?`);
+    if (confirmed) {
+      console.log(patient)
+      console.log(patient.visits)
+      console.log(patient.visits.length)
+
+
+      const id = patient.visits[patient?.visits?.length - 1].id
+      handleSubmitVisit(id, nextVisitValue)
+    }
+  };
+
+  const handleSubmitVisit = async (id, nextVisitValue) => {
+    // Prepare data to send
+
+    const updateData = {
+      nextVisit: nextVisitValue // you can send as ISO string or timestamp depending on backend
+    };
+    try {
+      const response = await fetch(
+        `${SERVER}/patients/medical/visit/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Submission failed");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+    }
+  };
   const fetchPatientById = async (patientId) => {
     setLoading(true);
     setError(null);
@@ -193,7 +246,7 @@ const Patient = ({ id }) => {
     },
     {
       label: "Next Visit",
-      value: patient?.visits?.length
+      value: nextVisitValue || patient?.visits?.length
         ? formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
         : "-",
     },
@@ -227,17 +280,16 @@ const Patient = ({ id }) => {
       label: "Caffeine Intake",
       value:
         patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine ===
-        "Yes"
+          "Yes"
           ? [
-              `${
-                patient?.lifestyles?.[
-                  patient?.lifestyles.length - 1
-                ]?.caffeineSources?.join(", ") || "Not specified"
-              }`,
-              // `Servings per day: ${
-              //   patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine_quantity ?? "Not specified"
-              // }`,
-            ]
+            `${patient?.lifestyles?.[
+              patient?.lifestyles.length - 1
+            ]?.caffeineSources?.join(", ") || "Not specified"
+            }`,
+            // `Servings per day: ${
+            //   patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine_quantity ?? "Not specified"
+            // }`,
+          ]
           : "None",
     },
     // patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine !=
@@ -263,12 +315,12 @@ const Patient = ({ id }) => {
           Diet{" "}
           {patient?.lifestyles?.[patient?.lifestyles.length - 1]?.diet ===
             "Vegan" && (
-            <IoFlagSharp
-              data-tooltip-id="my-tooltip"
-              data-tooltip-content="Patient is vegan — consider testing for Vitamin B12"
-              color="red"
-            />
-          )}
+              <IoFlagSharp
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Patient is vegan — consider testing for Vitamin B12"
+                color="red"
+              />
+            )}
         </span>
       ),
       value:
@@ -279,10 +331,9 @@ const Patient = ({ id }) => {
       label: "Exercise ",
       value:
         patient?.lifestyles?.[patient?.lifestyles.length - 1]?.exercise !==
-        undefined
-          ? `${patient.lifestyles[0].exercise} ${
-              patient.lifestyles[0].exercise > 1 ? "hrs" : "hr"
-            }`
+          undefined
+          ? `${patient.lifestyles[0].exercise} ${patient.lifestyles[0].exercise > 1 ? "hrs" : "hr"
+          }`
           : "Not specified",
     },
     {
@@ -371,13 +422,54 @@ const Patient = ({ id }) => {
       <div className="container">
         {items.map((item, index) => (
           <div className="list" key={index}>
-            <div className="label">{item.label}</div>
-            <div className="value">{item.value}</div>
+            <div className="label" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              {item.label}
+              {item.label === "Next Visit" && (
+                <HiMiniPencilSquare
+                  style={{ cursor: "pointer", color: "#585858" }}
+                  onClick={() => handleEditNextVisit(item.value)}
+                  title="Edit Next Visit"
+                />
+              )}
+            </div>
+            <div className="value">
+              {/* Add this conditional rendering */}
+              {item.label === "Next Visit" && nextVisitChange ? (
+                <input
+                  type="date"
+                  className="special-date"
+                  style={{
+                    border: "none"
+                  }}
+                  defaultValue={new Date(patient?.visits?.[patient.visits.length - 1]?.nextVisit).toISOString().split('T')[0]}
+                  onBlur={(e) => {
+                    // Handle the date change here
+                    setNextVisitValue(e.target.value);
+                    setNextVisitChange(false); // Hide the input after editing
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setNextVisitValue(e.target.value);
+                      setNextVisitChange(false);
+                    }
+                  }}
+                  onChange={(e) => handleNextVisitChange(e.target.value)}
+                  autoFocus
+                />
+              ) : (
+                item.value
+              )}
+            </div>
           </div>
         ))}
       </div>
     </section>
   );
+
+  // Handler function to handle the edit click
+  const handleEditNextVisit = (currentValue) => {
+    setNextVisitChange(true); // This will show the date input
+  };
 
   return (
     <div className="patient-container">
@@ -465,9 +557,9 @@ const Patient = ({ id }) => {
               </ul>
               <div className="ai-buttons">
                 <div className="notification" onClick={() => handleShowAlert()}>
-                  <FaRegBell 
+                  <FaRegBell
 
-                    style={{ color: "#333",}}
+                    style={{ color: "#333", }}
                   />
                   {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
                     <span className="badge" >
