@@ -2,16 +2,18 @@ import React from 'react';
 import { getNextStep, getStepProgress } from '../config/screeningFlowConfig';
 import '../css/NextScreeningButton.css';
 
-const NextScreeningButton = ({ 
-  flowId = 'PATIENT_SCREENING', 
-  currentStepId, 
-  patientId, 
+const NextScreeningButton = ({
+  flowId = 'PATIENT_SCREENING',
+  currentStepId,
+  patientId,
   onNext,
   className = '',
-  disabled = false 
+  disabled = false
 }) => {
   const nextStep = getNextStep(flowId, currentStepId);
   const progress = getStepProgress(flowId, currentStepId);
+
+  console.log(nextStep)
 
   if (!nextStep) {
     return (
@@ -40,10 +42,10 @@ const NextScreeningButton = ({
   return (
     <div className={`next-screening-container ${className}`}>
 
-      
 
 
-      <button 
+
+      <button
         className={`next-screening-btn ${disabled ? 'disabled' : ''}`}
         onClick={handleNext}
         disabled={disabled}

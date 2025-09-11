@@ -31,6 +31,8 @@
   gap: 8px;
   flex-wrap: wrap;
   justify-content: center;
+  margin-top: 0px !important;
+  padding-top: 0px !important;
 }
 
 /* Page Numbers Container */
@@ -239,6 +241,7 @@
   }
 
   .pagination-controls {
+    flex-direction: row !important;
     gap: 4px;
   }
 
@@ -285,10 +288,11 @@
 @media (max-width: 480px) {
   .pagination-container {
     flex-direction: column;
-    gap: 8px;
+    gap: 25px;
   }
 
   .pagination-controls {
+    flex-direction: row;
     flex-wrap: wrap;
     gap: 2px;
   }
