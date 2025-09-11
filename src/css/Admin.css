@@ -50,7 +50,7 @@
 @media screen and (max-width: 900px) {
   .admin {
     flex-direction: column;
-    height: auto;
+    height: 90vh;
     padding: 5vh 0px !important;
     overflow:hidden;
     
@@ -63,7 +63,7 @@
 @media screen and (max-width: 500px) {
   .admin .content {
     width: calc(100% - 40px);
-    height: auto;
+    height: calc(100vh - 10vh);
     padding: 5vh 20px;
   }
 }
