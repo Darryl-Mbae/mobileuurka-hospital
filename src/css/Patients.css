@@ -1,9 +1,10 @@
 /* Patients.css */
 .patients-page {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
+
 }
 
 .patients-page .toolbar {
@@ -28,8 +29,9 @@
 .patients-page .lists {
   width: 100%;
   margin: 10px auto;
-  max-height: 75vh;
+  /* max-height: 75vh; */
   padding: 15px 0;
+  height: auto;
   display: flex;
   flex-direction: column;
   font-size: 0.9em;

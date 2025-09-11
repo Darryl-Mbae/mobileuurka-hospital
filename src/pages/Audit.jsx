@@ -206,7 +206,7 @@ const Audit = () => {
     getPaginatedData,
   } = usePagination({
     totalItems: filteredLogs.length,
-    initialItemsPerPage: 6,
+    initialItemsPerPage: 10,
     initialPage: 1,
   });
 

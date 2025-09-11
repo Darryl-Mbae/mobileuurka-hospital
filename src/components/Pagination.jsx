@@ -87,7 +87,7 @@ const Pagination = ({
   itemsPerPageOptions = [10, 25, 50, 100],
   showPageInfo = true,
   width,
-  maxVisiblePages = 7,
+  maxVisiblePages = 10,
   isLoading = false,
   ariaLabel = 'Pagination Navigation'
 }) => {

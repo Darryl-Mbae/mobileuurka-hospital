@@ -1,10 +1,15 @@
 .admin {
   display: flex;
   flex-direction: row;
+
 }
 .admin .content {
   width: calc(100% - 22% - 40px);
+  height: calc(100vh - 26vh);
   padding: 13vh 40px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  /* padding-bottom: 20vh; */
 }
 .admin .content.active {
   width: calc(100%);
@@ -47,7 +52,7 @@
     flex-direction: column;
     height: 90vh;
     padding: 5vh 0px !important;
-    overflow-y: scroll;
+    overflow:hidden;
     
 
   }

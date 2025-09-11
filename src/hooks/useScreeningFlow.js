@@ -28,6 +28,7 @@ export const useScreeningFlow = (setInternalTab) => {
       'Ultrasound': 2.12,
       'Prescription': 2.13
     };
+    console.log(nextStep)
 
     const tabNumber = componentToTabMap[nextStep.component];
     
