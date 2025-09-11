@@ -56,7 +56,7 @@
 @media screen and (max-width: 900px) {
     .screening{
         height:auto;
-        overflow-y: scroll;
+        overflow: hidden;
     }
     .screening .components .tests{
         grid-template-columns: repeat(2,1fr);
