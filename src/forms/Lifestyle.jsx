@@ -4,6 +4,7 @@ import "../css/Form.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
+import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
   const [formData, setFormData] = useState({
@@ -31,6 +32,10 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const { showSuccess, successConfig, showSuccessMessage } = useSuccessMessage(clearForm);
+
+  const { navigateToNextStep, getCurrentStepInfo, getScreeningContext } = useScreeningFlow(setInternalTab);
+  const screeningInfo = getCurrentStepInfo('Lifestyle');
+  const screeningContext = getScreeningContext();
 
 
   useEffect(() => {
@@ -121,15 +126,12 @@ const Lifestyle = ({ setInternalTab, selectedPatientId }) => {
       showSuccessMessage({
         title: "Lifestyle Completed Successfully!",
         message: `Visit details recorded for ${formData.name || 'the patient'}.`,
-        showRedoButton: true,
-        showScreeningButton: true,
-        showNextButton: true,
-        setInternalTab: setInternalTab,
-        nextButtonText: "Add Another Triage",
-        nextButtonAction: () => {
-          clearForm();
-        },
-        patientId: formData.patientId
+        // showScreeningButton: true,
+        showNextScreening: true,
+        currentStepId: screeningInfo.stepId,
+        flowId: screeningInfo.flowId,
+        patientId: formData.patientId,
+        onNextScreening: navigateToNextStep,
       });
       setSuccess(true);
     } catch (error) {

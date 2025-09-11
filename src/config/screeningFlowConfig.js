@@ -48,7 +48,24 @@ export const SCREENING_FLOWS = {
         description: 'Lifestyle and behavioral factors',
         icon: '🏃‍♀️',
         required: false
+      },
+      {
+        id: 'infections',
+        name: 'Infections test',
+        component: 'Infections',
+        description: 'Lifestyle and behavioral factors',
+        icon: '🩺',
+        required: false
+      },
+      {
+        id: 'allergies',
+        name: 'Alergies',
+        component: 'Allergies',
+        description: 'Lifestyle and behavioral factors',
+        icon: '🩺',
+        required: false
       }
+
     ]
   },
 
@@ -58,20 +75,13 @@ export const SCREENING_FLOWS = {
     name: 'Pregnancy Screening Flow',
     description: 'Comprehensive pregnancy assessment',
     steps: [
+     
       {
-        id: 'intake',
-        name: 'Patient Intake',
-        component: 'PatientIntake',
-        description: 'Basic patient registration',
-        icon: '📝',
-        required: true
-      },
-      {
-        id: 'pregnancy',
-        name: 'Pregnancy Assessment',
-        component: 'Pregnancy',
-        description: 'Pregnancy-specific information',
-        icon: '🤱',
+        id: 'visit',
+        name: 'Patient Visit',
+        component: 'PatientVisit',
+        description: 'Visit details and chief complaint',
+        icon: '🏥',
         required: true
       },
       {
@@ -82,6 +92,7 @@ export const SCREENING_FLOWS = {
         icon: '🩺',
         required: true
       },
+      
       {
         id: 'ultrasound',
         name: 'Ultrasound',
@@ -89,6 +100,14 @@ export const SCREENING_FLOWS = {
         description: 'Fetal ultrasound examination',
         icon: '🔍',
         required: false
+      },
+      {
+        id: 'pregnancy',
+        name: 'Pregnancy Assessment',
+        component: 'Pregnancy',
+        description: 'Pregnancy-specific information',
+        icon: '🤱',
+        required: true
       },
       {
         id: 'labwork',

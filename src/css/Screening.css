@@ -9,6 +9,7 @@
 .screening .components{
     width: 100%;
     height: 90%;
+
 }
 
 .screening .components .tests{
@@ -54,8 +55,8 @@
 
 @media screen and (max-width: 900px) {
     .screening{
-        height: auto;
-        padding-bottom: 4vh;
+        height:auto;
+        overflow-y: scroll;
     }
     .screening .components .tests{
         grid-template-columns: repeat(2,1fr);

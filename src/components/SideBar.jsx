@@ -133,6 +133,10 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
             </li>
           ))}
         </ul>
+        <div className="signout mobile" onClick={signout}>
+          <GoSignOut />
+
+        </div>
         {/* <div className="logout" onClick={logout}>
           <MdLogout /> Logout
         </div> */}

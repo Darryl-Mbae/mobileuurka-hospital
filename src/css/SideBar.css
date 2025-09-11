@@ -10,15 +10,18 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* background: #fffaf5; */
 }
-.sidebar.active{
+
+.sidebar.active {
   width: 8%;
   align-items: center;
 }
+
 .sidebar .navigation .line {
   width: 80%;
   border-bottom: 1px solid #efefef;
   margin: 30px auto;
 }
+
 .sidebar .company {
   display: flex;
   flex-direction: row;
@@ -40,11 +43,13 @@
   margin-right: 20px;
   background: whitesmoke;
 }
+
 .sidebar .company .logo img {
   width: 60%;
   height: auto;
   margin: auto;
 }
+
 .sidebar .company .name {
   font-size: 1.2em;
   font-weight: 500;
@@ -54,12 +59,15 @@
   align-items: center;
   width: 100%;
 }
-.sidebar .company .name .signout{
+
+.sidebar .company .name .signout {
   cursor: pointer;
 }
+
 .sidebar.active .company .name {
   display: none;
 }
+
 .sidebar .navigation {
   display: flex;
   flex-direction: column;
@@ -68,6 +76,7 @@
   padding: 0;
   list-style: none;
 }
+
 .sidebar .navigation .category {
   text-transform: uppercase;
   font-size: 0.9em;
@@ -84,6 +93,7 @@
   margin: 0;
   padding: 0;
 }
+
 .sidebar .navigation ul li {
   display: flex;
   flex-direction: row;
@@ -99,23 +109,27 @@
 }
 
 
-.sidebar.active .navigation ul li{
+.sidebar.active .navigation ul li {
   display: flex;
   flex-direction: row;
   width: calc(80% - 40px);
   justify-content: center;
 
 }
-.sidebar.active .navigation ul li span{
+
+.sidebar.active .navigation ul li span {
   display: none;
 }
+
 .sidebar .navigation ul li.active,
 .sidebar .navigation ul li:hover {
   background: rgba(239, 239, 239, 0.57);
 }
+
 .sidebar .navigation ul li:hover {
   transform: translateX(5px);
 }
+
 .sidebar .navigation ul li .icon {
   color: #aca287;
   font-size: 1.3em;
@@ -123,6 +137,7 @@
   align-items: center;
   justify-content: center;
 }
+
 .sidebar .navigation ul li .badge {
   background: #f05b56;
   width: 20px;
@@ -134,10 +149,12 @@
   align-items: center;
   justify-content: center;
 }
+
 .sidebar .hamburger {
   display: none;
 }
-.sidebar .logout{
+
+.sidebar .logout {
   position: absolute;
   width: calc(70% - 40px);
   padding: 0px 20px;
@@ -152,6 +169,10 @@
   cursor: pointer;
 }
 
+.signout.mobile {
+  display: none;
+}
+
 @media screen and (max-width: 900px) {
   .sidebar {
     width: 100%;
@@ -161,6 +182,7 @@
     position: relative;
     background: white;
   }
+
   .sidebar .navigation {
     position: absolute;
     top: 6vh;
@@ -174,6 +196,7 @@
     height: 89vh;
     background: white;
   }
+
   .sidebar .navigation .category {
     text-transform: uppercase;
     font-size: 0.9em;
@@ -181,10 +204,24 @@
     margin-bottom: 20px;
     padding-left: 30px;
   }
+
   .sidebar .hamburger {
     display: inline;
   }
+
   .sidebar .navigation.open {
     transform: translateX(-200%);
   }
+
+  .sidebar .company .name .signout {
+    display: none;
+  }
+
+  .signout.mobile{
+    display: flex;
+    position: absolute;
+    right: 7%;
+    top: 5%;
+  }
+  
 }

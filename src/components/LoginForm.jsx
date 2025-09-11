@@ -96,14 +96,14 @@ const LoginForm = memo(({
       </div>
 
       <div className="form-actions">
-        <label className="remember-me">
+        {/* <label className="remember-me">
           <input
             type="checkbox"
             checked={loginFormData.rememberMe}
             onChange={handleRememberMeChange}
           />
           <span>Remember me</span>
-        </label>
+        </label> */}
         <span 
           onClick={() => window.location.href = "/forgot-password"}
           style={{ cursor: "pointer", color: "var(--primary-color)" }}

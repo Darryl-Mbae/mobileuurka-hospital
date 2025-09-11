@@ -60,7 +60,7 @@ const SuccessMessage = ({
             </div>
           </div>
         ) : title === "Feature Unavailable During Pilot" ? (
-          <div className="success-icon" style={{color:"#008540"}}>
+          <div className="success-icon" style={{ color: "#008540" }}>
             <MdError />
           </div>
         ) : (
@@ -82,20 +82,23 @@ const SuccessMessage = ({
             className="success-next-screening"
           />
         )}
+        
+        {showScreeningButton && (
+          <button
+            className="next-screening-btn"
+            onClick={handleGoToScreening}
+            style={{
+              backgroundColor:
+                title == "Action Needed" ? "#ffc187" : "#008540",
+            }}
+          >
+            Go to Screening
+            <span className="arrow">→</span>
+          </button>
+        )}
 
         <div className="success-buttons">
-          {showScreeningButton && (
-            <button
-              className="success-btn primary"
-              onClick={handleGoToScreening}
-              style={{
-                backgroundColor:
-                  title == "Action Needed" ? "#ffc187" : "#008540",
-              }}
-            >
-              Go to Screening
-            </button>
-          )}
+
           {showFeedbackButton && (
             <button
               className="success-btn primary"

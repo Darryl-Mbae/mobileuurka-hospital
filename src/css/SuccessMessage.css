@@ -119,6 +119,13 @@
   transform: translateY(0);
 }
 
+
+@media screen and (max-width:900px) {
+  .success-container{
+    width: calc(90% - 40px);
+    padding: 30px 20px;
+  }
+}
 /* Responsive design */
 @media (min-width: 480px) {
   .success-buttons {

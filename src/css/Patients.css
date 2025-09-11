@@ -150,28 +150,67 @@
   }
 }
 
-@media screen and (max-width: 768px) {
+/* Mobile Horizontal Scrolling - Below 900px */
+@media screen and (max-width: 900px) {
+  .patients-page .lists {
+    overflow-x: auto;
+    overflow-y: auto;
+    /* Hide scrollbars but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .patients-page .lists::-webkit-scrollbar {
+    display: none;
+  }
+
+  .patients-page .lists .title {
+    width: 100%;
+    min-width: 800px; /* Ensure minimum width for all columns */
+    margin: 10px 0;
+    padding: 15px 20px;
+  }
+
+  .patients-page .lists .list {
+    width: 100%;
+    min-width: 800px; /* Match title width */
+    padding: 12px 20px;
+  }
+
+  /* Keep original grid structure intact */
   .patients-page .lists .title,
   .patients-page .lists .list {
-    grid-template-columns: 30% 20% 20% auto;
+    grid-template-columns: 15% 18% 12% 14% 9% 32%; /* Slightly adjusted for mobile */
+    font-size: 0.85em;
   }
 
-  .patients-page .lists .title .hospital,
-  .patients-page .lists .title .risk,
-  .patients-page .lists .title .week,
-  .patients-page .lists .title .createdAt,
-  .patients-page .lists .title .reason,
-  .patients-page .lists .title .suspected {
-    display: none;
+  /* Improve touch targets */
+  .patients-page .lists .list {
+    min-height: 50px;
   }
 
-  .patients-page .lists .list .hospital,
-  .patients-page .lists .list .risk,
-  .patients-page .lists .list .week,
-  .patients-page .lists .list .createdAt,
-  .patients-page .lists .list .reason,
-  .patients-page .lists .list .suspected {
-    display: none;
+  /* Add subtle scroll hint */
+  .patients-page .lists::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Ensure hover effect still works on mobile touch */
+  .patients-page .lists .list:hover,
+  .patients-page .lists .list:active {
+    transform: none; /* Remove slide effect on mobile */
+    background-color: rgba(0, 0, 0, 0.02);
   }
 }
 
@@ -193,7 +232,7 @@
 }
 
 .filter-select {
-  padding: 8px 12px;
+  padding: 8px 32px 8px 12px; /* extra right padding */
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   background: white;
@@ -203,7 +242,19 @@
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
+
+  /* hide default arrow */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* optional: add space for a custom icon */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="12" width="12" xmlns="http://www.w3.org/2000/svg"><path d="M2 4l4 4 4-4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
 }
+
 
 .filter-select:hover {
   border-color: rgba(0, 0, 0, 0.2);
@@ -287,13 +338,12 @@
   }
 
   .filters-row {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
     gap: 10px;
   }
 
   .filter-select {
-    min-width: 100%;
+    min-width: 43.5vw;
   }
 
   .active-filters {

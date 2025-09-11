@@ -259,6 +259,15 @@ form textarea:focus {
   .hospital-selection {
     grid-template-columns: 1fr;
   }
+  .form{
+    width: 100%;
+    height: auto;
+    
+  }
+  .form .form-grid {
+    width: 110%;
+    grid-template-columns: 100%;
+  }
 
   .form-section {
     padding: 15px;

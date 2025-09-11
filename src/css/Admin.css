@@ -45,11 +45,17 @@
 @media screen and (max-width: 900px) {
   .admin {
     flex-direction: column;
+    height: 90vh;
+    padding: 5vh 0px !important;
+    overflow-y: scroll;
+    
+
   }
 }
 @media screen and (max-width: 500px) {
   .admin .content {
     width: calc(100% - 40px);
+    height: calc(100vh - 10vh);
     padding: 5vh 20px;
   }
 }
