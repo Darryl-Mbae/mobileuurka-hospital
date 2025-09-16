@@ -1,0 +1,7 @@
+@media screen and (min-width: 500px) {
+    .notepad-container{
+     overflow-y: scroll;
+     height: 80vh;
+     padding: 10px 0px;   
+    }
+}

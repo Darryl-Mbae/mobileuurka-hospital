@@ -19,3 +19,13 @@
 
   height: auto;
 }
+
+@media screen and (max-width:500px) {
+  .profile-page{
+    grid-template-columns: 100%;
+  }
+  .profile-page .righty{
+    padding-left: 0px;
+    width: 100%;
+  }
+}

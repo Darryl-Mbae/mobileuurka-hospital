@@ -76,3 +76,40 @@
 .p-overview .grid-2.reverse .chart.x2 .in-chart.two {
   aspect-ratio: 1/1.05;
 }
+@media screen and (max-width: 500px) {
+  .p-overview{
+    height: auto;
+    padding-bottom: 15vh;
+  }
+  .p-overview .grid-2.reverse{
+    height: auto;
+  }
+  .p-overview .grid-3 {
+    grid-template-columns: 100%;
+  }
+  .p-overview .grid-2 {
+    grid-template-columns: 100%;
+  }
+  .p-overview .grid-2.reverse{
+    grid-template-columns: 100%;
+  }
+  .p-overview .grid-3 .fetal{
+    display: none;
+  }
+  .p-overview .grid-2 .chart.x2{
+    height: auto;
+    aspect-ratio: auto;
+    padding: 2vh 0px;
+  }
+  .p-overview .grid-2 .lab{
+    display: none;
+  }
+  .p-overview .grid-2.reverse .chart.x2 .inner-grid{
+    grid-template-columns: 100%;
+  }
+  .p-overview .grid-2.reverse .chart.x2 .inner-grid .in-chart.two{
+    display: none;
+  }
+
+
+}

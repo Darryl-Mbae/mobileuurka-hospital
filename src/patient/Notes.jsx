@@ -7,12 +7,30 @@ import { useSelector } from "react-redux";
 import { usePagination } from "../hooks/usePagination";
 import Pagination from "../components/Pagination";
 
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 const Notes = ({ setNotes, setActiveTitle, patient }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
+
+
 
   // useEffect(() => {
   //   async function getUsers() {
@@ -56,7 +74,7 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
       note.notes.toLowerCase().includes(term)
     );
   });
-  
+
 
   // Add pagination hook
   const {
@@ -85,7 +103,7 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
   };
 
   return (
-    <div id="notes" className="content">
+    <div id="notes" className="content doc">
       <div className="con">
         <div className="search-input">
           <RiSearchLine />
@@ -100,40 +118,42 @@ const Notes = ({ setNotes, setActiveTitle, patient }) => {
         </div>
         <div className="button" onClick={handleAddNote}>
           <IoMdAdd />
-          Add Note
+          {isMobile ? "" : "Add Note"}
         </div>
       </div>
-
-      <div className="documents">
-        <div className="title">
-          <div className="title-name">Title</div>
-          <div className="Editor">Editor</div>
-          <div className="date">Date</div>
-        </div>
-
-        {currentPageNotes.map((note, index) => (
-          <div
-            key={index}
-            className="record"
-            onClick={() => {
-              setNotes(note);
-              setActiveTitle("note");
-            }}
-          >
-            <div className="doc">
-              <div className="icon">
-                <IoDocumentTextOutline />
-              </div>
-              <div className="details">
-                <div className="doc-name">{note.title}</div>
-                <div className="doc-visit">{note.visit_id}</div>
-              </div>
-            </div>
-            <div className="doc-editor">{note.editor}</div>
-            <div className="date">{formatDate(note.date)}</div>
+      <div className="med-grid">
+        <div className="documents">
+          <div className="title">
+            <div className="title-name">Title</div>
+            <div className="Editor">Editor</div>
+            <div className="date">Date</div>
           </div>
-        ))}
+
+          {currentPageNotes.map((note, index) => (
+            <div
+              key={index}
+              className="record"
+              onClick={() => {
+                setNotes(note);
+                setActiveTitle("note");
+              }}
+            >
+              <div className="doc">
+                <div className="icon">
+                  <IoDocumentTextOutline />
+                </div>
+                <div className="details">
+                  <div className="doc-name">{note.title}</div>
+                  <div className="doc-visit">{note.visit_id}</div>
+                </div>
+              </div>
+              <div className="doc-editor">{note.editor}</div>
+              <div className="date">{formatDate(note.date)}</div>
+            </div>
+          ))}
+        </div>
       </div>
+
 
       {/* Add Pagination Component */}
       {filteredNotes?.length > 0 && (

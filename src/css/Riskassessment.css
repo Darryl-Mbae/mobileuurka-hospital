@@ -171,3 +171,9 @@
 }
 }
 
+
+@media screen and (max-width:500px) {
+    .riskassessment{
+        grid-template-columns: 100%;
+    }
+}

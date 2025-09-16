@@ -94,3 +94,29 @@
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
+@media screen and (max-width:500px) {
+  .medication{
+    width: calc(100%);
+    overflow-x: hidden;
+  }
+  .medication .buttonz{
+    height: 50px;
+    padding: 0px;
+    aspect-ratio: 1;
+  }
+  .medication .med-grid {
+    grid-template-columns: 100%;
+    overflow-x: scroll;
+  }
+
+  .medication .meds {
+    width: 200vw;
+  }
+
+  .medication .con{
+    width: 100%;
+  }
+
+  
+}

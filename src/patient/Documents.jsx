@@ -10,10 +10,27 @@ import Document from "./Document";
 import { usePagination } from "../hooks/usePagination";
 import Pagination from "../components/Pagination";
 
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const users = useSelector((s) => s.user.users);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
 
   const riskLevelColors = {
     high: "#FF3B30",
@@ -92,7 +109,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
       state: {
         patientId: patient?.id,
         returnTo: "documents",
-        internalTab: 1, // Documents/screening tab
+        // internalTab: 1, // Documents/screening tab
       },
     });
   };
@@ -186,8 +203,8 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           // Join risk_levels found
           result = relatedExplanations?.length
             ? relatedExplanations
-                .map((exp) => exp.risklevel || "No risk level")
-                .join(", ")
+              .map((exp) => exp.risklevel || "No risk level")
+              .join(", ")
             : "No explanations";
         }
 
@@ -248,7 +265,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   };
 
   return (
-    <div id="notes" className="content">
+    <div id="notes" className="content doc">
       {document?.title ? (
         <>
           <Document
@@ -274,52 +291,56 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
             </div>
             <div className="button" onClick={handleAddDocument}>
               <IoMdAdd />
-              Add Document
+              {isMobile ? "" : "Add Document"}
             </div>
           </div>
-
-          <div className="documents new">
-            <div className="title">
-              <div className="title-name">Name</div>
-              <div className="Editor">Editor</div>
-              <div className="date">Date</div>
-              <div className="date">Analysis</div>
-            </div>
-
-            {currentPageRecords.map((record, index) => (
-              <div
-                key={index}
-                className="record"
-                onClick={() => setDocument(record)}
-              >
-                <div className="doc">
-                  <div className="icon">
-                    <IoDocumentTextOutline />
-                  </div>
-                  <div className="details">
-                    <div className="doc-name">{record.title}</div>
-                    <div className="doc-visit">{record.visit_id}</div>
-                  </div>
-                </div>
-                <div className="doc-editor">{record.editor}</div>
-                <div className="date">{formatDate(record.date_of_visit)}</div>
-                <div className="result">
-                  {record.result !== "" && (
-                    <IoIosWarning
-                      className="warn"
-                      style={{
-                        color: "#FF9500",
-                        backgroundColor: "#FF950020",
-                        borderRadius: "50%",
-                        padding: "2px",
-                        marginRight: "10px",
-                      }}
-                    />
-                  )}
-                  {renderResult(record)}
-                </div>
+          <div className="med-grid"
+          style={{
+            overflowX:"scroll"
+          }}>
+            <div className="documents new">
+              <div className="title">
+                <div className="title-name">Name</div>
+                <div className="Editor">Editor</div>
+                <div className="date">Date</div>
+                <div className="date">Analysis</div>
               </div>
-            ))}
+
+              {currentPageRecords.map((record, index) => (
+                <div
+                  key={index}
+                  className="record"
+                  onClick={() => setDocument(record)}
+                >
+                  <div className="doc">
+                    <div className="icon">
+                      <IoDocumentTextOutline />
+                    </div>
+                    <div className="details">
+                      <div className="doc-name">{record.title}</div>
+                      <div className="doc-visit">{record.visit_id}</div>
+                    </div>
+                  </div>
+                  <div className="doc-editor">{record.editor}</div>
+                  <div className="date">{formatDate(record.date_of_visit)}</div>
+                  <div className="result">
+                    {record.result !== "" && (
+                      <IoIosWarning
+                        className="warn"
+                        style={{
+                          color: "#FF9500",
+                          backgroundColor: "#FF950020",
+                          borderRadius: "50%",
+                          padding: "2px",
+                          marginRight: "10px",
+                        }}
+                      />
+                    )}
+                    {renderResult(record)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Add Pagination Component */}

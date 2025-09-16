@@ -2,10 +2,28 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import SuccessMessage from "../components/SuccessMessage";
 import useSuccessMessage from "../hooks/useSuccessMessage";
+import '../css/Notepad.css'
+
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
 
 const Notepad = ({ patient, user }) => {
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const [loading, setLoading] = useState(false);
+  const isMobile = useIsMobile();
+
   console.log(patient)
 
   // Clear form function
@@ -18,7 +36,7 @@ const Notepad = ({ patient, user }) => {
         ? patient.notes[patient.notes.length]
         : "1",
       notes: "",
-      gestationweek: patient ? patient?.visits[patient.visits?.length -  1].gestationWeek : "",
+      gestationweek: patient ? patient?.visits[patient.visits?.length - 1].gestationWeek : "",
       date: new Date().toISOString().split("T")[0],
       visit_id: "",
       user_id: user ? user.user_id : "",
@@ -38,7 +56,7 @@ const Notepad = ({ patient, user }) => {
       ? patient.notes[patient.notes.length]
       : "1",
     notes: "",
-    gestationweek: patient ? patient?.visits[patient.visits?.length -  1].gestationWeek : "",
+    gestationweek: patient ? patient?.visits[patient.visits?.length - 1].gestationWeek : "",
     date: new Date().toISOString().split("T")[0],
     visit_id: "",
     user_id: user ? user.user_id : "",
@@ -67,7 +85,7 @@ const Notepad = ({ patient, user }) => {
     e.preventDefault();
     const payload = {
       patientId: formData.patient_id,
-      editor:user.name,
+      editor: user.name,
       date: new Date().toISOString().split("T")[0], // or use formData.date if already set
       gestationWeek: Number(formData.gestationweek) || undefined,
       notes: formData.notes,
@@ -136,17 +154,17 @@ const Notepad = ({ patient, user }) => {
           display: "grid",
           gridTemplateColumns: "45% 45%",
           gap: "10%",
-          maxWidth:"100% !important",
+          maxWidth: "100% !important",
           width: "100% !important",
-          margin:'0px auto !important'
+          margin: '0px auto !important'
         }}
       >
         {/* Left Side Form Fields */}
         <div className="grid1"
-        style={{
-          width:'100%',
-          margin:'0px auto'
-        }}
+          style={{
+            width: '100%',
+            margin: '0px auto'
+          }}
         >
           <h3>Patient Information</h3>
           <div className="form-group">
@@ -210,9 +228,10 @@ const Notepad = ({ patient, user }) => {
             />
           </div>
           {/* Submit Button */}
-          <button type="submit" className="button primary">
-            {loading ? <div className="spinner"></div> : "Submit"}
-          </button>{" "}
+          {!isMobile &&
+            <button type="submit" className="button primary">
+              {loading ? <div className="spinner"></div> : "Submit"}
+            </button>}
         </div>
 
         {/* Right Side Form Fields */}
@@ -220,7 +239,7 @@ const Notepad = ({ patient, user }) => {
           className="grid2"
           style={{ marginLeft: "-80px", paddingTop: "60px" }}
         >
-          
+
           <div className="form-group">
             <label htmlFor="visitNumber">Note Title</label>
             <input
@@ -253,6 +272,12 @@ const Notepad = ({ patient, user }) => {
               onChange={handleChange}
             ></textarea>
           </div>
+          {isMobile &&
+            <button type="submit" className="button primary" style={{
+              marginBottom:"15vh"
+            }}>
+              {loading ? <div className="spinner"></div> : "Submit"}
+            </button>}
         </div>
       </form>
     </div>

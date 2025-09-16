@@ -528,3 +528,12 @@
     display: none;
   }
 }
+
+@media screen and (max-width:500px) {
+  .predisposition .line-container .results .r-details {
+
+  }
+  .riskassessment .r-details .bottom{
+    margin-top:20px;
+  }
+}

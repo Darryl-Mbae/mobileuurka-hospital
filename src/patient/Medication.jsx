@@ -9,9 +9,27 @@ import { Tooltip } from "react-tooltip";
 import { usePagination } from "../hooks/usePagination";
 import Pagination from "../components/Pagination";
 
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
+
 const Medication = ({ setActiveTab, patient }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
 
   console.log("Patient Data:", patient);
 
@@ -91,7 +109,8 @@ const Medication = ({ setActiveTab, patient }) => {
           data-tooltip-content="Click to add a new medication"
         >
           <IoMdAdd />
-          Add Medication
+
+         {isMobile ? "" : "Add Medication"} 
         </div>
       </div>
 

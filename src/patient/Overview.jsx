@@ -17,7 +17,7 @@ const Overview = ({ patient,setActiveTab }) => {
         <div className="chart" style={{ overflow: "visible" }}>
           <Weight patient={patient?.triages} />
         </div>
-        <div className="chart">
+        <div className="chart fetal">
           <Fetal  patient={patient?.fetalInfos}/>
         </div>
         <div className="chart">
@@ -28,7 +28,7 @@ const Overview = ({ patient,setActiveTab }) => {
         <div className="chart x2">
           <Riskassessment patient={patient} />
         </div>
-        <div className="chart ">
+        <div className="chart lab">
           <Lab patient={patient?.labworks} />
         </div>
       </div>
@@ -36,7 +36,7 @@ const Overview = ({ patient,setActiveTab }) => {
         <div className="chart ">
           <Medications patient={patient} setActiveTab={setActiveTab} />
         </div>
-        <div className="chart x2">
+        <div className="chart x2 bt">
           <div className="inner-grid">
             <div className="in-chart one" >
               <BloodPressure patient={patient?.triages} />

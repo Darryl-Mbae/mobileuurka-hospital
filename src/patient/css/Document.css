@@ -1,3 +1,4 @@
+
 .documents {
   margin-top: 50px;
 }
@@ -603,6 +604,13 @@
   .document-viewer .form-template {
     margin: 15px;
   }
+  .doc .med-grid{
+    overflow-x: scroll;
+  }
+  /* .doc .med-grid .documents{
+    width: 200vw;
+  } */
+  
 }
 
 @media (max-width: 480px) {
@@ -911,5 +919,38 @@ ced Print Styles */
     border: 1px solid #000 !important;
     border-radius: 0 !important;
     max-width: none !important;
+  }
+}
+
+
+@media screen and (max-width:500px) {
+  .con {
+    justify-content: space-between;
+    gap: 0px;
+    width:100%
+  }
+  .documents{
+    width: 280vw;
+  }
+  .con .search-input{
+    width: 77%;
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 15px;
+  }
+  .documents .title {
+    width: 100% !important;
+  }
+  .documents  .record {
+    width: 100% !important;
+
+  }
+
+}
+
+@media screen and (max-width:500px) {
+  .content.doc{
+    width: 100% !important;
   }
 }

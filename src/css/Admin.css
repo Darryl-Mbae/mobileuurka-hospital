@@ -5,7 +5,7 @@
 }
 .admin .content {
   width: calc(100% - 22% - 40px);
-  height: calc(100vh - 26vh);
+  height: auto;
   padding: 13vh 40px;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -15,6 +15,22 @@
   width: calc(100%);
   padding: 0px;
 }
+.admin .content {
+  width: calc(100% - 22% - 40px);
+  height: 100vh;              /* take full viewport height */
+  padding: 13vh 40px;
+  overflow-y: auto;           /* only scroll when needed */
+  overflow-x: hidden;
+  padding-bottom: 0vh;
+  
+  /* hide scrollbars */
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* IE/Edge */
+}
+.admin .content::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari */
+}
+
 .admin-loading{
   width: 100vw;
   height: 100vh;
@@ -51,7 +67,7 @@
   .admin {
     flex-direction: column;
     height: 90vh;
-    padding: 5vh 0px !important;
+    padding: 15px 0px !important;
     overflow:hidden;
     
 
@@ -64,6 +80,12 @@
   .admin .content {
     width: calc(100% - 40px);
     height: calc(100vh - 10vh);
-    padding: 5vh 20px;
+    padding: 15px 20px;
+  }
+  .admin .content.doc{
+    width: 100% !important;
+  }
+  .admin .content.doc .med-grid{
+    overflow-x: scroll;
   }
 }

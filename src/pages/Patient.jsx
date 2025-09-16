@@ -23,6 +23,22 @@ import { TiTick } from "react-icons/ti";
 import { HiBellAlert, HiMiniPencilSquare } from "react-icons/hi2";
 import Alerts from "../dialog/Alerts.jsx";
 import { FaRegBell } from "react-icons/fa6";
+import { FiChevronDown } from "react-icons/fi";
+
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
 
 const Patient = ({ id }) => {
   const [loading, setLoading] = useState(false);
@@ -31,6 +47,11 @@ const Patient = ({ id }) => {
   const [alerts, setAlerts] = useState();
   const currentUser = useSelector((s) => s.user.currentUser);
   const dispatch = useDispatch();
+  const isMobile = useIsMobile();
+  const [mobileView, setMobileView] = useState("Analytics")
+  const [open, setOpen] = useState(false);
+
+  const options = ["Sabi", "Summary", "Analytics"];
   const [profilePic, setProfilePic] = useState(defaultImg);
   const [chatActive, setChatActive] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -50,13 +71,13 @@ const Patient = ({ id }) => {
       console.log("patient", patient)
     }
   }, [patient])
+  
   useEffect(() => {
     if (id) {
       // Only fetch if patient is not in Redux store
       if (!patient) {
         fetchPatientById(id);
       }
-
     }
   }, [id, patient]);
 
@@ -65,7 +86,6 @@ const Patient = ({ id }) => {
   const handleShowAlert = () => {
     setNextVisitChange(true)
   };
-
 
   const handleNextVisitChange = (nextVisitValue) => {
     if (!nextVisitValue) return;
@@ -84,7 +104,6 @@ const Patient = ({ id }) => {
       console.log(patient.visits)
       console.log(patient.visits.length)
 
-
       const id = patient.visits[patient?.visits?.length - 1].id
       handleSubmitVisit(id, nextVisitValue)
     }
@@ -92,7 +111,6 @@ const Patient = ({ id }) => {
 
   const handleSubmitVisit = async (id, nextVisitValue) => {
     // Prepare data to send
-
     const updateData = {
       nextVisit: nextVisitValue // you can send as ISO string or timestamp depending on backend
     };
@@ -116,6 +134,7 @@ const Patient = ({ id }) => {
     } finally {
     }
   };
+  
   const fetchPatientById = async (patientId) => {
     setLoading(true);
     setError(null);
@@ -138,6 +157,133 @@ const Patient = ({ id }) => {
       setLoading(false);
     }
   };
+
+  // Copy patient ID to clipboard
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(patient?.id?.toString() || "");
+      setCopied(true);
+      // Reset the tick icon after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy patient ID:", err);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = patient?.id?.toString() || "";
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
+      } catch (fallbackErr) {
+        console.error("Fallback copy failed:", fallbackErr);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
+  // Mobile Header Component
+  const MobileHeader = () => (
+    <div className="mobile-header">
+      <div className="patient-info">
+        <div className="patient-name">{patient?.name || 'Loading...'}</div>
+        {/* <div className="patient-id">
+          {patient?.id}
+          <span
+            onClick={handleCopyId}
+            style={{
+              cursor: "pointer",
+              marginLeft: "8px",
+              color: copied ? "#4CAF50" : "#666",
+              transition: "color 0.3s ease",
+            }}
+            title={copied ? "Copied!" : "Copy ID"}
+          >
+            {copied ? <TiTick /> : <FaRegCopy />}
+          </span>
+        </div> */}
+      </div>
+      
+      <div className="header-controls">
+        {/* Tab switcher for Analytics view */}
+        {mobileView === "Analytics" && (
+          <div className="tab-switcher">
+            <select
+              className="tabs-select-header"
+              value={activeTab}
+              onChange={(e) => {
+                const value = e.target.value
+                setActiveTab(value)
+                // reset documents if "documents" is selected
+                if (value === "documents") {
+                  setDocument([])
+                }
+              }}
+            >
+              <option value="overview">Overview</option>
+              <option value="profile">Profile</option>
+              <option value="medication">Medication</option>
+              <option value="documents">Documents</option>
+              <option value="notes">Notes</option>
+            </select>
+          </div>
+        )}
+
+        {/* Page switcher dropdown */}
+        <div className="page-switcher">
+          <div className="dropdown">
+            <div
+              className="dropdown-header"
+              onClick={() => setOpen((prev) => !prev)}
+            >
+              <span>{mobileView}</span>
+              <FiChevronDown className={`icon ${open ? "rotate" : ""}`} />
+            </div>
+
+            {open && (
+              <ul className="dropdown-list">
+                {options.map((option) => (
+                  <li
+                    key={option}
+                    className={`dropdown-item ${option === mobileView ? "active" : ""}`}
+                    onClick={() => {
+                      setMobileView(option);
+                      setOpen(false);
+                    }}
+                  >
+                    {option}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        {/* <div className="header-actions">
+          <div className="notification" onClick={() => handleShowAlert()}>
+            <FaRegBell style={{ color: "#333" }} />
+            {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
+              <span className="badge">
+                {patient?.alerts.filter((alert) => !alert.read).length}
+              </span>
+            )}
+          </div>
+          <div
+            className="notification"
+            onClick={() => setChatActive((prev) => !prev)}
+          >
+            <img src="/logo.png" alt="logo" />
+          </div>
+        </div> */}
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -202,7 +348,6 @@ const Patient = ({ id }) => {
 
   const patientMainDetails = [
     { label: "Age", value: calculateAge(patient?.dob) },
-
     {
       label: "Gravida + Parity",
       value: ` ${patient?.patientHistories?.[0]?.gravida}+${patient?.patientHistories?.[0]?.parity}`,
@@ -221,7 +366,7 @@ const Patient = ({ id }) => {
           {patient?.rh === "-" && (
             <IoFlagSharp
               data-tooltip-id="my-tooltip"
-              data-tooltip-content="Anti-D immunoglobulin should be administered between 28–30 weeks gestation if not already given."
+              data-tooltip-content="Anti-D immunoglobulin should be administered between 28–30 weeks gestation if not already given."
               color="red"
             />
           )}
@@ -239,7 +384,6 @@ const Patient = ({ id }) => {
         ? formatDate(patient.visits[patient.visits.length - 1]?.date) || "-"
         : "-",
     },
-
     {
       label: "Visit Number",
       value: patient?.visits?.[patient.visits.length - 1]?.visitNumber ?? "-",
@@ -286,22 +430,9 @@ const Patient = ({ id }) => {
               patient?.lifestyles.length - 1
             ]?.caffeineSources?.join(", ") || "Not specified"
             }`,
-            // `Servings per day: ${
-            //   patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine_quantity ?? "Not specified"
-            // }`,
           ]
           : "None",
     },
-    // patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine !=
-    //   "No" &&
-    //   {
-    //   label: "Caffeine Quantity",
-    //   value: `${
-    //     patient?.lifestyles?.[patient?.lifestyles.length - 1]
-    //       ?.caffeine_quantity ?? "-"
-    //   } Cups/Day`,
-    // },
-
     {
       label: (
         <span
@@ -387,35 +518,6 @@ const Patient = ({ id }) => {
 
   const allergies = processAllergies();
 
-  // Copy patient ID to clipboard
-  const handleCopyId = async () => {
-    try {
-      await navigator.clipboard.writeText(patient?.id?.toString() || "");
-      setCopied(true);
-      // Reset the tick icon after 2 seconds
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (err) {
-      console.error("Failed to copy patient ID:", err);
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = patient?.id?.toString() || "";
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand("copy");
-        setCopied(true);
-        setTimeout(() => {
-          setCopied(false);
-        }, 2000);
-      } catch (fallbackErr) {
-        console.error("Fallback copy failed:", fallbackErr);
-      }
-      document.body.removeChild(textArea);
-    }
-  };
-
   const renderSection = (title, items) => (
     <section>
       <h4>{title}</h4>
@@ -474,162 +576,236 @@ const Patient = ({ id }) => {
   return (
     <div className="patient-container">
       <MainSearch />
-      <div className={chatActive ? "patient active" : "patient"}>
-        <Alerts ref={alertsRef} patient={patient} />
-
-        <div className="profile">
-          <div className="profile-container">
-            <div className="profile-pic">
-              <div className="width">
-                <div className="circle">
-                  <img src={profilePic} alt="default" />
-                </div>
-                <div className="row-end">
-                  <div className="details">
-                    <div className="name">{patient?.name}</div>
-                    <div className="phone">
-                      {patient?.id}
-                      <span
-                        onClick={handleCopyId}
-                        style={{
-                          cursor: "pointer",
-                          marginLeft: "8px",
-                          color: copied ? "#4CAF50" : "#666",
-                          transition: "color 0.3s ease",
-                        }}
-                        title={copied ? "Copied!" : "Copy ID"}
-                      >
-                        {copied ? <TiTick /> : <FaRegCopy />}
-                      </span>
+      {isMobile ? (
+        <div className="patient mobile-patient">
+          {/* Mobile Header - Consistent across all views */}
+          <MobileHeader />
+          
+          {/* Mobile Content */}
+          <div className="mobile-content">
+            {mobileView === "Analytics" && (
+              <div className="detail">
+                <div className="tabs">
+                  {patient?.name ? (
+                    <div className="tab">
+                      {activeTab === "overview" && (
+                        <Overview patient={patient} setActiveTab={setActiveTab} />
+                      )}
+                      {activeTab === "profile" && <Profile patient={patient} />}
+                      {activeTab === "medication" && (
+                        <Medication setActiveTab={setActiveTab} patient={patient} />
+                      )}
+                      {activeTab === "documents" && (
+                        <Documents
+                          setActiveTitle={setActiveTab}
+                          setDocument={setDocument}
+                          document={document}
+                          patient={patient}
+                        />
+                      )}
+                      {activeTab === "notes" && (
+                        <Notes
+                          setActiveTitle={setActiveTab}
+                          setNotes={setNote}
+                          patient={patient}
+                        />
+                      )}
+                      {activeTab === "document" && <Document document={document} />}
+                      {activeTab === "note" && (
+                        <Note note={note} user={currentUser} />
+                      )}
+                      {activeTab === "notepad" && (
+                        <Notepad patient={patient} user={currentUser} />
+                      )}
                     </div>
-                  </div>
-                  {/* <div className="edit">
-                    <HiOutlineDotsHorizontal />
-                  </div> */}
-                </div>
-              </div>
-            </div>
-            {renderSection("Patient Details", patientMainDetails)}
-            <Tooltip
-              id="my-tooltip"
-              style={{ fontSize: ".8em", zIndex: "9999" }}
-            />
-            {renderSection("Allergies", allergies)}
-            {renderSection("Lifestyle", lifestyle)}
-          </div>
-        </div>
-        <div className="detail">
-          <div className="tabs">
-            <div className="lists">
-              <ul className="tabs-list">
-                <li
-                  className={activeTab === "overview" ? "active" : ""}
-                  onClick={() => setActiveTab("overview")}
-                >
-                  Overview
-                </li>
-                <li
-                  className={activeTab === "profile" ? "active" : ""}
-                  onClick={() => setActiveTab("profile")}
-                >
-                  Profile
-                </li>
-                <li
-                  className={activeTab === "medication" ? "active" : ""}
-                  onClick={() => setActiveTab("medication")}
-                >
-                  Medication
-                </li>
-                <li
-                  className={activeTab === "documents" ? "active" : ""}
-                  onClick={() => {
-                    setActiveTab("documents"), setDocument([]);
-                  }}
-                >
-                  Documents
-                </li>
-                <li
-                  className={activeTab === "notes" ? "active" : ""}
-                  onClick={() => setActiveTab("notes")}
-                >
-                  Notes
-                </li>
-              </ul>
-              <div className="ai-buttons">
-                <div className="notification" onClick={() => handleShowAlert()}>
-                  <FaRegBell
-
-                    style={{ color: "#333", }}
-                  />
-                  {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
-                    <span className="badge" >
-                      {patient?.alerts.filter((alert) => !alert.read).length}
-                    </span>
+                  ) : (
+                    <div className="loading">
+                      <div className="image">
+                        <img src="/logo.png" alt="" />
+                      </div>
+                      <DotLottieReact
+                        src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
+                        loop
+                        autoplay
+                        style={{ width: "70%", margin: "-20px auto" }}
+                      />
+                    </div>
                   )}
                 </div>
-                <div
-                  className="notification"
-                  onClick={() => setChatActive((prev) => !prev)}
-                >
-                  <img src="/logo.png" alt="logo" />
+              </div>
+            )}
+
+            {mobileView === "Summary" && (
+              <div className="profile mobile-summary">
+                <div className="profile-container">
+                  {renderSection("Patient Details", patientMainDetails)}
+                  <Tooltip
+                    id="my-tooltip"
+                    style={{ fontSize: ".8em", zIndex: "9999" }}
+                  />
+                  {renderSection("Allergies", allergies)}
+                  {renderSection("Lifestyle", lifestyle)}
                 </div>
               </div>
-            </div>
-            {patient?.name ? (
-              <div className="tab">
-                {activeTab === "overview" && (
-                  <Overview patient={patient} setActiveTab={setActiveTab} />
-                )}
+            )}
 
-                {activeTab === "profile" && <Profile patient={patient} />}
-
-                {activeTab === "medication" && (
-                  <Medication setActiveTab={setActiveTab} patient={patient} />
-                )}
-                {activeTab === "documents" && (
-                  <Documents
-                    setActiveTitle={setActiveTab}
-                    setDocument={setDocument}
-                    document={document}
-                    patient={patient}
-                  />
-                )}
-                {activeTab === "notes" && (
-                  <Notes
-                    setActiveTitle={setActiveTab}
-                    setNotes={setNote}
-                    patient={patient}
-                  />
-                )}
-                {activeTab === "document" && <Document document={document} />}
-                {activeTab === "note" && (
-                  <Note note={note} user={currentUser} />
-                )}
-                {activeTab === "notepad" && (
-                  <Notepad patient={patient} user={currentUser} />
-                )}
-              </div>
-            ) : (
-              <div className="loading">
-                <div className="image">
-                  <img src="/logo.png" alt="" />
-                </div>
-                <DotLottieReact
-                  src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
-                  loop
-                  autoplay
-                  style={{ width: "70%", margin: "-20px auto" }}
-                />
+            {mobileView === "Sabi" && (
+              <div className="chat mobile-chat">
+                <Chat patient={patient} user={currentUser} />
               </div>
             )}
           </div>
-          {chatActive && (
-            <div className="chat">
-              <Chat patient={patient} user={currentUser} />
-            </div>
-          )}
         </div>
-      </div>
+      ) : (
+        <div className={chatActive ? "patient active" : "patient"}>
+          <Alerts ref={alertsRef} patient={patient} />
+
+          <div className="profile">
+            <div className="profile-container">
+              <div className="profile-pic">
+                <div className="width">
+                  <div className="circle">
+                    <img src={profilePic} alt="default" />
+                  </div>
+                  <div className="row-end">
+                    <div className="details">
+                      <div className="name">{patient?.name}</div>
+                      <div className="phone">
+                        {patient?.id}
+                        <span
+                          onClick={handleCopyId}
+                          style={{
+                            cursor: "pointer",
+                            marginLeft: "8px",
+                            color: copied ? "#4CAF50" : "#666",
+                            transition: "color 0.3s ease",
+                          }}
+                          title={copied ? "Copied!" : "Copy ID"}
+                        >
+                          {copied ? <TiTick /> : <FaRegCopy />}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {renderSection("Patient Details", patientMainDetails)}
+              <Tooltip
+                id="my-tooltip"
+                style={{ fontSize: ".8em", zIndex: "9999" }}
+              />
+              {renderSection("Allergies", allergies)}
+              {renderSection("Lifestyle", lifestyle)}
+            </div>
+          </div>
+          <div className="detail">
+            <div className="tabs">
+              <div className="lists">
+                <ul className="tabs-list">
+                  <li
+                    className={activeTab === "overview" ? "active" : ""}
+                    onClick={() => setActiveTab("overview")}
+                  >
+                    Overview
+                  </li>
+                  <li
+                    className={activeTab === "profile" ? "active" : ""}
+                    onClick={() => setActiveTab("profile")}
+                  >
+                    Profile
+                  </li>
+                  <li
+                    className={activeTab === "medication" ? "active" : ""}
+                    onClick={() => setActiveTab("medication")}
+                  >
+                    Medication
+                  </li>
+                  <li
+                    className={activeTab === "documents" ? "active" : ""}
+                    onClick={() => {
+                      setActiveTab("documents"), setDocument([]);
+                    }}
+                  >
+                    Documents
+                  </li>
+                  <li
+                    className={activeTab === "notes" ? "active" : ""}
+                    onClick={() => setActiveTab("notes")}
+                  >
+                    Notes
+                  </li>
+                </ul>
+                <div className="ai-buttons">
+                  <div className="notification" onClick={() => handleShowAlert()}>
+                    <FaRegBell style={{ color: "#333" }} />
+                    {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
+                      <span className="badge">
+                        {patient?.alerts.filter((alert) => !alert.read).length}
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    className="notification"
+                    onClick={() => setChatActive((prev) => !prev)}
+                  >
+                    <img src="/logo.png" alt="logo" />
+                  </div>
+                </div>
+              </div>
+              {patient?.name ? (
+                <div className="tab">
+                  {activeTab === "overview" && (
+                    <Overview patient={patient} setActiveTab={setActiveTab} />
+                  )}
+                  {activeTab === "profile" && <Profile patient={patient} />}
+                  {activeTab === "medication" && (
+                    <Medication setActiveTab={setActiveTab} patient={patient} />
+                  )}
+                  {activeTab === "documents" && (
+                    <Documents
+                      setActiveTitle={setActiveTab}
+                      setDocument={setDocument}
+                      document={document}
+                      patient={patient}
+                    />
+                  )}
+                  {activeTab === "notes" && (
+                    <Notes
+                      setActiveTitle={setActiveTab}
+                      setNotes={setNote}
+                      patient={patient}
+                    />
+                  )}
+                  {activeTab === "document" && <Document document={document} />}
+                  {activeTab === "note" && (
+                    <Note note={note} user={currentUser} />
+                  )}
+                  {activeTab === "notepad" && (
+                    <Notepad patient={patient} user={currentUser} />
+                  )}
+                </div>
+              ) : (
+                <div className="loading">
+                  <div className="image">
+                    <img src="/logo.png" alt="" />
+                  </div>
+                  <DotLottieReact
+                    src="https://lottie.host/76c8d5c4-8758-498c-8e7c-6acce91d7032/utjeKB11PP.lottie"
+                    loop
+                    autoplay
+                    style={{ width: "70%", margin: "-20px auto" }}
+                  />
+                </div>
+              )}
+            </div>
+            {chatActive && (
+              <div className="chat">
+                <Chat patient={patient} user={currentUser} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

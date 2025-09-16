@@ -15,10 +15,30 @@ import { MdOutlineHistory } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { GoSignOut } from "react-icons/go";
 
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [active, setActive] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+
+
+
+
 
   // Get user role from Redux store
   const user = useSelector((state) => state.user.currentUser);
@@ -76,7 +96,7 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
 
 
   return (
-    <div className={`sidebar ${active ? "active" : ""}`}>
+    <div className={`sidebar ${active ? isMobile ? "" : "active" : ""}`}>
       <div className="company">
         <div className="logo">
           <img src={CompanyConfig.logoUrl} alt="Company Logo" />
