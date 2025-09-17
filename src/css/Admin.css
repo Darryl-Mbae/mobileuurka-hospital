@@ -3,6 +3,7 @@
   flex-direction: row;
 
 }
+
 .admin .content {
   width: calc(100% - 22% - 40px);
   height: auto;
@@ -11,27 +12,35 @@
   overflow-y: scroll;
   /* padding-bottom: 20vh; */
 }
+
 .admin .content.active {
   width: calc(100%);
   padding: 0px;
 }
+
 .admin .content {
   width: calc(100% - 22% - 40px);
-  height: 100vh;              /* take full viewport height */
+  height: 100vh;
+  /* take full viewport height */
   padding: 13vh 40px;
-  overflow-y: auto;           /* only scroll when needed */
+  overflow-y: auto;
+  /* only scroll when needed */
   overflow-x: hidden;
   padding-bottom: 0vh;
-  
+
   /* hide scrollbars */
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* IE/Edge */
-}
-.admin .content::-webkit-scrollbar {
-  display: none;              /* Chrome, Safari */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
 }
 
-.admin-loading{
+.admin .content::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari */
+}
+
+.admin-loading {
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -39,15 +48,17 @@
   align-items: center;
   position: relative;
 }
-.admin-loading .loading{
+
+.admin-loading .loading {
   margin: auto;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.admin-loading .loading .image{
-  width:60px;
+
+.admin-loading .loading .image {
+  width: 60px;
   aspect-ratio: 1;
   margin: auto;
   display: flex;
@@ -57,35 +68,61 @@
 
 
 }
-.admin-loading .loading .image img{
+
+.admin-loading .loading .image img {
   width: 100%;
   margin: auto;
 }
 
+.admin .content.doc {
+  width: calc(100% - 40px);
+}
+
+.admin .content.doc .med-grid {
+  -ms-overflow-style: none;
+  background: transparent;
+}
+
+.admin .content.doc .med-grid::-webkit-scrollbar {
+  width: 0;
+  scrollbar-width: none;
+}
 
 @media screen and (max-width: 900px) {
   .admin {
     flex-direction: column;
     height: auto;
     padding: 15px 0px !important;
-    overflow:hidden;
-    
+    overflow: hidden;
+
 
   }
+
   .admin .content {
     overflow-x: hidden;
   }
 }
+
 @media screen and (max-width: 500px) {
   .admin .content {
     width: calc(100% - 40px);
     height: calc(100vh - 10vh);
     padding: 15px 20px;
   }
-  .admin .content.doc{
+
+  .admin .content.doc {
     width: 100% !important;
   }
-  .admin .content.doc .med-grid{
+
+  .admin .content.doc .med-grid {
     overflow-x: scroll;
+
+  }
+
+  .admin .content.doc .med-grid::-webkit-scrollbar {
+    width: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: transparent;
   }
 }

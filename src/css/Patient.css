@@ -469,12 +469,13 @@
 .mobile-header {
   position: sticky;
   top: 0;
+  width: calc(100% - 32px);
   z-index: 100;
   background: white;
   border-bottom: 1px solid #e0e0e0;
-  padding: 12px 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px 16px;
   display: grid;
+  margin: auto;
   grid-template-columns: 40% 60%;
 
 }
@@ -678,7 +679,7 @@
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .mobile-header {
-    padding: 10px 12px;
+    padding: 17px 12px;
   }
   
   .mobile-header .patient-name {
