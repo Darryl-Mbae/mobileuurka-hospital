@@ -688,6 +688,7 @@
   
   .mobile-header .header-controls {
     gap: 8px;
+    padding-right: 10px;
   }
   
   .mobile-header .tab-switcher {

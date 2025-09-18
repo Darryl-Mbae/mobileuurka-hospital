@@ -1,16 +1,69 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../css/FormTemplate.css";
 
 const FormTemplate = ({
   title = "Health Record",
   patientData = {},
+  setSelection,
+  onContextMenu,
   formData = {},
   organizationName = "Mobileuurka",
   logoSrc = "/logo.png",
   children,
+  comments = [],
   showPatientInfo = true,
   className = "",
 }) => {
+
+  console.log(comments)
+
+  useEffect(() => {
+    const handleMouseUp = (e) => {
+      // 🚫 Don't clear if clicking inside the context menu
+      if (e.target.closest(".context-menu")) return;
+
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) {
+        setSelection(sel.toString()); // keep the selection
+      } else {
+        setSelection(null); // clear only if outside
+      }
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [setSelection]);
+
+  // Only highlight text that has been commented on
+  const highlightText = (text, comments) => {
+    if (!text) return "";
+
+    let highlighted = text;
+
+    comments.forEach((c) => {
+      if (c.selection) {
+        const cleanSelection = c.selection.trim();
+
+        if (!cleanSelection) return;
+
+        const safe = cleanSelection.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        const regex = new RegExp(`(${safe})`, "gi");
+
+        highlighted = highlighted.replace(
+          regex,
+          `<span class="highlighted-text">$1</span>`
+        );
+      }
+    });
+
+    return highlighted;
+  };
+
+
+
   // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -23,25 +76,31 @@ const FormTemplate = ({
 
   // Helper function to render field value
   const renderFieldValue = (value) => {
-    if (value === null || value === undefined || value === "") {
-      return <span className="empty-value">—</span>;
-    }
-    if (typeof value === "boolean") {
-      return (
-        <span className={`boolean-value ${value ? "yes" : "no"}`}>
-          {value ? "Yes" : "No"}
-        </span>
-      );
-    }
-    if (Array.isArray(value)) {
-      return value.length > 0 ? (
-        value.join(", ")
-      ) : (
-        <span className="empty-value">—</span>
-      );
-    }
-    return value;
+    if (!value) return <span className="empty-value">—</span>;
+
+    const highlightText = (text, comments) => {
+      let result = text;
+      comments.forEach((c) => {
+        if (c.selection) {
+          const regex = new RegExp(c.selection, "g");
+          result = result.replace(
+            regex,
+            `<span class="highlighted-text">${c.selection}</span>`
+          );
+        }
+      });
+      return result;
+    };
+
+    return (
+      <span
+        dangerouslySetInnerHTML={{
+          __html: highlightText(String(value), comments),
+        }}
+      />
+    );
   };
+
 
   // Sample data structure - you can pass real data via props
   const defaultPatientData = {
@@ -65,7 +124,17 @@ const FormTemplate = ({
   };
 
   return (
-    <div className={`form-template ${className}`}>
+    <div
+      className={`form-template ${className}`}
+      onContextMenu={(e) => {
+        e.preventDefault(); // stop default browser menu
+
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed && onContextMenu) {
+          onContextMenu(sel.toString(), e.clientX, e.clientY);
+        }
+      }}
+    >
       {/* Header Section */}
       <div className="header">
         <div className="logo">
@@ -123,8 +192,6 @@ const FormTemplate = ({
           </div>
         </div>
       )}
-
-
 
       {/* Dynamic Content Section */}
       {children ? (

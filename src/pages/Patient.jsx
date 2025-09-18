@@ -24,6 +24,10 @@ import { HiBellAlert, HiMiniPencilSquare } from "react-icons/hi2";
 import Alerts from "../dialog/Alerts.jsx";
 import { FaRegBell } from "react-icons/fa6";
 import { FiChevronDown } from "react-icons/fi";
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+
 
 const useIsMobile = (breakpoint = 768) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
@@ -66,12 +70,7 @@ const Patient = ({ id }) => {
     state.patient?.patients?.find((p) => p.id === id)
   );
 
-  useEffect(() => {
-    if (patient) {
-      console.log("patient", patient)
-    }
-  }, [patient])
-  
+
   useEffect(() => {
     if (id) {
       // Only fetch if patient is not in Redux store
@@ -84,7 +83,7 @@ const Patient = ({ id }) => {
   const alertsRef = useRef();
 
   const handleShowAlert = () => {
-    setNextVisitChange(true)
+    alertsRef.current.show();
   };
 
   const handleNextVisitChange = (nextVisitValue) => {
@@ -134,7 +133,7 @@ const Patient = ({ id }) => {
     } finally {
     }
   };
-  
+
   const fetchPatientById = async (patientId) => {
     setLoading(true);
     setError(null);
@@ -191,99 +190,73 @@ const Patient = ({ id }) => {
   const MobileHeader = () => (
     <div className="mobile-header">
       <div className="patient-info">
-        <div className="patient-name">{patient?.name || 'Loading...'}</div>
-        {/* <div className="patient-id">
-          {patient?.id}
-          <span
-            onClick={handleCopyId}
-            style={{
-              cursor: "pointer",
-              marginLeft: "8px",
-              color: copied ? "#4CAF50" : "#666",
-              transition: "color 0.3s ease",
-            }}
-            title={copied ? "Copied!" : "Copy ID"}
-          >
-            {copied ? <TiTick /> : <FaRegCopy />}
-          </span>
-        </div> */}
+        <div className="patient-name">{patient?.name || "Loading..."}</div>
       </div>
-      
+
       <div className="header-controls">
         {/* Tab switcher for Analytics view */}
         {mobileView === "Analytics" && (
           <div className="tab-switcher">
-            <select
-              className="tabs-select-header"
-              value={activeTab}
-              onChange={(e) => {
-                const value = e.target.value
-                setActiveTab(value)
-                // reset documents if "documents" is selected
-                if (value === "documents") {
-                  setDocument([])
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 100,
+                backgroundColor: "white",
+                borderRadius: 1,
+
+                '& .MuiInputBase-input': {
+                  fontSize: ".9em",
                 }
               }}
             >
-              <option value="overview">Overview</option>
-              <option value="profile">Profile</option>
-              <option value="medication">Medication</option>
-              <option value="documents">Documents</option>
-              <option value="notes">Notes</option>
-            </select>
+              <Select
+                value={activeTab}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setActiveTab(value);
+                  if (value === "documents") {
+                    setDocument([]);
+                  }
+                }}
+              >
+                <MenuItem value="overview">Overview</MenuItem>
+                <MenuItem value="profile">Profile</MenuItem>
+                <MenuItem value="medication">Medication</MenuItem>
+                <MenuItem value="documents">Documents</MenuItem>
+                <MenuItem value="notes">Notes</MenuItem>
+              </Select>
+            </FormControl>
           </div>
         )}
 
-        {/* Page switcher dropdown */}
+        {/* Page switcher dropdown (converted to MUI Select) */}
         <div className="page-switcher">
-          <div className="dropdown">
-            <div
-              className="dropdown-header"
-              onClick={() => setOpen((prev) => !prev)}
-            >
-              <span>{mobileView}</span>
-              <FiChevronDown className={`icon ${open ? "rotate" : ""}`} />
-            </div>
+          <FormControl
+            size="small"
+            sx={{
+              minWidth: 100, backgroundColor: "white", borderRadius: 1,
 
-            {open && (
-              <ul className="dropdown-list">
-                {options.map((option) => (
-                  <li
-                    key={option}
-                    className={`dropdown-item ${option === mobileView ? "active" : ""}`}
-                    onClick={() => {
-                      setMobileView(option);
-                      setOpen(false);
-                    }}
-                  >
-                    {option}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        {/* Action buttons */}
-        {/* <div className="header-actions">
-          <div className="notification" onClick={() => handleShowAlert()}>
-            <FaRegBell style={{ color: "#333" }} />
-            {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
-              <span className="badge">
-                {patient?.alerts.filter((alert) => !alert.read).length}
-              </span>
-            )}
-          </div>
-          <div
-            className="notification"
-            onClick={() => setChatActive((prev) => !prev)}
+              '& .MuiInputBase-input': {
+                fontSize: ".9em",
+              }
+            }}
           >
-            <img src="/logo.png" alt="logo" />
-          </div>
-        </div> */}
+            <Select
+              value={mobileView}
+              onChange={(e) => setMobileView(e.target.value)}
+              IconComponent={FiChevronDown} // keep your chevron style
+            >
+              {options.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
       </div>
     </div>
-  );
+  )
 
   if (loading) {
     return (
@@ -575,12 +548,16 @@ const Patient = ({ id }) => {
 
   return (
     <div className="patient-container">
+      <Tooltip
+        id="my-tooltip"
+        style={{ fontSize: ".8em", zIndex: "9999" }}
+      />
       <MainSearch />
       {isMobile ? (
         <div className="patient mobile-patient">
           {/* Mobile Header - Consistent across all views */}
           <MobileHeader />
-          
+
           {/* Mobile Content */}
           <div className="mobile-content">
             {mobileView === "Analytics" && (
@@ -639,10 +616,7 @@ const Patient = ({ id }) => {
               <div className="profile mobile-summary">
                 <div className="profile-container">
                   {renderSection("Patient Details", patientMainDetails)}
-                  <Tooltip
-                    id="my-tooltip"
-                    style={{ fontSize: ".8em", zIndex: "9999" }}
-                  />
+
                   {renderSection("Allergies", allergies)}
                   {renderSection("Lifestyle", lifestyle)}
                 </div>
@@ -690,10 +664,6 @@ const Patient = ({ id }) => {
                 </div>
               </div>
               {renderSection("Patient Details", patientMainDetails)}
-              <Tooltip
-                id="my-tooltip"
-                style={{ fontSize: ".8em", zIndex: "9999" }}
-              />
               {renderSection("Allergies", allergies)}
               {renderSection("Lifestyle", lifestyle)}
             </div>

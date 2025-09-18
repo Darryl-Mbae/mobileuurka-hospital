@@ -1,18 +1,19 @@
-
 .doc-main {
-  width: calc(100% - 40px);
-  /* background: #f8f4ef; */
-  padding: 20px;
-  margin-bottom: 30px;
-  border-radius: 10px;
-  color: #585858;
-  display: flex;
-  flex-direction:column;
+    width: calc(100% - 40px);
+    /* background: #f8f4ef; */
+    padding: 20px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    color: #585858;
+    display: flex;
+    flex-direction: column;
 }
-.doc-main h3{
+
+.doc-main h3 {
     padding: 0px 4%;
 }
-.doc-main .row{
+
+.doc-main .row {
     /* align-self: self-end; */
     width: 90%;
     align-items: center;
@@ -26,6 +27,7 @@
     text-align: left;
 
 }
+
 /* 
 .doc-cont{
     width: 100%;
@@ -33,3 +35,44 @@
     grid-template-columns: 50% 50% !important;
     margin: 0;
 } */
+
+.doc-grid {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-columns: 78% 22%;
+}
+
+.doc-grid .doc-grid-left {
+    width: 100%;
+}
+
+.doc-grid .doc-grid-right {
+    width: 100%;
+}
+.doc-grid .doc-grid-right .form-template {
+    width: calc(100% - 8px);
+    margin: 0px;
+    padding: 10px;
+    margin-top: 10vh;
+    height: 83.5%;
+    margin-left: -15px;
+    border: none;
+}
+.comment {
+    width: 90%;
+    min-height: 50px;
+    height: auto;
+    font-size: .85em;
+  }
+  .comment textarea {
+    font-family: "Inter", sans-serif;
+    height: auto;
+  }
+  
+  .highlighted-text {
+    background: yellow;
+    color: black;
+    cursor: pointer;
+  }
+  

@@ -110,7 +110,7 @@ const WeightChart = ({ data }) => {
         height: "90%",
         paddingTop: "10px",
         position: "relative",
-        zIndex: 99999,
+        // zIndex: 99999,
         overflow: "visible",
       }}
       ref={chartRef}

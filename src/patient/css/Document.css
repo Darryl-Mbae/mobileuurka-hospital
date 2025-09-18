@@ -486,6 +486,7 @@
 .document-viewer {
   width: 100%;
   min-height: 100vh;
+  
   /* background: #f8f9fa; */
 }
 
@@ -558,7 +559,7 @@
 }
 
 .document-content {
-  padding: 0;
+  padding: 15px 0px;
   /* background: #f8f9fa; */
 }
 
@@ -856,6 +857,8 @@ ced Print Styles */
     display: flex !important;
   }
 
+
+
   /* Page settings */
   @page {
     margin: 0.5in;
@@ -954,3 +957,17 @@ ced Print Styles */
     width: 100% !important;
   }
 }
+
+
+
+.comment-btn{
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: .8em;
+}
+

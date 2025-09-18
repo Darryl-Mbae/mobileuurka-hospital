@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../patient/css/Doc.css";
 import { IoPrintOutline } from "react-icons/io5";
 import FormTemplate from "../components/FormTemplate";
+import { FaRegCommentAlt } from "react-icons/fa";
 
 // Format object keys into readable labels
 const formatKey = (key) =>
@@ -63,6 +64,262 @@ const Document = ({ document, title, patient }) => {
   const [useFormTemplate, setUseFormTemplate] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const componentRef = useRef();
+  const SERVER = import.meta.env.VITE_SERVER_URL;
+  const [selection, setSelection] = useState(null);
+  const [contextMenuPosition, setContextMenuPosition] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [editingComment, setEditingComment] = useState(null);
+  const [commentedSelections, setCommentedSelections] = useState(new Set());
+  const [isLoadingComments, setIsLoadingComments] = useState(true); // Add this
+
+  // Track which comment is being edited
+  useEffect(() => {
+    const handleClick = (e) => {
+      // Don't clear selection if clicking on context menu
+      if (e.target.closest('.context-menu')) {
+        return;
+      }
+
+      setSelection(null);
+      setContextMenuPosition(null);
+    };
+
+    window.document.addEventListener("click", handleClick);
+    return () => window.document.removeEventListener("click", handleClick);
+  }, []);
+
+
+
+  useEffect(() => {
+    console.log(patient)
+    const loadComments = async () => {
+      if (!document?.id || !patient?.id) return;
+
+      setIsLoadingComments(true);
+      try {
+        const response = await fetch(
+          `${SERVER}/patients/${patient.id}/medical/comments`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (response.ok) {
+          const loadedComments = await response.json();
+          console.log("Comments loaded:", loadedComments);
+
+          setComments(loadedComments.records);
+
+          // Rebuild commentedSelections set
+          const selections = new Set(loadedComments.records.map(comment => comment.selection));
+          setCommentedSelections(selections);
+        } else {
+          console.error("Failed to load comments");
+          setComments([]);
+        }
+      } catch (error) {
+        console.error("Error loading comments:", error);
+        setComments([]);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    };
+
+    loadComments();
+  }, [document?.id, patient]);
+
+
+
+  // Handle text selection and context menu positioning
+  const handleContextMenu = (selectedText, clientX, clientY) => {
+    if (selectedText && componentRef.current) {
+      const containerRect = componentRef.current.getBoundingClientRect();
+      const relativeY = clientY - containerRect.top + componentRef.current.scrollTop;
+
+      setSelection(selectedText);
+      setContextMenuPosition({
+        x: clientX,
+        y: clientY, // Keep viewport coordinates for context menu
+        relativeY: relativeY // Store relative position for comment placement
+      });
+    }
+  };
+
+  // Fixed add comment handler
+  const handleAddComment = (e) => {
+    e.stopPropagation();
+
+    if (selection && contextMenuPosition && componentRef.current) {
+      // Calculate relative Y position within the document
+      const containerRect = componentRef.current.getBoundingClientRect();
+      const relativeY = contextMenuPosition.relativeY;
+
+      // Calculate percentage-based position for better persistence across different screen sizes
+      const documentHeight = componentRef.current.scrollHeight;
+      const yPercentage = (relativeY / documentHeight) * 100;
+
+      const newComment = {
+        id: Date.now(),
+        text: "",
+        selection: selection.trim(),
+        y: relativeY, // Absolute position for current session
+        yPercentage: yPercentage, // Percentage for persistence
+        documentId: document?.id,
+        patientId: patient?.id,
+        isEditing: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      console.log('Creating comment with coordinates:', {
+        selection: newComment.selection,
+        absoluteY: relativeY,
+        percentageY: yPercentage,
+        documentHeight
+      });
+
+      setComments((prev) => [...prev, newComment]);
+      setEditingComment(newComment.id);
+      setCommentedSelections((prev) => new Set([...prev, selection.trim()]));
+      setSelection(null);
+      setContextMenuPosition(null);
+    }
+  };
+
+  // Remove comment handler
+  const handleRemoveComment = async (commentId) => {
+    try {
+      console.log('Deleting comment:', commentId);
+      
+      const response = await fetch(`${SERVER}/patients/medical/comments/${commentId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete comment");
+      }
+      
+      console.log("Comment deleted successfully");
+      
+      setComments((prev) => {
+        const commentToRemove = prev.find(comment => comment.id === commentId);
+        if (commentToRemove) {
+          setCommentedSelections((prevSet) => {
+            const newSet = new Set(prevSet);
+            newSet.delete(commentToRemove.selection);
+            return newSet;
+          });
+        }
+        return prev.filter(comment => comment.id !== commentId);
+      });
+      
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert(error.message || "Failed to delete comment. Please try again.");
+    }
+  };
+
+  const handleSaveComment = async (commentId, text) => {
+    try {
+      const comment = comments.find(c => c.id === commentId);
+
+      console.log(comment)
+      const isNewComment = !comment.createdAt ;
+
+      const commentData = {
+        patientId: patient?.id,
+        documentId: document?.id,
+        selection: comment.selection,
+        text: text.trim(),
+        y: comment.y,
+        yPercentage: comment.yPercentage,
+      };
+
+      console.log(isNewComment);
+
+      const url = !isNewComment
+        ? `${SERVER}/patients/medical/comments`
+        : `${SERVER}/patients/medical/comments/${commentId}`;
+
+      const response = await fetch(url, {
+        method: !isNewComment ? "POST" : "PUT",
+        // method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(commentData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save comment");
+      }
+
+      const result = await response.json();
+      console.log("Comment saved:", result);
+
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId
+            ? { ...c, text: text.trim(), isEditing: false, updatedAt: new Date().toISOString() }
+            : c
+        )
+      );
+      setEditingComment(null);
+
+    } catch (error) {
+      console.error("Error saving comment:", error);
+      alert(error.message || "Failed to save comment. Please try again.");
+    }
+  };
+
+
+  const handleCancelComment = (commentId) => {
+    const comment = comments.find(c => c.id === commentId);
+
+    if (comment && comment.text === "") {
+      // If it's a new empty comment, remove it
+      handleRemoveComment(commentId);
+    } else {
+      // If it has existing text, just exit edit mode
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId ? { ...c, isEditing: false } : c
+        )
+      );
+      setEditingComment(null);
+    }
+  };
+
+  const handleEditComment = async (commentId) => {
+    try {
+      console.log('Starting edit for comment:', commentId);
+
+      // Optional: Call API to lock comment for editing
+      // await fetch(`/api/comments/${commentId}/edit`, { method: 'POST' });
+
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === commentId
+            ? { ...comment, isEditing: true }
+            : comment
+        )
+      );
+      setEditingComment(commentId);
+
+    } catch (error) {
+      console.error('Error starting edit:', error);
+    }
+  };
+
+  // Update comment text handler
+  const handleCommentTextChange = (commentId, newText) => {
+    setComments((prev) =>
+      prev.map((comment) =>
+        comment.id === commentId ? { ...comment, text: newText } : comment
+      )
+    );
+  };
 
   // Optimized items per page for A4 layout - conservative to prevent overflow
   const ITEMS_FIRST_PAGE = 6; // First page has patient info, so fewer items
@@ -120,9 +377,8 @@ const Document = ({ document, title, patient }) => {
               </div>
 
               <!-- Patient Information Section - Only on first page -->
-              ${
-                page === 1
-                  ? `
+              ${page === 1
+              ? `
               <div style="${styles.section}">
                 <h3 style="${styles.sectionTitle}">Patient Information</h3>
                 <div style="${styles.patientGrid}">
@@ -149,18 +405,17 @@ const Document = ({ document, title, patient }) => {
                 </div>
               </div>
               `
-                  : ""
-              }
+              : ""
+            }
 
               <!-- Document Details Section -->
-              ${
-                isSymptomReasoningReport
-                  ? `
+              ${isSymptomReasoningReport
+              ? `
                 ${(() => {
-                  // Handle both direct record and nested records structure
-                  const record = documentData.records?.[0] || documentData;
-                  
-                  return `
+                // Handle both direct record and nested records structure
+                const record = documentData.records?.[0] || documentData;
+
+                return `
                     <!-- Risk Assessment Section -->
                     <div style="${styles.section}">
                       <h3 style="${styles.sectionTitle}">Risk Assessment</h3>
@@ -185,14 +440,14 @@ const Document = ({ document, title, patient }) => {
                     </div>
 
                     ${Object.entries(record)
-                      .filter(([key, value]) => 
-                        typeof value === 'string' && 
-                        value.length > 50 && 
-                        !['id', 'patient_id', 'risk_score', 'risk_score_raw', 'risk_level', 'gestation_weeks_int', 'gestation_weeks_total', 'prompt_version', 'raw_model_response', 'input_hash', 'created_at', 'recommendations', 'recommendation', 'recommended_actions', 'next_steps'].includes(key)
-                      )
-                      .map(([key, value]) => {
-                        const formattedKey = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (l) => l.toUpperCase());
-                        return `
+                    .filter(([key, value]) =>
+                      typeof value === 'string' &&
+                      value.length > 50 &&
+                      !['id', 'patient_id', 'risk_score', 'risk_score_raw', 'risk_level', 'gestation_weeks_int', 'gestation_weeks_total', 'prompt_version', 'raw_model_response', 'input_hash', 'created_at', 'recommendations', 'recommendation', 'recommended_actions', 'next_steps'].includes(key)
+                    )
+                    .map(([key, value]) => {
+                      const formattedKey = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\b\w/g, (l) => l.toUpperCase());
+                      return `
                           <div style="${styles.section}">
                             <h3 style="${styles.sectionTitle}">${formattedKey}</h3>
                             <div style="${styles.contentArea}">
@@ -200,54 +455,49 @@ const Document = ({ document, title, patient }) => {
                             </div>
                           </div>
                         `;
-                      }).join('')}
+                    }).join('')}
                   `;
-                })()}
+              })()}
               `
-                  : `
+              : `
                 <div style="${styles.section}">
                   <h3 style="${styles.sectionTitle}">
                     Document Details
-                    ${
-                      totalPages > 1
-                        ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>`
-                        : ""
-                    }
+                    ${totalPages > 1
+                ? `<span style="${styles.pageIndicator}">(Page ${page} of ${totalPages})</span>`
+                : ""
+              }
                   </h3>
                   <div style="${styles.documentGrid}">
                     ${pageItems
-                      .map(
-                        (item) => `
+                .map(
+                  (item) => `
                       <div style="${styles.fieldGroup}">
-                        <label style="${styles.fieldLabel}">${
-                          item.label
-                        }</label>
+                        <label style="${styles.fieldLabel}">${item.label
+                    }</label>
                         <div style="${styles.fieldValue}">
-                          ${
-                            item.value === "Not provided"
-                              ? `<span style="${styles.emptyValue}">${item.value}</span>`
-                              : item.value
-                          }
+                          ${item.value === "Not provided"
+                      ? `<span style="${styles.emptyValue}">${item.value}</span>`
+                      : item.value
+                    }
                         </div>
                       </div>
                     `
-                      )
-                      .join("")}
+                )
+                .join("")}
                   </div>
                 </div>
               `
-              }
+            }
 
-              ${
-                page === 1
-                  ? `
+              ${page === 1
+              ? `
               <div style="${styles.footer}">
                 <div style="${styles.signatureSection}">
                   <div style="${styles.signatureBox}">
                     <div style="${styles.signatureLine}"></div>
-                    <label style="${
-                      styles.signatureLabel
-                    }">Healthcare Provider Signature</label>
+                    <label style="${styles.signatureLabel
+              }">Healthcare Provider Signature</label>
                   </div>
                   <div style="${styles.signatureBox}">
                     <div style="${styles.signatureLine}"></div>
@@ -255,47 +505,42 @@ const Document = ({ document, title, patient }) => {
                   </div>
                 </div>
                 <div style="${styles.footerInfo}">
-                  <p style="${
-                    styles.footerInfoP
-                  }">This document is confidential and contains protected health information.</p>
-                  <p style="${
-                    styles.footerInfoP
-                  }">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+                  <p style="${styles.footerInfoP
+              }">This document is confidential and contains protected health information.</p>
+                  <p style="${styles.footerInfoP
+              }">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
                 </div>
               </div>
               `
-                  : ""
-              }
+              : ""
+            }
           `;
         } else {
           // Legacy view
           allPagesHTML += `
-            <div class="doc-main" style="page-break-after: ${
-              page < totalPages ? "always" : "auto"
+            <div class="doc-main" style="page-break-after: ${page < totalPages ? "always" : "auto"
             };">
-              <h3>${title} ${
-            totalPages > 1 ? `(Page ${page} of ${totalPages})` : ""
-          }</h3>
+              <h3>${title} ${totalPages > 1 ? `(Page ${page} of ${totalPages})` : ""
+            }</h3>
               <section>
                 <div class="container">
                   ${pageItems
-                    .map(
-                      (item) => `
+              .map(
+                (item) => `
                     <div class="list">
                       <div class="label">${item.label}</div>
                       <div class="value">
-                        ${
-                          item.value === "Not provided"
-                            ? '<span class="placeholder">' +
-                              item.value +
-                              "</span>"
-                            : item.value
-                        }
+                        ${item.value === "Not provided"
+                    ? '<span class="placeholder">' +
+                    item.value +
+                    "</span>"
+                    : item.value
+                  }
                       </div>
                     </div>
                   `
-                    )
-                    .join("")}
+              )
+              .join("")}
                 </div>
               </section>
             </div>
@@ -308,10 +553,10 @@ const Document = ({ document, title, patient }) => {
 
     // Use inline styles for perfect consistency
     const getInlineStyles = () => {
-      const baseFormTemplate = isSymptomReasoningReport 
+      const baseFormTemplate = isSymptomReasoningReport
         ? "max-width: 800px; margin: 30px auto; padding: 20px 0; background: transparent; border: none; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #2d3748; page-break-after: always;"
         : "max-width: 800px; margin: 30px auto; padding: 40px; background: #ffffff; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.06); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #2d3748; page-break-after: always;";
-      
+
       return {
         formTemplate: baseFormTemplate,
         pageNumber: "margin: 3px 0 0 0; font-size: 0.8rem; color: #718096; font-weight: normal;",
@@ -381,9 +626,8 @@ const Document = ({ document, title, patient }) => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${title} - ${
-      patient?.name || "Patient"
-    } - ${new Date().toLocaleDateString()}</title>
+          <title>${title} - ${patient?.name || "Patient"
+      } - ${new Date().toLocaleDateString()}</title>
           <meta charset="UTF-8">
           <style>
             * { box-sizing: border-box; }
@@ -437,7 +681,6 @@ const Document = ({ document, title, patient }) => {
     // Show instruction and auto-trigger print dialog
     setTimeout(() => {
       printWindow.focus();
-
       printWindow.print();
     }, 500);
   };
@@ -445,14 +688,11 @@ const Document = ({ document, title, patient }) => {
   if (!document) return null;
 
   // Check if this is a SymptomReasoningReport
-  console.log(title)
-  const isSymptomReasoningReport =
-    title === "AI Analysis";
+  const isSymptomReasoningReport = title === "AI Analysis";
 
   // Prepare data for FormTemplate
   const prepareDocumentData = () => {
     if (isSymptomReasoningReport) {
-      // For SymptomReasoningReport, we'll handle it differently
       return document;
     }
 
@@ -491,6 +731,32 @@ const Document = ({ document, title, patient }) => {
     return new Date().toISOString();
   };
 
+  // Only highlight text that has been commented on
+  const highlightText = (text, comments, commentedSelections) => {
+    if (!text) return text;
+
+    let highlighted = text;
+
+    // Only process selections that are in our commented set
+    comments.forEach((comment) => {
+      if (comment.selection && commentedSelections.has(comment.selection)) {
+        const cleanSelection = comment.selection.trim();
+        if (!cleanSelection) return;
+
+        // Escape regex special chars
+        const safe = cleanSelection.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const regex = new RegExp(`(${safe})`, "gi");
+
+        highlighted = highlighted.replace(
+          regex,
+          `<span class="highlighted-text">$1</span>`
+        );
+      }
+    });
+
+    return highlighted;
+  };
+
   const formData = {
     recordDate: getRecordDate(),
     recordType: title || "Health Record",
@@ -501,9 +767,9 @@ const Document = ({ document, title, patient }) => {
   const allItems = isSymptomReasoningReport
     ? [] // SymptomReasoningReport doesn't use the table format
     : Object.entries(documentData).map(([key, value]) => ({
-        label: formatKey(key),
-        value: formatValue(formatHumanDate(key, value)),
-      }));
+      label: formatKey(key),
+      value: formatValue(formatHumanDate(key, value)),
+    }));
 
   // Calculate pagination with different page sizes
   const calculatePagination = () => {
@@ -601,20 +867,41 @@ const Document = ({ document, title, patient }) => {
     setCurrentPage(page);
   };
 
+
+
   return (
     <div className="document-viewer">
+      {/* Context Menu */}
+      {selection && contextMenuPosition && (
+        <div
+          className="context-menu"
+          style={{
+            position: "fixed",
+            top: contextMenuPosition.y,
+            left: contextMenuPosition.x,
+            background: "#fff",
+            border: "1px solid #ccc",
+            padding: "6px 12px",
+            borderRadius: "6px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+            zIndex: 1000,
+            cursor: "pointer"
+          }}
+          onClick={handleAddComment}
+        >
+          <div className="comment-btn" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <FaRegCommentAlt />
+            Add Comment
+          </div>
+        </div>
+      )}
+
       {/* Header with controls */}
       <div className="document-header">
         <div className="header-left">
           <h2>{title}</h2>
         </div>
         <div className="header-right">
-          {/* <button
-            className="view-toggle"
-            onClick={() => setUseFormTemplate(!useFormTemplate)}
-          >
-            {useFormTemplate ? "Legacy View" : "Form View"}
-          </button> */}
           <button className="download-button" onClick={handlePrint}>
             <IoPrintOutline />
             Download PDF
@@ -625,124 +912,255 @@ const Document = ({ document, title, patient }) => {
       {/* Document Content */}
       <div ref={componentRef} className="document-content">
         {useFormTemplate ? (
-          <>
-            {/* Pagination Controls - Outside the FormTemplate */}
-            {totalPages > 1 && (
-              <div className="pagination-controls document-pagination">
-                <button
-                  className="page-btn"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Previous Page
-                </button>
+          <div className="doc-grid">
+            <div className="doc-grid-left">
+              {/* Pagination Controls - Outside the FormTemplate */}
+              {totalPages > 1 && (
+                <div className="pagination-controls document-pagination">
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous Page
+                  </button>
 
-                <div className="page-numbers">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        className={`page-btn ${
-                          page === currentPage ? "active" : ""
-                        }`}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                </div>
-
-                <button
-                  className="page-btn"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Next Page
-                </button>
-              </div>
-            )}
-            {/* Complete FormTemplate for each page */}
-            <FormTemplate
-              title={title}
-              patientData={patientData}
-              showPatientInfo={currentPage === 1}
-              className={isSymptomReasoningReport ? "ai-analysis" : ""}
-              formData={formData}
-              organizationName="Mobileuurka"
-              logoSrc="/logo.png"
-            >
-              {/* Custom content section for document data */}
-              {isSymptomReasoningReport ? (
-                renderSymptomReasoningSummary()
-              ) : (
-                <div className="section">
-                  <h3 className="section-title">
-                    Document Details
-                    {totalPages > 1 && (
-                      <span className="page-indicator">
-                        (Page {currentPage} of {totalPages})
-                      </span>
+                  <div className="page-numbers">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          className={`page-btn ${page === currentPage ? "active" : ""}`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      )
                     )}
-                  </h3>
-                  <div className="grid document-grid">
-                    {currentItems.map((item, index) => (
-                      <div key={index} className="field-group">
-                        <label>{item.label}</label>
-                        <div className="field-value">
-                          {item.value === "Not provided" ? (
-                            <span className="empty-value">{item.value}</span>
-                          ) : (
-                            <span>{item.value}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
                   </div>
+
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next Page
+                  </button>
                 </div>
               )}
-            </FormTemplate>
 
-            {/* Pagination Controls - Outside the FormTemplate */}
-            {totalPages > 1 && (
-              <div className="pagination-controls document-pagination">
-                <button
-                  className="page-btn"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Previous Page
-                </button>
+              {/* Complete FormTemplate for each page */}
+              <FormTemplate
+                title={title}
+                patientData={patientData}
+                showPatientInfo={currentPage === 1}
+                className={isSymptomReasoningReport ? "ai-analysis" : ""}
+                formData={formData}
+                comments={comments}
+                setSelection={setSelection}
+                onContextMenu={handleContextMenu}
+                organizationName="Mobileuurka"
+                commentedSelections={commentedSelections}
+                logoSrc="/logo.png"
+              >
+                {/* Custom content section for document data */}
+                {isSymptomReasoningReport ? (
+                  renderSymptomReasoningSummary()
+                ) : (
+                  <div className="section">
+                    <h3 className="section-title">
+                      Document Details
+                      {totalPages > 1 && (
+                        <span className="page-indicator">
+                          (Page {currentPage} of {totalPages})
+                        </span>
+                      )}
+                    </h3>
+                    <div className="grid document-grid">
+                      {currentItems.map((item, index) => (
+                        <div key={index} className="field-group">
+                          <label>{item.label}</label>
+                          <div className="field-value">
+                            {item.value === "Not provided" ? (
+                              <span className="empty-value">{item.value}</span>
+                            ) : (
+                              <span
+                                dangerouslySetInnerHTML={{
+                                  __html: highlightText(item.value, comments, commentedSelections),
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </FormTemplate>
 
-                <div className="page-numbers">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        className={`page-btn ${
-                          page === currentPage ? "active" : ""
-                        }`}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
+              {/* Pagination Controls - Outside the FormTemplate */}
+              {totalPages > 1 && (
+                <div className="pagination-controls document-pagination">
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous Page
+                  </button>
+
+                  <div className="page-numbers">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          className={`page-btn ${page === currentPage ? "active" : ""
+                            }`}
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next Page
+                  </button>
                 </div>
+              )}
+            </div>
+            <div className="doc-grid-right">
+              <div className="form-template" style={{ position: "relative" }}>
+                {comments.map((comment) => (
+                  <div
+                    className="comment"
+                    key={comment.id}
+                    style={{
+                      position: "absolute",
+                      top: `${comment.y - 120}px`,
+                      left: 0,
+                      right: 0,
+                      margin: "5px auto",
+                      padding: "8px",
+                      background: "var(--section)",
+                      border: "1px solid var(--section)",
+                      borderRadius: "6px",
+                      zIndex: "99",
+                    }}
+                  >
+                    {comment.isEditing ? (
+                      <>
+                        <textarea
+                          value={comment.text}
+                          onChange={(e) =>
+                            setComments((prev) =>
+                              prev.map((c) =>
+                                c.id === comment.id ? { ...c, text: e.target.value } : c
+                              )
+                            )
+                          }
+                          placeholder="Write a comment..."
+                          style={{
+                            width: "100%",
+                            minHeight: "40px",
+                            border: "none",
+                            outline: "none",
+                            resize: "vertical",
+                            background: "transparent",
+                            marginBottom: "8px",
+                          }}
+                        />
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                          <button
+                            onClick={() => handleSaveComment(comment.id, comment.text)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#008540",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => handleCancelComment(comment.id)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#e53e3e",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            padding: "4px 0",
+                            marginBottom: "8px",
+                            minHeight: "20px",
+                          }}
+                        >
+                          {comment.text || "No comment text"}
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                          <button
+                            onClick={() => handleEditComment(comment.id)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#4299e1",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleRemoveComment(comment.id)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#e53e3e",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
 
-                <button
-                  className="page-btn"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Next Page
-                </button>
               </div>
-            )}
-          </>
+            </div>
+
+          </div>
         ) : (
           // Legacy view
-          <div className="doc-main">
+          <div className="doc-main" style={{
+            marginTop: "10vh"
+          }}>
             <h3>
               {title}
               {totalPages > 1 && (
@@ -783,9 +1201,8 @@ const Document = ({ document, title, patient }) => {
                       (page) => (
                         <button
                           key={page}
-                          className={`page-btn ${
-                            page === currentPage ? "active" : ""
-                          }`}
+                          className={`page-btn ${page === currentPage ? "active" : ""
+                            }`}
                           onClick={() => handlePageChange(page)}
                         >
                           {page}

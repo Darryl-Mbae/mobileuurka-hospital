@@ -4,13 +4,19 @@
   right: -48%;
   height: 65vh;
   width: 40%;
-  background: red;
   border: none;
   border-radius: 10px;
   padding: 20px;
   z-index: 1001;
+  -ms-overflow-style: none;
   font-size: 0.8em;
 }
+
+.alerts-dialog::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari */
+}
+
 .alerts-dialog .cancel {
   position: absolute;
   right: 20px;
