@@ -116,17 +116,23 @@ form {
   padding: 0.8em 1rem;
   border: 1px solid #d5dbe2;
   border-radius: 8px;
-  font-size: 0.9rem;
+  font-size: 16px;
   transition: border-color 0.2s, box-shadow 0.2s;
   position: relative;
   z-index: 90;
   width: 92%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .password-input input {
   padding: 0px 0.4rem;
   border: none;
   background: none;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .password-input .password-toggle {
   color: #495057;
