@@ -10,7 +10,6 @@ const SERVER = import.meta.env.VITE_SERVER_URL;
 export const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem('access_token');
   
-  console.log('token', token);
   const defaultOptions = {
     credentials: 'include', // For cookies
     headers: {

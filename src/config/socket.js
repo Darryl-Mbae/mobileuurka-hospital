@@ -178,8 +178,8 @@ class SocketManager {
       auth: {
         token: token,
       },
-      transports: ["websocket", "polling"],
-      timeout: 20000,
+      transports: ['polling', 'websocket'], // fallback order
+      timeout: 25000,
       forceNew: true,
     });
 
@@ -817,6 +817,7 @@ class SocketManager {
     const state = store.getState();
     const token = state.user?.token || state.auth?.token;
     
+    console.log(token)
     if (token) {
       this.connect(token);
     } else {

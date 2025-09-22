@@ -22,7 +22,6 @@ export const useSocket = () => {
       try {
         // Get token from localStorage since that's where your API stores it
         const token = localStorage.getItem('access_token');
-        console.log(token);
         
         if (token) {
           socketManager.connect(token);
