@@ -152,7 +152,7 @@ function App() {
         const { apiGet } = await import("./config/api.js");
         const res = await apiGet("/patients/my");
 
-        const data = await res.json();
+        const data = await res
 
         // Optional: transform or normalize data
         const transformed = data?.map((p) => ({
