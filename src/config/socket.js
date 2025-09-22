@@ -159,32 +159,43 @@ class SocketManager {
   }
 
   connect(token) {
+    console.log("🔌 Connecting with token:", token ? `Yes (length: ${token.length})` : "No token!");
+
     if (this.socket?.connected) {
       console.log("Socket already connected");
       return this.socket;
     }
-
+  
     // Clear any existing reconnection timer
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-
+  
     // Set connecting status
     store.dispatch(setConnecting());
     console.log("🔄 Connecting to socket server...");
-
+  
+    // CHANGE ONLY THESE OPTIONS:
     this.socket = io(SERVER, {
       auth: {
         token: token,
       },
-      transports: ["websocket", "polling"],
-      timeout: 25000,
+      // CHANGE THIS LINE - put polling first for mobile Safari:
+      transports: ["polling", "websocket"], // Changed order
+      timeout: 60000, // Increased from 25000
       forceNew: true,
+      
+      // ADD THESE NEW OPTIONS:
+      reconnection: true,
+      reconnectionAttempts: 15, // Increased from 10
+      reconnectionDelay: 2000, // Start with 2 seconds
+      reconnectionDelayMax: 10000, // Max 10 seconds
+      randomizationFactor: 0.5, // Add jitter
     });
-
+  
     this.setupEventListeners();
-
+  
     return this.socket;
   }
 
