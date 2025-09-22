@@ -178,7 +178,7 @@ class SocketManager {
       auth: {
         token: token,
       },
-      transports: ['polling', 'websocket'], // fallback order
+      transports: ["websocket", "polling"],
       timeout: 25000,
       forceNew: true,
     });
