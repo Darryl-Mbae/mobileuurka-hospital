@@ -25,6 +25,7 @@ export const useSocket = () => {
       try {
         const token = localStorage.getItem('access_token');
         if (token) {
+          console.log(token)
           socketManager.connect(token);
         } else {
           console.error('❌ No token found for socket connection');

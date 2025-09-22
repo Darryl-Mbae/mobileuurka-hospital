@@ -159,7 +159,9 @@ class SocketManager {
   }
 
   connect(token) {
-    console.log("🔌 Connecting with token:", token ? `Yes (length: ${token.length})` : "No token!");
+    console.log("📱 UserAgent:", navigator.userAgent);
+    console.log("🔗 Server URL:", SERVER);
+    console.log("🔑 Token exists:", !!token);
 
     if (this.socket?.connected) {
       console.log("Socket already connected");
@@ -828,7 +830,6 @@ class SocketManager {
     const state = store.getState();
     const token = state.user?.token || state.auth?.token;
     
-    console.log(token)
     if (token) {
       this.connect(token);
     } else {
