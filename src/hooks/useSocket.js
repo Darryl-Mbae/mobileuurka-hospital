@@ -13,19 +13,21 @@ export const useSocket = () => {
     isReconnecting 
   } = useSelector(state => state.socket);
   const { currentUser } = useSelector(state => state.user);
-  
+
 
 
   useEffect(() => {
+    // Only connect if we have a user AND no existing socket connection
     if (currentUser && !socket) {
+      console.log('🔄 Initializing socket connection...');
       dispatch(setConnecting());
+      
       try {
-        // Get token from localStorage since that's where your API stores it
         const token = localStorage.getItem('access_token');
-        
         if (token) {
           socketManager.connect(token);
         } else {
+          console.error('❌ No token found for socket connection');
           dispatch(setConnectionError('No authentication token found'));
         }
       } catch (error) {
@@ -34,10 +36,12 @@ export const useSocket = () => {
       }
     }
 
+    // Cleanup on component unmount
     return () => {
-      // Don't disconnect on unmount, let the app handle it
+      // Only disconnect if specifically needed, not on every re-render
     };
-  }, [currentUser, socket, dispatch]);
+  }, [currentUser, socket, dispatch]); // Add socket to dependencies
+
 
   const disconnect = () => {
     socketManager.disconnect();
