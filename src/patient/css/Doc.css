@@ -76,3 +76,9 @@
     cursor: pointer;
   }
   
+
+  @media screen and (max-width:900px) {
+    .doc-grid {
+        grid-template-columns: 100%;
+    }
+  }

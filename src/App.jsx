@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "./css/Admin.css";
 import SideBar from "./components/SideBar";
 import DashboardPage from "./pages/DashBoardPage";
@@ -36,6 +36,7 @@ function App() {
   const { page, id } = useParams();
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const [accepted, setAccepted] = useState(false);
+  const [initialPatientsFetched, setInitialPatientsFetched] = useState(false);
   const currentUser = useSelector((state) => state.user.currentUser);
 
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ function App() {
   // Initialize socket connection
   const { isConnected, connectionStatus } = useSocket();
 
+  // Handle URL params
   useEffect(() => {
     if (page) {
       setActiveItem(page);
@@ -53,111 +55,143 @@ function App() {
     }
   }, [page, id]);
 
+  // Handle terms dialog
   useEffect(() => {
     if (currentUser && dialog.current && !currentUser.readTerms) {
       dialog.current.show();
     }
   }, [currentUser, dialog]);
 
+  // Handle terms acceptance
   useEffect(() => {
-    if (accepted) {
-      async function updateUser() {
-        try {
-          const res = await fetch(`${SERVER}/users/${currentUser?.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ readTerms: true }), // 👈 set flag
-          });
+    if (!accepted || !currentUser) return;
 
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          dispatch(setUser(data)); // update redux or context
-        } catch (err) {
-          console.error("Error updating user:", err);
-        } finally {
+    let isMounted = true;
+
+    async function updateUser() {
+      try {
+        const res = await fetch(`${SERVER}/users/${currentUser?.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ readTerms: true }),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        
+        if (isMounted) {
+          dispatch(setUser(data));
+        }
+      } catch (err) {
+        console.error("Error updating user:", err);
+      } finally {
+        if (isMounted) {
           dialog.current?.close();
         }
       }
-
-      updateUser();
     }
-  }, [accepted]);
+
+    updateUser();
+
+    return () => { isMounted = false; };
+  }, [accepted, currentUser, SERVER, dispatch]);
 
   // Get current user with secure API
   useEffect(() => {
+    let isMounted = true;
+
     async function getUser() {
       try {
         // Check if user is authenticated first
         if (!isAuthenticated()) {
-          navigate("/auth");
-          setLoading(false);
+          if (isMounted) {
+            navigate("/auth", { replace: true });
+            setLoading(false);
+          }
           return;
         }
 
         const { fetchCurrentUser } = await import("./config/api.js");
         const data = await fetchCurrentUser();
 
-        dispatch(setUser(data));
+        if (isMounted) {
+          dispatch(setUser(data));
+        }
       } catch (error) {
         console.error("Error fetching user:", error);
-        setError("Failed to load user data");
-        navigate("/auth");
+        if (isMounted) {
+          setError("Failed to load user data");
+          navigate("/auth", { replace: true });
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     getUser();
+
+    return () => { isMounted = false; };
   }, [dispatch, navigate]);
 
   // Fetch organizations based on user tenants - INITIAL FETCH ONLY
   useEffect(() => {
-    const fetchOrganizations = async () => {
-      if (!currentUser) return;
+    if (!currentUser) return;
 
+    let isMounted = true;
+
+    const fetchOrganizations = async () => {
       try {
         const { apiGet } = await import("./config/api.js");
         const data = await apiGet("/organisations/my");
-        dispatch(setOrganisations(data));
+        
+        if (isMounted) {
+          dispatch(setOrganisations(data));
+        }
       } catch (err) {
         console.error("Error fetching organizations:", err);
-        setError("Failed to load organizations data");
+        if (isMounted) {
+          setError("Failed to load organizations data");
+        }
       }
     };
 
     fetchOrganizations();
+
+    return () => { isMounted = false; };
   }, [currentUser, dispatch]);
 
+  // Memoized function to fetch patients
+  const fetchPatients = useCallback(async () => {
+    if (!currentUser || initialPatientsFetched) return;
+
+    try {
+      const res = await fetch(`${SERVER}/patients/my`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      // Optional: transform or normalize data
+      const transformed = data?.map((p) => ({
+        ...p,
+      }));
+
+      dispatch(setPatients(transformed));
+      setInitialPatientsFetched(true);
+    } catch (err) {
+      console.error("Failed to fetch patients:", err);
+      setInitialPatientsFetched(true); // Mark as attempted even on error
+    }
+  }, [currentUser, initialPatientsFetched, SERVER, dispatch]);
+
   // Fetch patients only once when user is first loaded
-  const [initialPatientsFetched, setInitialPatientsFetched] = useState(false);
-  
   useEffect(() => {
-    if (currentUser && !initialPatientsFetched) {
-      fetchPatients();
-    }
-    
-    async function fetchPatients() {
-      try {
-        const res = await fetch(`${SERVER}/patients/my`, {
-          credentials: "include",
-        });
-
-        const data = await res.json();
-
-        // Optional: transform or normalize data
-        const transformed = data?.map((p) => ({
-          ...p,
-        }));
-
-        dispatch(setPatients(transformed));
-        setInitialPatientsFetched(true);
-      } catch (err) {
-        console.error("Failed to fetch patients:", err);
-        setInitialPatientsFetched(true); // Mark as attempted even on error
-      }
-    }
-  }, [currentUser, initialPatientsFetched]); // Only run once per user session
+    fetchPatients();
+  }, [fetchPatients]);
 
   const renderContent = () => {
     switch (activeItem) {
@@ -202,6 +236,14 @@ function App() {
     }
   };
 
+  // Retry function without full page reload
+  const handleRetry = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    setInitialPatientsFetched(false);
+    // The useEffects will re-run and fetch data again
+  }, []);
+
   // Loading state
   if (loading) {
     return (
@@ -226,7 +268,7 @@ function App() {
     return (
       <div className="admin-error">
         <div>Error: {error}</div>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <button onClick={handleRetry}>Retry</button>
       </div>
     );
   }
@@ -236,7 +278,7 @@ function App() {
     return (
       <div className="admin-auth-required">
         <div>Authentication required</div>
-        <button onClick={() => navigate("/auth")}>Login</button>
+        <button onClick={() => navigate("/auth", { replace: true })}>Login</button>
       </div>
     );
   }
