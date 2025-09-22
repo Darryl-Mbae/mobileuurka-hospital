@@ -63,7 +63,7 @@ function App() {
     const token = localStorage.getItem("access_token");
     return token ? { "Authorization": `Bearer ${token}` } : {};
   }
-  
+
 
   useEffect(() => {
     if (accepted) {
@@ -71,11 +71,11 @@ function App() {
         try {
           const res = await fetch(`${SERVER}/users/${currentUser?.id}`, {
             method: "PUT",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
               ...authHeaders(), // Include auth headers
-           
-             },
+
+            },
             credentials: "include",
             body: JSON.stringify({ readTerms: true }), // 👈 set flag
           });
@@ -141,12 +141,12 @@ function App() {
 
   // Fetch patients only once when user is first loaded
   const [initialPatientsFetched, setInitialPatientsFetched] = useState(false);
-  
+
   useEffect(() => {
     if (currentUser && !initialPatientsFetched) {
       fetchPatients();
     }
-    
+
     async function fetchPatients() {
       try {
         const { apiGet } = await import("./config/api.js");
@@ -229,41 +229,26 @@ function App() {
       </div>
     );
   }
-
-  // Error state
-  if (error) {
+  else {
+    if (error) {
+      return <div className="admin-error">{error}</div>;
+    }
     return (
-      <div className="admin-error">
-        <div>Error: {error}</div>
-        <button onClick={() => window.location.reload()}>Retry</button>
+      <div className="admin">
+        <Terms ref={dialog} pdfUrl={pdfurl} onAccept={() => setAccepted(true)} />
+        <SideBar
+          activeItem={activeItem}
+          setActiveItem={setActiveItem}
+          setInternalTab={setInternalTab}
+        />
+        <div className={`content ${activeItem === "Patient" && "active"}`}>
+          {/* <ConnectionStatus /> */}
+          {renderContent()}
+        </div>
       </div>
     );
   }
 
-  // Require authentication
-  if (!currentUser) {
-    return (
-      <div className="admin-auth-required">
-        <div>Authentication required</div>
-        <button onClick={() => navigate("/auth")}>Login</button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="admin">
-      <Terms ref={dialog} pdfUrl={pdfurl} onAccept={() => setAccepted(true)} />
-      <SideBar
-        activeItem={activeItem}
-        setActiveItem={setActiveItem}
-        setInternalTab={setInternalTab}
-      />
-      <div className={`content ${activeItem === "Patient" && "active"}`}>
-        {/* <ConnectionStatus /> */}
-        {renderContent()}
-      </div>
-    </div>
-  );
 }
 
 export default App;
