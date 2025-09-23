@@ -93,7 +93,13 @@ const PatientIntake = ({ setInternalTab }) => {
   const getIds = async () => {
     try {
       const response = await fetch(`${SERVER}/patients/ids`, {
+
         credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          ...options.headers,
+        },
       });
       const data = await response.json();
       setIds(data);
