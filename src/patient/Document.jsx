@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../patient/css/Doc.css";
-import { IoPrintOutline } from "react-icons/io5";
+import { IoArrowBack, IoPrintOutline } from "react-icons/io5";
 import FormTemplate from "../components/FormTemplate";
 import { FaRegCommentAlt } from "react-icons/fa";
 
@@ -60,17 +60,38 @@ const formatHumanDate = (key, value) => {
   return value;
 };
 
+const useIsMobile = (breakpoint = 768) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= breakpoint);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+};
+
 const Document = ({ document, title, patient }) => {
   const [useFormTemplate, setUseFormTemplate] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const componentRef = useRef();
+  const isMobile = useIsMobile();
+  const [activateComment, setActivateComment] = useState(false);
   const SERVER = import.meta.env.VITE_SERVER_URL;
   const [selection, setSelection] = useState(null);
   const [contextMenuPosition, setContextMenuPosition] = useState(null);
   const [comments, setComments] = useState([]);
   const [editingComment, setEditingComment] = useState(null);
   const [commentedSelections, setCommentedSelections] = useState(new Set());
-  const [isLoadingComments, setIsLoadingComments] = useState(true); // Add this
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  
+  // Mobile long press state
+  const [longPressTimer, setLongPressTimer] = useState(null);
+  const [longPressStarted, setLongPressStarted] = useState(false);
 
   // Track which comment is being edited
   useEffect(() => {
@@ -87,8 +108,6 @@ const Document = ({ document, title, patient }) => {
     window.document.addEventListener("click", handleClick);
     return () => window.document.removeEventListener("click", handleClick);
   }, []);
-
-
 
   useEffect(() => {
     console.log(patient)
@@ -128,7 +147,40 @@ const Document = ({ document, title, patient }) => {
     loadComments();
   }, [document?.id, patient]);
 
+  // Mobile long press handlers
+  const handleTouchStart = (e) => {
+    if (!isMobile) return;
+    
+    setLongPressStarted(true);
+    const timer = setTimeout(() => {
+      const selection = window.getSelection();
+      const selectedText = selection.toString().trim();
+      
+      if (selectedText) {
+        const touch = e.touches[0];
+        handleContextMenu(selectedText, touch.clientX, touch.clientY);
+        setLongPressStarted(false);
+      }
+    }, 500); // 500ms long press
+    
+    setLongPressTimer(timer);
+  };
 
+  const handleTouchEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    setLongPressStarted(false);
+  };
+
+  const handleTouchMove = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    setLongPressStarted(false);
+  };
 
   // Handle text selection and context menu positioning
   const handleContextMenu = (selectedText, clientX, clientY) => {
@@ -142,6 +194,19 @@ const Document = ({ document, title, patient }) => {
         y: clientY, // Keep viewport coordinates for context menu
         relativeY: relativeY // Store relative position for comment placement
       });
+    }
+  };
+
+  // Desktop right-click handler
+  const handleRightClick = (e) => {
+    if (isMobile) return; // Skip on mobile
+    
+    e.preventDefault();
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    if (selectedText) {
+      handleContextMenu(selectedText, e.clientX, e.clientY);
     }
   };
 
@@ -182,6 +247,11 @@ const Document = ({ document, title, patient }) => {
       setCommentedSelections((prev) => new Set([...prev, selection.trim()]));
       setSelection(null);
       setContextMenuPosition(null);
+      
+      // On mobile, auto-open comments panel
+      if (isMobile) {
+        setActivateComment(true);
+      }
     }
   };
 
@@ -189,19 +259,19 @@ const Document = ({ document, title, patient }) => {
   const handleRemoveComment = async (commentId) => {
     try {
       console.log('Deleting comment:', commentId);
-      
+
       const response = await fetch(`${SERVER}/patients/medical/comments/${commentId}`, {
         method: "DELETE",
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to delete comment");
       }
-      
+
       console.log("Comment deleted successfully");
-      
+
       setComments((prev) => {
         const commentToRemove = prev.find(comment => comment.id === commentId);
         if (commentToRemove) {
@@ -213,7 +283,7 @@ const Document = ({ document, title, patient }) => {
         }
         return prev.filter(comment => comment.id !== commentId);
       });
-      
+
     } catch (error) {
       console.error("Error deleting comment:", error);
       alert(error.message || "Failed to delete comment. Please try again.");
@@ -225,7 +295,7 @@ const Document = ({ document, title, patient }) => {
       const comment = comments.find(c => c.id === commentId);
 
       console.log(comment)
-      const isNewComment = !comment.createdAt ;
+      const isNewComment = !comment.createdAt;
 
       const commentData = {
         patientId: patient?.id,
@@ -273,11 +343,11 @@ const Document = ({ document, title, patient }) => {
     }
   };
 
-
   const handleCancelComment = (commentId) => {
     const comment = comments.find(c => c.id === commentId);
 
-    if (comment && comment.text === "") {
+    console.log(comment ,comments)
+    if (comment && comment.text === "" && comment?.editor) {
       // If it's a new empty comment, remove it
       handleRemoveComment(commentId);
     } else {
@@ -719,6 +789,8 @@ const Document = ({ document, title, patient }) => {
     address: patient?.address || "N/A",
   };
 
+
+
   // Prepare form data - fix date handling
   const getRecordDate = () => {
     if (document?.date) {
@@ -742,17 +814,19 @@ const Document = ({ document, title, patient }) => {
       if (comment.selection && commentedSelections.has(comment.selection)) {
         const cleanSelection = comment.selection.trim();
         if (!cleanSelection) return;
-
+    
         // Escape regex special chars
         const safe = cleanSelection.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    
         const regex = new RegExp(`(${safe})`, "gi");
-
+    
         highlighted = highlighted.replace(
           regex,
           `<span class="highlighted-text">$1</span>`
         );
       }
     });
+    
 
     return highlighted;
   };
@@ -867,8 +941,6 @@ const Document = ({ document, title, patient }) => {
     setCurrentPage(page);
   };
 
-
-
   return (
     <div className="document-viewer">
       {/* Context Menu */}
@@ -899,18 +971,70 @@ const Document = ({ document, title, patient }) => {
       {/* Header with controls */}
       <div className="document-header">
         <div className="header-left">
-          <h2>{title}</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <h2>{title}</h2>
+            {document?.date && (
+              <span style={{ fontSize: "0.875rem", color: "#718096" }}>
+                {formatDate(document.date)}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="header-right">
+        <div className="header-right" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+
           <button className="download-button" onClick={handlePrint}>
             <IoPrintOutline />
             Download PDF
           </button>
+          {isMobile && (
+            <button 
+              className="comment-toggle-btn" 
+              onClick={() => setActivateComment(prev => !prev)}
+              style={{
+                background: activateComment ? "#008540" : "transparent",
+                color: activateComment ? "white" : "#4a5568",
+                border: "1px solid #e2e8f0",
+                borderRadius: "6px",
+                padding: "8px 10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                fontSize: "14px"
+              }}
+            >
+              <FaRegCommentAlt size={14} />
+              {comments.length > 0 && (
+                <span style={{
+                  background: activateComment ? "rgba(255,255,255,0.3)" : "#008540",
+                  color: activateComment ? "white" : "white",
+                  borderRadius: "50%",
+                  width: "18px",
+                  height: "18px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  fontWeight: "bold"
+                }}>
+                  {comments.length}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       {/* Document Content */}
-      <div ref={componentRef} className="document-content">
+      <div 
+        ref={componentRef} 
+        className="document-content"
+        onContextMenu={handleRightClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        style={{ userSelect: "text", WebkitUserSelect: "text" }}
+      >
         {useFormTemplate ? (
           <div className="doc-grid">
             <div className="doc-grid-left">
@@ -1058,11 +1182,7 @@ const Document = ({ document, title, patient }) => {
                         <textarea
                           value={comment.text}
                           onChange={(e) =>
-                            setComments((prev) =>
-                              prev.map((c) =>
-                                c.id === comment.id ? { ...c, text: e.target.value } : c
-                              )
-                            )
+                            handleCommentTextChange(comment.id, e.target.value)
                           }
                           placeholder="Write a comment..."
                           style={{
@@ -1154,6 +1274,118 @@ const Document = ({ document, title, patient }) => {
 
               </div>
             </div>
+            {isMobile &&
+              <div className={activateComment ? "doc-grid-comments active" : "doc-grid-comments"}>
+                <div className="back" onClick={()=> setActivateComment(prev => !prev )}><IoArrowBack />
+                  Back</div>
+                {comments.map((comment) => (
+                  <div
+                    className="comment"
+                    key={comment.id}
+                    style={{
+                      margin: "5px auto 10px",
+                      padding: "8px",
+                      background: "var(--section)",
+                      border: "1px solid var(--section)",
+                      borderRadius: "6px",
+                      zIndex: "99",
+                    }}
+                  >
+                    {comment.isEditing ? (
+                      <>
+                        <textarea
+                          value={comment.text}
+                          onChange={(e) =>
+                            handleCommentTextChange(comment.id, e.target.value)
+                          }
+                          placeholder="Write a comment..."
+                          style={{
+                            width: "100%",
+                            minHeight: "40px",
+                            border: "none",
+                            outline: "none",
+                            resize: "vertical",
+                            background: "transparent",
+                            marginBottom: "8px",
+                          }}
+                        />
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                          <button
+                            onClick={() => handleSaveComment(comment.id, comment.text)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#008540",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => handleCancelComment(comment.id)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#e53e3e",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            padding: "4px 0",
+                            marginBottom: "8px",
+                            minHeight: "20px",
+                          }}
+                        >
+                          {comment.text || "No comment text"}
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                          <button
+                            onClick={() => handleEditComment(comment.id)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#4299e1",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleRemoveComment(comment.id)}
+                            style={{
+                              padding: "4px 12px",
+                              background: "#e53e3e",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              fontSize: "12px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>}
 
           </div>
         ) : (
@@ -1224,6 +1456,7 @@ const Document = ({ document, title, patient }) => {
           </div>
         )}
       </div>
+
     </div>
   );
 };
