@@ -265,6 +265,12 @@ form textarea:focus {
     padding-bottom: 2vh;
     
   }
+  .form form {
+    width: 100% !important;
+    max-width: 85vw;
+    height: 100%;
+  }
+  
   .form .form-grid {
     width: 100%;
     grid-template-columns: 100%;
@@ -273,4 +279,8 @@ form textarea:focus {
   .form-section {
     padding: 15px;
   }
+  .form .form-group input,
+.form .form-group textarea {
+  font-size: 16px;
+}
 }
