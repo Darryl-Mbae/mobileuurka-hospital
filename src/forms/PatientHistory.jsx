@@ -115,6 +115,8 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
 
 
   const fetchPatientName = async (patientId) => {
+    const token = localStorage.getItem("access_token");
+
     if (!patientId || patientId.length < 6) return;
     console.log(patientId);
     setFetchingPatient(true);
@@ -122,6 +124,10 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         method: "GET",
         credentials: "include",
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+         },
       });
 
       if (response.ok) {
