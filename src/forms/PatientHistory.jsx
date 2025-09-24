@@ -180,6 +180,7 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
       setPatientName("");
     }
   };
+  const token = localStorage.getItem("access_token");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -190,7 +191,10 @@ const PatientHistory = ({ setInternalTab, selectedPatientId }) => {
         `${SERVER}/patients/medical/patientHistory`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          },           
           credentials: "include",
           body: JSON.stringify(formData),
         }

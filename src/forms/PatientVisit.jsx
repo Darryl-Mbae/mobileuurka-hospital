@@ -13,7 +13,8 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
   
   // Use selectedPatientId prop first, then fall back to screening context
   const initialPatientId = selectedPatientId || screeningContext.patientId || "";
-  
+  const token = localStorage.getItem("access_token");
+
   const [formData, setFormData] = useState({
     patientId: initialPatientId,
     editor: "",
@@ -70,6 +71,10 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
       });
 
       if (response.ok) {
@@ -111,8 +116,10 @@ const PatientVisit = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/medical/visit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },        credentials: "include",
         body: JSON.stringify(formData),
       });
 

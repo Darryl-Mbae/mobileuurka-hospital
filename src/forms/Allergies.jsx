@@ -17,6 +17,7 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
   const clearForm = () => {
     setFormData({});
   }
+  const token = localStorage.getItem("access_token");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [patientName, setPatientName] = useState("");
@@ -44,6 +45,10 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
       });
 
       if (response.ok) {
@@ -81,7 +86,10 @@ const Allergies = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/medical/allergy`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
         credentials: "include",
         body: JSON.stringify(formData),
       });

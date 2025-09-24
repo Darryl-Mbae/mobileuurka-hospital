@@ -18,6 +18,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     return diff > MAXDAYS * MS_IN_A_DAY;
   };
 
+  const token = localStorage.getItem("access_token");
 
   const [formData, setFormData] = useState({
     patientId: selectedPatientId || "",
@@ -108,6 +109,10 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
       });
 
       if (response.ok) {
@@ -422,8 +427,10 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
 
       const primaryResponse = await fetch(primaryURL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submissionData),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },        body: JSON.stringify(submissionData),
       });
 
       if (!primaryResponse.ok) {

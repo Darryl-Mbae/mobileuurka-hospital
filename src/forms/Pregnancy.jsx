@@ -13,6 +13,8 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
   const dispatch = useDispatch();
   const { emitMedicalRecordCreated } = useSocket();
   const id = cuid();
+  const token = localStorage.getItem("access_token");
+
   const PREDICTION_API_URL = import.meta.env.VITE_PREDICTION_API_URL;
   const MAXDAYS = import.meta.env.VITE_FORM_EXPIRY_DAYS;
   const [formData, setFormData] = useState({
@@ -174,6 +176,10 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
       });
 
       if (response.ok) {
@@ -598,8 +604,10 @@ const Pregnancy = ({ setInternalTab, selectedPatientId }) => {
           "https://diagnosis-factors-864851114868.europe-west4.run.app",
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
+            headers: { 
+              "Content-Type": "application/json",
+              ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+             },            credentials: "include",
             body: JSON.stringify({
               data: submissionData.data,
               user_id: currentUser?.id,

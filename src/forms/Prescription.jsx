@@ -20,6 +20,8 @@ const Prescription = ({ setInternalTab, selectedPatientId,patientId }) => {
     medicationPurpose: "",
   });
 
+  const token = localStorage.getItem("access_token");
+
   const [grid, setGrid] = useState(0);
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
@@ -124,7 +126,10 @@ const Prescription = ({ setInternalTab, selectedPatientId,patientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/medical/medication`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },        
         credentials: "include",
         body: JSON.stringify(formData),
       });

@@ -39,12 +39,14 @@ const PatientIntake = ({ setInternalTab }) => {
   const [success, setSuccess] = useState(false);
   const [hospitals, setHospitals] = useState([]);
   const [ids, setIds] = useState([]);
+  const token = localStorage.getItem("access_token");
   const [createdPatientId, setCreatedPatientId] = useState(null);
   const clearForm = () => {
     setFormData({});
   };
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
+
 
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -114,6 +116,11 @@ const PatientIntake = ({ setInternalTab }) => {
     try {
       const response = await fetch(`${SERVER}/organisations/my`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
+
       });
       const data = await response.json();
       console.log(data);
@@ -200,8 +207,14 @@ const PatientIntake = ({ setInternalTab }) => {
     try {
       const response = await fetch(`${SERVER}/patients`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json" ,
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+
+        },
+          
         credentials: "include",
+        
         body: JSON.stringify({ ...formData }),
       });
 

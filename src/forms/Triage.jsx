@@ -33,6 +33,7 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
   const [patientGweek, setPatientGweek] = useState("");
   const [success, setSuccess] = useState(false); 
   const [fetchingPatient, setFetchingPatient] = useState(false);
+  const token = localStorage.getItem("access_token");
 
   // Clear form function
   const clearForm = () => {
@@ -101,6 +102,10 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        }, 
       });
 
       if (response.ok) {
@@ -152,8 +157,10 @@ const Triage = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/medical/triage`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },         credentials: "include",
         body: JSON.stringify(formData),
       });
 

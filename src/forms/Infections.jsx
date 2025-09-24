@@ -17,6 +17,7 @@ const Infections = ({ setInternalTab, selectedPatientId }) => {
     rubella: "",
     hepC: "",
   });
+  const token = localStorage.getItem("access_token");
 
   const clearForm = () => {
     setFormData({});
@@ -50,6 +51,10 @@ const Infections = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
       });
       
       if (response.ok) {
@@ -87,7 +92,10 @@ const Infections = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/medical/infection`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
         credentials: "include",
         body: JSON.stringify(formData),
       });

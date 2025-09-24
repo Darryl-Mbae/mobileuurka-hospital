@@ -17,6 +17,7 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
   const clearForm = () => {
     setFormData({});
   }
+  const token = localStorage.getItem("access_token");
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);

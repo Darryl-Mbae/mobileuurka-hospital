@@ -15,7 +15,8 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
     headCircumference: "",
   });
 
-  
+  const token = localStorage.getItem("access_token");
+
   const [loading, setLoading] = useState(false);
   const [patientName, setPatientName] = useState("");
   const [success,setSuccess] =useState(false)
@@ -58,6 +59,10 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },
       });
 
       if (response.ok) {
@@ -95,8 +100,10 @@ const Fetal = ({ setInternalTab, selectedPatientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/medical/fetalInfo`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        },        credentials: "include",
         body: JSON.stringify(formData),
       });
 
