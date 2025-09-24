@@ -306,7 +306,7 @@ const Document = ({ document, title, patient }) => {
         yPercentage: comment.yPercentage,
       };
 
-      console.log(isNewComment);
+      console.log(commentData);
 
       const url = !isNewComment
         ? `${SERVER}/patients/medical/comments`
