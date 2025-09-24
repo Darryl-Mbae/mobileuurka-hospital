@@ -190,10 +190,17 @@ const Chat = ({ patient, user }) => {
         message_type: selectedOption,
       });
 
+      function authHeaders() {
+        const token = localStorage.getItem("access_token");
+        return token ? { "Authorization": `Bearer ${token}` } : {};
+      }
+
       const response = await fetch(`${SERVER}/chatbot/${patient.id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          ...authHeaders(), // Include auth headers
+
         },
         credentials: "include",
       });
@@ -594,30 +601,30 @@ const Chat = ({ patient, user }) => {
               // Save flow data to database (only if not already saved)
               const messageId = msg.webhookData.MessageSid || msg.id;
               const savedKey = `flow_saved_${messageId}`;
-              
+
               if (!localStorage.getItem(savedKey)) {
                 localStorage.setItem(savedKey, 'true');
                 saveFlowDataToDB(msg.webhookData, patient?.id, SERVER, messageType).then(result => {
-                if (result.success) {
-                  // Add a success message to chat
-                  const successMessage = {
-                    id: `flow-saved-${Date.now()}`,
-                    text: `✅ **Assessment Saved**\n\n${result.successMessage}`,
-                    sender: "bot",
-                    timestamp: new Date().toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
-                  };
+                  if (result.success) {
+                    // Add a success message to chat
+                    const successMessage = {
+                      id: `flow-saved-${Date.now()}`,
+                      text: `✅ **Assessment Saved**\n\n${result.successMessage}`,
+                      sender: "bot",
+                      timestamp: new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                    };
 
-                  setTimeout(() => {
-                    setMessages((prev) => [...prev, successMessage]);
-                    scrollToBottom();
-                  }, 1000);
-                } else {
-                  console.error('Failed to save flow data:', result.error);
-                }
-              });
+                    setTimeout(() => {
+                      setMessages((prev) => [...prev, successMessage]);
+                      scrollToBottom();
+                    }, 1000);
+                  } else {
+                    console.error('Failed to save flow data:', result.error);
+                  }
+                });
               } else {
                 console.log('Flow data already saved for this message');
               }
