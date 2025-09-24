@@ -192,7 +192,11 @@ const Auth = () => {
       // 1. Verify OTP with backend
       const otpResponse = await fetch(`${SERVER}/otp/verify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
         body: JSON.stringify({
           email: loginFormData.email,
           otp: otpCode,
@@ -239,7 +243,11 @@ const Auth = () => {
 
       const recaptchaResponse = await fetch(`${SERVER}/recaptcha`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
         body: JSON.stringify({ recaptchaToken: token }),
       });
 
@@ -250,8 +258,11 @@ const Auth = () => {
       // 2. Request new OTP
       const otpResponse = await fetch(`${SERVER}/auth/resend-otp`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginFormData.email }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },        body: JSON.stringify({ email: loginFormData.email }),
       });
 
       const otpData = await otpResponse.json();
@@ -276,7 +287,11 @@ const Auth = () => {
   const submitLoginForm = async (email, password, rememberMe) => {
     const response = await fetch(`${SERVER}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        // ...options.headers,
+      },
       credentials: "include", // Important for cookies
       body: JSON.stringify({ email, password, rememberMe }),
     });
@@ -330,8 +345,11 @@ const Auth = () => {
   const submitSignupForm = async (name, email, password, terms) => {
     const response = await fetch(`${SERVER}/auth/signup`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, terms }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+        // ...options.headers,
+      },      body: JSON.stringify({ name, email, password, terms }),
     });
 
     if (!response.ok) {
@@ -354,7 +372,11 @@ const Auth = () => {
 
       const recaptchaResponse = await fetch(`${SERVER}/recaptcha`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
         body: JSON.stringify({ recaptchaToken: token }),
       });
 
@@ -365,7 +387,11 @@ const Auth = () => {
       // 2. Change password
       const response = await fetch(`${SERVER}/auth/change-password`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
         credentials: "include",
         body: JSON.stringify({
           email: loginFormData.email,
