@@ -79,6 +79,7 @@ const Document = ({ document, title, patient }) => {
   const [useFormTemplate, setUseFormTemplate] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const componentRef = useRef();
+  const token = localStorage.getItem("access_token");
   const isMobile = useIsMobile();
   const [activateComment, setActivateComment] = useState(false);
   const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -120,6 +121,11 @@ const Document = ({ document, title, patient }) => {
           `${SERVER}/patients/${patient.id}/medical/comments`,
           {
             credentials: "include",
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+              // ...options.headers,
+            },
           }
         );
 
@@ -263,6 +269,11 @@ const Document = ({ document, title, patient }) => {
       const response = await fetch(`${SERVER}/patients/medical/comments/${commentId}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
       });
 
       if (!response.ok) {
@@ -315,8 +326,11 @@ const Document = ({ document, title, patient }) => {
       const response = await fetch(url, {
         method: !isNewComment ? "POST" : "PUT",
         // method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },        credentials: "include",
         body: JSON.stringify(commentData),
       });
 

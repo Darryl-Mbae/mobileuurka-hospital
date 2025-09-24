@@ -114,5 +114,11 @@
     .form-template .header .document-info h2{
         text-align: left;
     }
+    .comment {
+        width: 90%;
+        min-height: 50px;
+        height: auto;
+        font-size: 16px;
+      }
 
   }

@@ -68,6 +68,7 @@ const Chat = ({ patient, user }) => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
+  const token = localStorage.getItem("access_token");
 
   // WhatsApp message templates
   const [showWhatsAppTemplates, setShowWhatsAppTemplates] = useState(false);
@@ -198,9 +199,9 @@ const Chat = ({ patient, user }) => {
       const response = await fetch(`${SERVER}/chatbot/${patient.id}`, {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          ...authHeaders(), // Include auth headers
-
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
         },
         credentials: "include",
       });
@@ -423,6 +424,8 @@ const Chat = ({ patient, user }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
         },
         credentials: 'include',
         body: JSON.stringify(formData)
@@ -1003,7 +1006,9 @@ const Chat = ({ patient, user }) => {
       const response = await fetch(`${SERVER}/chatbot/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
         },
         body: JSON.stringify({
           user_id: userId,

@@ -75,6 +75,8 @@ const Prescription = ({ setInternalTab, selectedPatientId,patientId }) => {
     setFormData((prev) => ({ ...prev, trimester }));
   }, [formData.gestationWeek]);
 
+
+
   const fetchPatientName = async (patientId) => {
     if (!patientId) return;
 
@@ -82,6 +84,11 @@ const Prescription = ({ setInternalTab, selectedPatientId,patientId }) => {
     try {
       const response = await fetch(`${SERVER}/patients/${patientId}`, {
         credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
       });
 
       if (response.ok) {
