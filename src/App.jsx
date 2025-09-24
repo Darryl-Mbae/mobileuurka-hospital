@@ -51,21 +51,6 @@ function App() {
     patients: false
   });
 
-  // Add a loading timeout to prevent infinite loading
-  useEffect(() => {
-    const loadingTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn("⚠️ Loading timeout reached, forcing loading to false");
-        setLoading(false);
-        if (!currentUser && !error) {
-          setError("Loading timeout - please refresh the page");
-        }
-      }
-    }, 15000); // 15 second timeout
-
-    return () => clearTimeout(loadingTimeout);
-  }, [loading, currentUser, error]);
-
   // Memoized auth headers function
   const authHeaders = useCallback(() => {
     const token = localStorage.getItem("access_token");
@@ -116,42 +101,30 @@ function App() {
     }
   }, [accepted, currentUser, SERVER, authHeaders, dispatch]);
 
-  // Get current user with secure API - ONE TIME ONLY with better error handling
+  // Get current user with secure API - ONE TIME ONLY
   useEffect(() => {
     if (initialDataFetched.current.user) {
       return;
     }
 
     async function getUser() {
-      console.log("🔄 Fetching current user...");
-      
       try {
-        // Check authentication first
         if (!isAuthenticated()) {
-          console.log("❌ User not authenticated, redirecting to auth");
           navigate("/auth");
           setLoading(false);
           return;
         }
 
         const { fetchCurrentUser } = await import("./config/api.js");
-        console.log("📡 Making API call to fetch user...");
         const data = await fetchCurrentUser();
-        
-        console.log("✅ User data received:", data?.id);
+
         dispatch(setUser(data));
         initialDataFetched.current.user = true;
       } catch (error) {
-        console.error("❌ Error fetching user:", error);
-        setError(`Failed to load user data: ${error.message}`);
-        
-        // If it's an auth error, redirect to login
-        if (error.status === 401 || error.status === 403) {
-          console.log("🔐 Authentication error, redirecting to auth");
-          navigate("/auth");
-        }
+        console.error("Error fetching user:", error);
+        setError("Failed to load user data");
+        navigate("/auth");
       } finally {
-        console.log("🏁 User fetch completed, setting loading to false");
         setLoading(false);
       }
     }
@@ -207,49 +180,26 @@ function App() {
     fetchPatients();
   }, [currentUser, dispatch]);
 
-  // Handle page visibility changes to manage socket connections - with debouncing
+  // Handle page visibility changes to manage socket connections
   useEffect(() => {
-    let visibilityTimer;
-    let lastVisibilityChange = 0;
-
     const handleVisibilityChange = () => {
-      const now = Date.now();
-      
-      // Debounce rapid visibility changes (ignore if less than 2 seconds apart)
-      if (now - lastVisibilityChange < 2000) {
-        return;
-      }
-      
-      lastVisibilityChange = now;
-      
-      // Clear any existing timer
-      if (visibilityTimer) {
-        clearTimeout(visibilityTimer);
-      }
-
-      // Add delay to prevent rapid firing
-      visibilityTimer = setTimeout(() => {
-        if (document.hidden) {
-          console.log("📱 App backgrounded");
-        } else {
-          console.log("📱 App foregrounded");
-          // Only request fresh data if socket is connected and user exists
-          if (socketHook.isConnected && currentUser) {
-            socketHook.requestOnlineUsers();
-            socketHook.requestOnlineCounts();
-          }
+      if (document.hidden) {
+        console.log("📱 App backgrounded");
+      } else {
+        console.log("📱 App foregrounded");
+        // Optionally request fresh online users when app comes back to foreground
+        if (socketHook.isConnected) {
+          socketHook.requestOnlineUsers();
+          socketHook.requestOnlineCounts();
         }
-      }, 500);
+      }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      if (visibilityTimer) {
-        clearTimeout(visibilityTimer);
-      }
     };
-  }, [socketHook, currentUser]);
+  }, [socketHook]);
 
   // Handle network status changes
   useEffect(() => {
@@ -330,7 +280,7 @@ function App() {
     }
   };
 
-  // Loading state with retry option
+  // Loading state
   if (loading) {
     return (
       <div className="admin-loading">
@@ -344,91 +294,13 @@ function App() {
             autoplay
             style={{ width: "70%", margin: "-20px auto" }}
           />
-          <div style={{ marginTop: "20px", textAlign: "center" }}>
-            <p>Loading your dashboard...</p>
-            <button 
-              onClick={() => {
-                console.log("🔄 Manual retry requested");
-                setLoading(false);
-                setError(null);
-                // Reset fetch flags to retry
-                initialDataFetched.current = {
-                  user: false,
-                  organizations: false,
-                  patients: false
-                };
-                // Trigger re-fetch by setting loading back to true after a brief moment
-                setTimeout(() => setLoading(true), 100);
-              }}
-              style={{
-                marginTop: "10px",
-                padding: "8px 16px",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer"
-              }}
-            >
-              Retry
-            </button>
-          </div>
         </div>
       </div>
     );
   }
   
   if (error) {
-    return (
-      <div className="admin-error">
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <h2>Something went wrong</h2>
-          <p>{error}</p>
-          <div style={{ marginTop: "20px" }}>
-            <button 
-              onClick={() => {
-                console.log("🔄 Error retry requested");
-                setError(null);
-                setLoading(true);
-                // Reset fetch flags to retry
-                initialDataFetched.current = {
-                  user: false,
-                  organizations: false,
-                  patients: false
-                };
-              }}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                marginRight: "10px"
-              }}
-            >
-              Retry
-            </button>
-            <button 
-              onClick={() => {
-                localStorage.clear();
-                window.location.href = "/auth";
-              }}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#6c757d",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer"
-              }}
-            >
-              Re-login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <div className="admin-error">{error}</div>;
   }
   
   return (
