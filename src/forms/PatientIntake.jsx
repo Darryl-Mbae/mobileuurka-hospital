@@ -91,6 +91,8 @@ const PatientIntake = ({ setInternalTab }) => {
   }, [socket, formData.name, formData.patientId, formData.phone]);
 
   const getIds = async () => {
+    const token = localStorage.getItem("access_token");
+
     try {
       const response = await fetch(`${SERVER}/patients/ids`, {
 
@@ -98,7 +100,7 @@ const PatientIntake = ({ setInternalTab }) => {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
-          ...options.headers,
+          // ...options.headers,
         },
       });
       const data = await response.json();
