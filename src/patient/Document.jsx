@@ -167,7 +167,7 @@ const Document = ({ document, title, patient }) => {
         handleContextMenu(selectedText, touch.clientX, touch.clientY);
         setLongPressStarted(false);
       }
-    }, 500); // 500ms long press
+    }, 300); // 500ms long press
     
     setLongPressTimer(timer);
   };
