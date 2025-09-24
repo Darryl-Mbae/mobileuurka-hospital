@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import "./css/Admin.css";
 import SideBar from "./components/SideBar";
 import DashboardPage from "./pages/DashBoardPage";
@@ -41,8 +41,36 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Initialize socket connection
-  const { isConnected, connectionStatus } = useSocket();
+  // Initialize socket connection with better management
+  const socketHook = useSocket();
+  
+  // Track initial data fetch states to prevent multiple fetches
+  const initialDataFetched = useRef({
+    user: false,
+    organizations: false,
+    patients: false
+  });
+
+  // Add a loading timeout to prevent infinite loading
+  useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn("⚠️ Loading timeout reached, forcing loading to false");
+        setLoading(false);
+        if (!currentUser && !error) {
+          setError("Loading timeout - please refresh the page");
+        }
+      }
+    }, 15000); // 15 second timeout
+
+    return () => clearTimeout(loadingTimeout);
+  }, [loading, currentUser, error]);
+
+  // Memoized auth headers function
+  const authHeaders = useCallback(() => {
+    const token = localStorage.getItem("access_token");
+    return token ? { "Authorization": `Bearer ${token}` } : {};
+  }, []);
 
   useEffect(() => {
     if (page) {
@@ -59,12 +87,7 @@ function App() {
     }
   }, [currentUser, dialog]);
 
-  function authHeaders() {
-    const token = localStorage.getItem("access_token");
-    return token ? { "Authorization": `Bearer ${token}` } : {};
-  }
-
-
+  // Handle terms acceptance
   useEffect(() => {
     if (accepted) {
       async function updateUser() {
@@ -73,16 +96,15 @@ function App() {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
-              ...authHeaders(), // Include auth headers
-
+              ...authHeaders(),
             },
             credentials: "include",
-            body: JSON.stringify({ readTerms: true }), // 👈 set flag
+            body: JSON.stringify({ readTerms: true }),
           });
 
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          dispatch(setUser(data)); // update redux or context
+          dispatch(setUser(data));
         } catch (err) {
           console.error("Error updating user:", err);
         } finally {
@@ -92,28 +114,44 @@ function App() {
 
       updateUser();
     }
-  }, [accepted]);
+  }, [accepted, currentUser, SERVER, authHeaders, dispatch]);
 
-  // Get current user with secure API
+  // Get current user with secure API - ONE TIME ONLY with better error handling
   useEffect(() => {
+    if (initialDataFetched.current.user) {
+      return;
+    }
+
     async function getUser() {
+      console.log("🔄 Fetching current user...");
+      
       try {
-        // Check if user is authenticated first
+        // Check authentication first
         if (!isAuthenticated()) {
+          console.log("❌ User not authenticated, redirecting to auth");
           navigate("/auth");
           setLoading(false);
           return;
         }
 
         const { fetchCurrentUser } = await import("./config/api.js");
+        console.log("📡 Making API call to fetch user...");
         const data = await fetchCurrentUser();
-
+        
+        console.log("✅ User data received:", data?.id);
         dispatch(setUser(data));
+        initialDataFetched.current.user = true;
       } catch (error) {
-        console.error("Error fetching user:", error);
-        setError("Failed to load user data");
-        navigate("/auth");
+        console.error("❌ Error fetching user:", error);
+        setError(`Failed to load user data: ${error.message}`);
+        
+        // If it's an auth error, redirect to login
+        if (error.status === 401 || error.status === 403) {
+          console.log("🔐 Authentication error, redirecting to auth");
+          navigate("/auth");
+        }
       } finally {
+        console.log("🏁 User fetch completed, setting loading to false");
         setLoading(false);
       }
     }
@@ -121,15 +159,18 @@ function App() {
     getUser();
   }, [dispatch, navigate]);
 
-  // Fetch organizations based on user tenants - INITIAL FETCH ONLY
+  // Fetch organizations based on user tenants - ONE TIME ONLY
   useEffect(() => {
-    const fetchOrganizations = async () => {
-      if (!currentUser) return;
+    if (!currentUser || initialDataFetched.current.organizations) {
+      return;
+    }
 
+    const fetchOrganizations = async () => {
       try {
         const { apiGet } = await import("./config/api.js");
         const data = await apiGet("/organisations/my");
         dispatch(setOrganisations(data));
+        initialDataFetched.current.organizations = true;
       } catch (err) {
         console.error("Error fetching organizations:", err);
         setError("Failed to load organizations data");
@@ -140,19 +181,15 @@ function App() {
   }, [currentUser, dispatch]);
 
   // Fetch patients only once when user is first loaded
-  const [initialPatientsFetched, setInitialPatientsFetched] = useState(false);
-
   useEffect(() => {
-    if (currentUser && !initialPatientsFetched) {
-      fetchPatients();
+    if (!currentUser || initialDataFetched.current.patients) {
+      return;
     }
 
     async function fetchPatients() {
       try {
         const { apiGet } = await import("./config/api.js");
-        const res = await apiGet("/patients/my");
-
-        const data = await res
+        const data = await apiGet("/patients/my");
 
         // Optional: transform or normalize data
         const transformed = data?.map((p) => ({
@@ -160,13 +197,95 @@ function App() {
         }));
 
         dispatch(setPatients(transformed));
-        setInitialPatientsFetched(true);
+        initialDataFetched.current.patients = true;
       } catch (err) {
         console.error("Failed to fetch patients:", err);
-        setInitialPatientsFetched(true); // Mark as attempted even on error
+        initialDataFetched.current.patients = true; // Mark as attempted even on error
       }
     }
-  }, [currentUser, initialPatientsFetched]); // Only run once per user session
+
+    fetchPatients();
+  }, [currentUser, dispatch]);
+
+  // Handle page visibility changes to manage socket connections - with debouncing
+  useEffect(() => {
+    let visibilityTimer;
+    let lastVisibilityChange = 0;
+
+    const handleVisibilityChange = () => {
+      const now = Date.now();
+      
+      // Debounce rapid visibility changes (ignore if less than 2 seconds apart)
+      if (now - lastVisibilityChange < 2000) {
+        return;
+      }
+      
+      lastVisibilityChange = now;
+      
+      // Clear any existing timer
+      if (visibilityTimer) {
+        clearTimeout(visibilityTimer);
+      }
+
+      // Add delay to prevent rapid firing
+      visibilityTimer = setTimeout(() => {
+        if (document.hidden) {
+          console.log("📱 App backgrounded");
+        } else {
+          console.log("📱 App foregrounded");
+          // Only request fresh data if socket is connected and user exists
+          if (socketHook.isConnected && currentUser) {
+            socketHook.requestOnlineUsers();
+            socketHook.requestOnlineCounts();
+          }
+        }
+      }, 500);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (visibilityTimer) {
+        clearTimeout(visibilityTimer);
+      }
+    };
+  }, [socketHook, currentUser]);
+
+  // Handle network status changes
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("🌐 Network connection restored");
+      if (!socketHook.isConnected && currentUser) {
+        console.log("🔄 Attempting to reconnect after network restoration...");
+        setTimeout(() => {
+          socketHook.manualReconnect();
+        }, 1000); // Wait a bit for network to stabilize
+      }
+    };
+
+    const handleOffline = () => {
+      console.log("🌐 Network connection lost");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [socketHook, currentUser]);
+
+  // Reset initial data fetch flags when user changes
+  useEffect(() => {
+    if (!currentUser) {
+      initialDataFetched.current = {
+        user: false,
+        organizations: false,
+        patients: false
+      };
+    }
+  }, [currentUser]);
 
   const renderContent = () => {
     switch (activeItem) {
@@ -211,7 +330,7 @@ function App() {
     }
   };
 
-  // Loading state
+  // Loading state with retry option
   if (loading) {
     return (
       <div className="admin-loading">
@@ -225,30 +344,107 @@ function App() {
             autoplay
             style={{ width: "70%", margin: "-20px auto" }}
           />
+          <div style={{ marginTop: "20px", textAlign: "center" }}>
+            <p>Loading your dashboard...</p>
+            <button 
+              onClick={() => {
+                console.log("🔄 Manual retry requested");
+                setLoading(false);
+                setError(null);
+                // Reset fetch flags to retry
+                initialDataFetched.current = {
+                  user: false,
+                  organizations: false,
+                  patients: false
+                };
+                // Trigger re-fetch by setting loading back to true after a brief moment
+                setTimeout(() => setLoading(true), 100);
+              }}
+              style={{
+                marginTop: "10px",
+                padding: "8px 16px",
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Retry
+            </button>
+          </div>
         </div>
       </div>
     );
   }
-  else {
-    if (error) {
-      return <div className="admin-error">{error}</div>;
-    }
+  
+  if (error) {
     return (
-      <div className="admin">
-        <Terms ref={dialog} pdfUrl={pdfurl} onAccept={() => setAccepted(true)} />
-        <SideBar
-          activeItem={activeItem}
-          setActiveItem={setActiveItem}
-          setInternalTab={setInternalTab}
-        />
-        <div className={`content ${activeItem === "Patient" && "active"}`}>
-          {/* <ConnectionStatus /> */}
-          {renderContent()}
+      <div className="admin-error">
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <h2>Something went wrong</h2>
+          <p>{error}</p>
+          <div style={{ marginTop: "20px" }}>
+            <button 
+              onClick={() => {
+                console.log("🔄 Error retry requested");
+                setError(null);
+                setLoading(true);
+                // Reset fetch flags to retry
+                initialDataFetched.current = {
+                  user: false,
+                  organizations: false,
+                  patients: false
+                };
+              }}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#dc3545",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                marginRight: "10px"
+              }}
+            >
+              Retry
+            </button>
+            <button 
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = "/auth";
+              }}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#6c757d",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              Re-login
+            </button>
+          </div>
         </div>
       </div>
     );
   }
-
+  
+  return (
+    <div className="admin">
+      <Terms ref={dialog} pdfUrl={pdfurl} onAccept={() => setAccepted(true)} />
+      <SideBar
+        activeItem={activeItem}
+        setActiveItem={setActiveItem}
+        setInternalTab={setInternalTab}
+      />
+      <div className={`content ${activeItem === "Patient" && "active"}`}>
+        <ConnectionStatus />
+        {renderContent()}
+      </div>
+    </div>
+  );
 }
 
 export default App;

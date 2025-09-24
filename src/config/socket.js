@@ -46,11 +46,34 @@ class SocketManager {
   constructor() {
     this.socket = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 10;
-    this.baseReconnectDelay = 1000; // Start with 1 second
-    this.maxReconnectDelay = 30000; // Max 30 seconds
+    this.maxReconnectAttempts = 5; // Reduced from 10
+    this.baseReconnectDelay = 2000; // Increased from 1000ms
+    this.maxReconnectDelay = 15000; // Reduced from 30000ms
     this.reconnectTimer = null;
     this.isReconnecting = false;
+    this.isManuallyDisconnected = false;
+    this.connectionStable = false;
+    this.heartbeatInterval = null;
+    this.lastPongTime = null;
+    this.connectionTimeout = null;
+  }
+
+  // Helper function to detect mobile Safari
+  isMobileSafari() {
+    const ua = navigator.userAgent;
+    return /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+  }
+
+  // Helper function to detect if we're in a problematic network environment
+  isProblematicNetwork() {
+    // Check for mobile networks or unstable connections
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection) {
+      return connection.effectiveType === 'slow-2g' || 
+             connection.effectiveType === '2g' ||
+             connection.saveData === true;
+    }
+    return false;
   }
 
   // Helper function to get current user's organization memberships
@@ -61,11 +84,7 @@ class SocketManager {
     
     if (!currentUser) return [];
     
-    // Get organizations where the current user is a member
-    // This assumes organizations have a members array or similar structure
     const userOrganizations = organizations.filter(org => {
-      // Check if user is a member of this organization
-      // This could be through org.members, org.users, or org.memberIds depending on your data structure
       if (org.members && Array.isArray(org.members)) {
         return org.members.some(member => 
           (typeof member === 'object' ? member.id : member) === currentUser.id
@@ -79,7 +98,6 @@ class SocketManager {
       if (org.memberIds && Array.isArray(org.memberIds)) {
         return org.memberIds.includes(currentUser.id);
       }
-      // Fallback: check if user's organizationId matches (for single organization membership)
       if (currentUser.organizationId) {
         return org.id === currentUser.organizationId;
       }
@@ -89,169 +107,255 @@ class SocketManager {
     return userOrganizations.map(org => org.id);
   }
 
-  // Helper function to check if user should see an event based on organization filtering
   shouldProcessEvent(eventData) {
     const userOrganizations = this.getCurrentUserOrganizations();
     
-    // If user has no organizations, they can see all events (fallback for admin users)
     if (userOrganizations.length === 0) {
       return true;
     }
     
-    // If event has organization context, check if user belongs to that organization
     if (eventData.organizationId) {
       return userOrganizations.includes(eventData.organizationId);
     }
     
-    // If event has organization array, check if user belongs to any of those organizations
     if (eventData.organizationIds && Array.isArray(eventData.organizationIds)) {
       return eventData.organizationIds.some(orgId => userOrganizations.includes(orgId));
     }
     
-    // For user-related events, check if the user belongs to shared organizations
     if (eventData.user && eventData.user.organizationId) {
       return userOrganizations.includes(eventData.user.organizationId);
     }
     
-    // For patient-related events, check patient's organization
     if (eventData.patient && eventData.patient.organizationId) {
       return userOrganizations.includes(eventData.patient.organizationId);
     }
     
-    // For events without clear organization context, allow them (they might be system-wide)
     return true;
   }
 
-  // Helper function to filter online users by shared organizations
   filterOnlineUsersByOrganization(onlineUsers) {
     const userOrganizations = this.getCurrentUserOrganizations();
     const state = store.getState();
     const allUsers = state.user.users;
     
     if (userOrganizations.length === 0) {
-      return onlineUsers; // No filtering if user has no organizations
+      return onlineUsers;
     }
     
-    // Filter online users to only include those from shared organizations
     return onlineUsers.filter(onlineUserId => {
       const user = allUsers.find(u => u.id === onlineUserId);
       if (!user) return false;
       
-      // Check if this user belongs to any of the current user's organizations
       if (user.organizationId) {
         return userOrganizations.includes(user.organizationId);
       }
       
-      // Check by organization name (for Users.jsx structure)
       if (user.org) {
         const currentUser = state.user.currentUser;
         const currentUserOrg = allUsers.find(u => u.id === currentUser?.id)?.org;
         return user.org === currentUserOrg;
       }
       
-      // If user has multiple organizations, check for overlap
       if (user.organizationIds && Array.isArray(user.organizationIds)) {
         return user.organizationIds.some(orgId => userOrganizations.includes(orgId));
       }
       
-      return true; // Show all users if no organization filtering can be applied
+      return true;
     });
   }
 
   connect(token) {
+    console.log("🔄 Initializing socket connection...");
+    console.log(token);
     console.log("📱 UserAgent:", navigator.userAgent);
     console.log("🔗 Server URL:", SERVER);
     console.log("🔑 Token exists:", !!token);
 
-    if (this.socket?.connected) {
-      console.log("Socket already connected");
+    if (this.socket?.connected && this.connectionStable) {
+      console.log("✅ Socket already connected and stable");
       return this.socket;
     }
+
+    // Reset manual disconnect flag
+    this.isManuallyDisconnected = false;
+    
+    // Clear any existing timers
+    this.clearTimers();
+    
+    // Disconnect existing socket cleanly
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
+    }
   
-    // Clear any existing reconnection timer
+    store.dispatch(setConnecting());
+    console.log("🔄 Connecting to socket server...");
+
+    // Optimize connection options for mobile Safari and unstable networks
+    const isMobile = this.isMobileSafari();
+    const isSlowNetwork = this.isProblematicNetwork();
+    
+    const socketOptions = {
+      auth: { token },
+      forceNew: true,
+      
+      // Transport optimization for mobile Safari
+      transports: isMobile ? ["polling"] : ["websocket", "polling"],
+      
+      // Timeout adjustments based on network conditions
+      timeout: isSlowNetwork ? 90000 : 60000,
+      
+      // Reconnection settings - more conservative
+      reconnection: false, // We'll handle reconnection manually for better control
+      
+      // Polling optimization for mobile
+      upgrade: !isMobile, // Disable upgrade on mobile Safari
+      rememberUpgrade: false, // Always start fresh
+      
+      // Additional options for stability
+      autoConnect: true,
+      closeOnBeforeunload: true,
+      
+      // Heartbeat settings
+      pingInterval: 25000,
+      pingTimeout: 60000,
+      
+      // Additional mobile optimizations
+      ...(isMobile && {
+        jsonp: false, // Disable JSONP fallback
+        enablesXDR: false, // Disable XDomainRequest
+      })
+    };
+
+    console.log("📡 Socket options:", {
+      transports: socketOptions.transports,
+      timeout: socketOptions.timeout,
+      isMobile,
+      isSlowNetwork
+    });
+
+    this.socket = io(SERVER, socketOptions);
+    this.setupEventListeners();
+    
+    // Set connection timeout
+    this.connectionTimeout = setTimeout(() => {
+      if (!this.socket?.connected) {
+        console.log("⏰ Connection timeout - attempting manual intervention");
+        this.handleConnectionTimeout();
+      }
+    }, socketOptions.timeout + 5000);
+
+    return this.socket;
+  }
+
+  clearTimers() {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
-  
-    // Set connecting status
-    store.dispatch(setConnecting());
-    console.log("🔄 Connecting to socket server...");
-  
-    // CHANGE ONLY THESE OPTIONS:
-    this.socket = io(SERVER, {
-      auth: {
-        token: token,
-      },
-      // CHANGE THIS LINE - put polling first for mobile Safari:
-      transports: ["polling", "websocket"], // Changed order
-      timeout: 60000, // Increased from 25000
-      forceNew: true,
-      
-      // ADD THESE NEW OPTIONS:
-      reconnection: true,
-      reconnectionAttempts: 15, // Increased from 10
-      reconnectionDelay: 2000, // Start with 2 seconds
-      reconnectionDelayMax: 10000, // Max 10 seconds
-      randomizationFactor: 0.5, // Add jitter
-    });
-  
-    this.setupEventListeners();
-  
-    return this.socket;
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+  }
+
+  handleConnectionTimeout() {
+    console.log("🚨 Connection timeout reached");
+    if (this.socket && !this.socket.connected && !this.isManuallyDisconnected) {
+      this.socket.disconnect();
+      store.dispatch(setConnectionError("Connection timeout - server may be unavailable"));
+      this.handleReconnect("timeout");
+    }
   }
 
   setupEventListeners() {
     if (!this.socket) return;
 
+    // Clear any existing listeners
+    this.socket.removeAllListeners();
+
     // Connection events
     this.socket.on("connect", () => {
       console.log("✅ Socket connected successfully to server");
+      
+      // Clear connection timeout
+      if (this.connectionTimeout) {
+        clearTimeout(this.connectionTimeout);
+        this.connectionTimeout = null;
+      }
+      
       this.reconnectAttempts = 0;
       this.isReconnecting = false;
+      this.connectionStable = true;
       
-      // Clear any existing reconnection timer
-      if (this.reconnectTimer) {
-        clearTimeout(this.reconnectTimer);
-        this.reconnectTimer = null;
-      }
+      this.clearTimers();
       
       store.dispatch(setSocket(this.socket));
       store.dispatch(clearError());
+      store.dispatch(setConnectionHealth('good'));
+      store.dispatch(setReconnecting(false));
       
-      // Request initial online users and counts when connected
+      // Start heartbeat monitoring
+      this.startHeartbeat();
+      
+      // Request initial data
       this.requestOnlineUsers();
       this.requestOnlineCounts();
     });
 
-    this.socket.on("disconnect", (reason) => {
+    this.socket.on("disconnect", (reason, details) => {
       console.log("👋 Socket disconnected from server:", reason);
+      console.log("Disconnect details:", details);
+      
+      this.connectionStable = false;
+      this.clearTimers();
       store.dispatch(resetSocket());
       
-      // Only attempt reconnection for certain disconnect reasons
-      if (this.shouldReconnect(reason)) {
+      // Only attempt reconnection if not manually disconnected and reason warrants it
+      if (!this.isManuallyDisconnected && this.shouldReconnect(reason)) {
+        console.log("🔄 Will attempt reconnection for reason:", reason);
         this.handleReconnect(reason);
+      } else {
+        console.log("❌ Not reconnecting. Manual disconnect:", this.isManuallyDisconnected, "Reason:", reason);
       }
     });
 
     this.socket.on("connect_error", (error) => {
-      const errorMessage = this.getErrorMessage(error);
-      console.error("❌ Socket connection error:", errorMessage);
-      console.error("Error details:", error.message, error.description, error.context);
+      console.error("❌ Socket connection error:", error.message);
+      console.error("Error details:", error.message, error.description, error.context, error);
       
+      this.connectionStable = false;
+      const errorMessage = this.getErrorMessage(error);
       store.dispatch(setConnectionError(errorMessage));
-      this.handleReconnect("connect_error");
+      
+      if (!this.isManuallyDisconnected) {
+        this.handleReconnect("connect_error");
+      }
+    });
+
+    // Enhanced error handling
+    this.socket.on("error", (error) => {
+      console.error("🚨 Socket error:", error);
+      store.dispatch(setConnectionError(`Socket error: ${error.message || error}`));
+    });
+
+    // Heartbeat monitoring
+    this.socket.on("pong", () => {
+      this.lastPongTime = Date.now();
+      // console.log("💗 Heartbeat received");
     });
 
     // Online users events with organization filtering
     this.socket.on("online_users_updated", (data) => {
-      // Handle both old format (array) and new format (object with users property)
       let usersArray;
       if (Array.isArray(data)) {
-        // Old format: direct array of users
         usersArray = data;
       } else if (data && Array.isArray(data.users)) {
-        // New format: object with users property
         usersArray = data.users;
       } else {
         console.warn("online_users_updated received invalid data format:", data);
@@ -265,15 +369,11 @@ class SocketManager {
       const filteredUserIds = this.filterOnlineUsersByOrganization(userIds);
       console.log('Filtered online user IDs:', filteredUserIds);
       
-      // Update backward compatibility array
       store.dispatch(setOnlineUsers(filteredUserIds));
-      
-      // Update organization-specific online users
       this.updateOnlineUsersByOrganization(filteredUserIds);
     });
 
     this.socket.on("user_online", (data) => {
-      // Check if this user should be visible based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out user_online event for user not in shared organizations:", data.userId);
         return;
@@ -281,24 +381,18 @@ class SocketManager {
       
       const currentOnlineUsers = store.getState().user.onlineUsers;
       if (!currentOnlineUsers.includes(data.userId)) {
-        // Update backward compatibility array
         store.dispatch(setOnlineUsers([...currentOnlineUsers, data.userId]));
-        
-        // Update organization-specific online users
         this.addUserToOrganizationOnlineList(data.userId);
       }
     });
 
     this.socket.on("user_offline", (data) => {
-      // Always process user_offline events to keep online list accurate
-      // The userWentOffline action now handles both backward compatibility and organization-specific removal
       store.dispatch(userWentOffline(data));
     });
 
     // User events with organization filtering
     this.socket.on("user_updated", (userData) => {
       console.log("Received user_updated:", userData);
-      // Check if this user update should be processed based on organization filtering
       if (!this.shouldProcessEvent({ user: userData })) {
         console.log("Filtered out user_updated event for user not in shared organizations:", userData.id);
         return;
@@ -308,7 +402,6 @@ class SocketManager {
 
     this.socket.on("users_updated", (usersData) => {
       console.log("Received users_updated:", usersData);
-      // Filter users list to only include users from shared organizations
       const userOrganizations = this.getCurrentUserOrganizations();
       let filteredUsers = usersData;
       
@@ -329,7 +422,6 @@ class SocketManager {
 
     this.socket.on("user_created", (userData) => {
       console.log("Received user_created:", userData);
-      // Check if this user creation should be processed based on organization filtering
       if (!this.shouldProcessEvent({ user: userData })) {
         console.log("Filtered out user_created event for user not in shared organizations:", userData.id);
         return;
@@ -339,7 +431,6 @@ class SocketManager {
 
     this.socket.on("user_deleted", (userData) => {
       console.log("Received user_deleted:", userData);
-      // Check if this user deletion should be processed based on organization filtering
       if (!this.shouldProcessEvent({ user: userData })) {
         console.log("Filtered out user_deleted event for user not in shared organizations:", userData.id);
         return;
@@ -347,19 +438,16 @@ class SocketManager {
       store.dispatch(deleteUser(userData));
     });
 
-    // Organization member management events with organization filtering
+    // Organization member management events
     this.socket.on("user_added_to_organization", (data) => {
       console.log("Received user_added_to_organization:", data);
       
-      // Check if this event should be processed based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out user_added_to_organization event for organization not accessible:", data.organizationId);
         return;
       }
       
-      // Add or update user in the users list
       if (data.user) {
-        // Check if user exists, if not add them, otherwise update
         const currentUsers = store.getState().user.users;
         const existingUser = currentUsers.find((u) => u.id === data.user.id);
         if (existingUser) {
@@ -368,7 +456,6 @@ class SocketManager {
           store.dispatch(addUser(data.user));
         }
       }
-      // Update organization data if provided
       if (data.organization) {
         store.dispatch(updateOrganisation(data.organization));
       }
@@ -377,7 +464,6 @@ class SocketManager {
     this.socket.on("user_created_for_organization", (data) => {
       console.log("Received user_created_for_organization:", data);
       
-      // Check if this event should be processed based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out user_created_for_organization event for organization not accessible:", data.organizationId);
         return;
@@ -391,7 +477,6 @@ class SocketManager {
     this.socket.on("user_removed_from_organization", (data) => {
       console.log("Received user_removed_from_organization:", data);
       
-      // Check if this event should be processed based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out user_removed_from_organization event for organization not accessible:", data.organizationId);
         return;
@@ -405,7 +490,6 @@ class SocketManager {
     this.socket.on("user_role_updated", (data) => {
       console.log("Received user_role_updated:", data);
       
-      // Check if this event should be processed based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out user_role_updated event for organization not accessible:", data.organizationId);
         return;
@@ -414,25 +498,21 @@ class SocketManager {
       if (data.user) {
         store.dispatch(updateUser(data.user));
       }
-      // Update organization data if provided
       if (data.organization) {
         store.dispatch(updateOrganisation(data.organization));
       }
     });
+
     // Patient events with organization filtering
     this.socket.on("patient_created", (eventData) => {
       console.log("Received patient_created:", eventData);
       
-      // Extract patient data from the event - it might be nested in a 'patient' property
       const patientData = eventData.patient || eventData;
-      
-      // Create organization filtering context using both event-level and patient-level organizationId
       const filteringContext = {
         organizationId: eventData.organizationId || patientData.organizationId,
         patient: patientData
       };
       
-      // Check if this patient should be visible based on organization filtering
       if (!this.shouldProcessEvent(filteringContext)) {
         console.log("Filtered out patient_created event for patient not in accessible organizations:", patientData.id);
         return;
@@ -445,16 +525,12 @@ class SocketManager {
     this.socket.on("patient_updated", (eventData) => {
       console.log("Received patient_updated:", eventData);
       
-      // Extract patient data from the event - it might be nested in a 'patient' property
       const patientData = eventData.patient || eventData;
-      
-      // Create organization filtering context using both event-level and patient-level organizationId
       const filteringContext = {
         organizationId: eventData.organizationId || patientData.organizationId,
         patient: patientData
       };
       
-      // Check if this patient should be visible based on organization filtering
       if (!this.shouldProcessEvent(filteringContext)) {
         console.log("Filtered out patient_updated event for patient not in accessible organizations:", patientData.id);
         return;
@@ -466,10 +542,6 @@ class SocketManager {
 
     this.socket.on("patient_deleted", (data) => {
       console.log("Received patient_deleted:", data);
-      
-      // For patient deletion, we need to check if the patient was accessible
-      // Since we might not have full patient data, we'll allow the deletion to proceed
-      // The backend should only send deletions for patients the user had access to
       const patientId = data.id || data.patientId || data;
       store.dispatch(deletePatient(patientId));
     });
@@ -477,16 +549,13 @@ class SocketManager {
     this.socket.on("patients_updated", (eventData) => {
       console.log("Received patients_updated:", eventData);
       
-      // Extract patients array from the event data
       const patientsData = eventData.patients || eventData;
       
-      // Ensure we have an array to work with
       if (!Array.isArray(patientsData)) {
         console.warn("patients_updated received invalid data format:", eventData);
         return;
       }
       
-      // Filter patients list to only include patients from accessible organizations
       const userOrganizations = this.getCurrentUserOrganizations();
       let filteredPatients = patientsData;
       
@@ -495,7 +564,6 @@ class SocketManager {
           if (patient.organizationId) {
             return userOrganizations.includes(patient.organizationId);
           }
-          // If patient doesn't have organization info, allow it (might be system-wide)
           return true;
         });
       }
@@ -503,11 +571,10 @@ class SocketManager {
       store.dispatch(setPatients(filteredPatients));
     });
 
-    // Organization events with filtering
+    // Organization events
     this.socket.on("organization_created", (orgData) => {
       console.log("Received organization_created:", orgData);
       
-      // Check if this organization should be visible to the current user
       if (!this.shouldProcessEvent({ organizationId: orgData.id })) {
         console.log("Filtered out organization_created event for organization not accessible:", orgData.id);
         return;
@@ -519,7 +586,6 @@ class SocketManager {
     this.socket.on("organization_updated", (orgData) => {
       console.log("Received organization_updated:", orgData);
       
-      // Check if this organization should be visible to the current user
       if (!this.shouldProcessEvent({ organizationId: orgData.id })) {
         console.log("Filtered out organization_updated event for organization not accessible:", orgData.id);
         return;
@@ -532,7 +598,6 @@ class SocketManager {
       console.log("Received organization_deleted:", data);
       const orgId = data.id || data.organizationId || data;
       
-      // Check if this organization deletion should be processed
       if (!this.shouldProcessEvent({ organizationId: orgId })) {
         console.log("Filtered out organization_deleted event for organization not accessible:", orgId);
         return;
@@ -544,7 +609,6 @@ class SocketManager {
     this.socket.on("organizations_updated", (orgsData) => {
       console.log("Received organizations_updated:", orgsData);
       
-      // Filter organizations list to only include organizations the user has access to
       const userOrganizations = this.getCurrentUserOrganizations();
       let filteredOrganizations = orgsData;
       
@@ -555,70 +619,56 @@ class SocketManager {
       store.dispatch(setOrganisations(filteredOrganizations));
     });
 
-    // Enhanced online users events with organization filtering
+    // Online count events
     this.socket.on("online_count_updated", (data) => {
-      // console.log("Received online_count_updated:", data);
-      
-      // Check if this online count update should be processed based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out online_count_updated event for organization not accessible:", data.organizationId);
         return;
       }
       
-      // Store organization-specific online counts in user slice
       if (data.organizationId && data.count !== undefined) {
         store.dispatch(updateOnlineCountForOrganization({
           organizationId: data.organizationId,
           count: data.count
         }));
-        // console.log(
-        //   `Organization ${data.organizationId} has ${data.count} users online`
-        // );
       }
     });
 
-    // Medical record events with organization filtering
+    // Medical record events
     this.socket.on("medical_record_created", (data) => {
       console.log("Received medical_record_created:", data);
       
-      // Check if this medical record should be visible based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out medical_record_created event for record not in accessible organizations:", data.patientId);
         return;
       }
       
-      // Enhanced medical record created handling
       this.handleMedicalRecordEvent(data, 'created');
     });
 
     this.socket.on("medical_record_updated", (data) => {
       console.log("Received medical_record_updated:", data);
       
-      // Check if this medical record should be visible based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out medical_record_updated event for record not in accessible organizations:", data.patientId);
         return;
       }
       
-      // Enhanced medical record updated handling
       this.handleMedicalRecordEvent(data, 'updated');
     });
 
-    // Feedback events with organization filtering
+    // Feedback events
     this.socket.on("feedback_created", (data) => {
       console.log("Received feedback_created:", data);
       
-      // Check if this feedback should be visible based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out feedback_created event for feedback not in accessible organizations:", data.organizationId);
         return;
       }
       
-      // If feedback includes chat data, add it to chat slice
       if (data.chat) {
         store.dispatch(addChat(data.chat));
       }
-      // If feedback is related to a patient, update patient data
       if (data.patient) {
         store.dispatch(updatePatient(data.patient));
       }
@@ -627,33 +677,26 @@ class SocketManager {
     this.socket.on("feedback_status_updated", (data) => {
       console.log("Received feedback_status_updated:", data);
       
-      // Check if this feedback should be visible based on organization filtering
       if (!this.shouldProcessEvent(data)) {
         console.log("Filtered out feedback_status_updated event for feedback not in accessible organizations:", data.organizationId);
         return;
       }
       
-      // If feedback includes chat data, add it to chat slice
       if (data.chat) {
         store.dispatch(addChat(data.chat));
       }
-      // If feedback is related to a patient, update patient data
       if (data.patient) {
         store.dispatch(updatePatient(data.patient));
       }
     });
 
-    // Response handlers for request-response events with organization filtering
+    // Response handlers
     this.socket.on("get_online_users_response", (data) => {
       if (data.success && data.users && Array.isArray(data.users)) {
-        // Extract user IDs from the response and filter by organization
         const userIds = data.users.map((user) => user.userId || user.id);
         const filteredUserIds = this.filterOnlineUsersByOrganization(userIds);
         
-        // Update backward compatibility array
         store.dispatch(setOnlineUsers(filteredUserIds));
-        
-        // Update organization-specific online users
         this.updateOnlineUsersByOrganization(filteredUserIds);
       } else if (data.error) {
         console.error("Error getting online users:", data.error);
@@ -662,7 +705,6 @@ class SocketManager {
 
     this.socket.on("get_online_counts_response", (data) => {
       if (data.success && data.counts) {
-        // Filter organization counts to only show counts for accessible organizations
         const userOrganizations = this.getCurrentUserOrganizations();
         let filteredCounts = data.counts;
         
@@ -675,45 +717,57 @@ class SocketManager {
           });
         }
         
-        // Store organization-specific online counts
         store.dispatch(setOnlineCountsByOrganization(filteredCounts));
       } else if (data.error) {
         console.error("Error getting online counts:", data.error);
       }
     });
+  }
 
-    // Keep alive
-    this.socket.on("pong", () => {
-      // Handle pong response if needed
-    });
+  startHeartbeat() {
+    // Clear existing heartbeat
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
 
-    // Send ping every 30 seconds to keep connection alive
-    setInterval(() => {
+    // Send ping every 25 seconds
+    this.heartbeatInterval = setInterval(() => {
       if (this.socket?.connected) {
         this.socket.emit("ping");
+        
+        // Check if we received pong in reasonable time
+        setTimeout(() => {
+          if (this.lastPongTime && (Date.now() - this.lastPongTime) > 70000) {
+            console.log("💔 Heartbeat failed - connection may be stale");
+            if (!this.isReconnecting) {
+              this.handleReconnect("heartbeat_failed");
+            }
+          }
+        }, 5000);
       }
-    }, 30000);
+    }, 25000);
+    
+    this.lastPongTime = Date.now();
   }
 
   shouldReconnect(reason) {
-    // Don't reconnect for certain reasons
     const noReconnectReasons = [
-      'io server disconnect', // Server intentionally disconnected us
-      'io client disconnect', // We intentionally disconnected
+      'io server disconnect',
+      'io client disconnect',
+      'client namespace disconnect'
     ];
     
-    return !noReconnectReasons.includes(reason);
+    return !noReconnectReasons.includes(reason) && !this.isManuallyDisconnected;
   }
 
   getErrorMessage(error) {
     if (!error) return "Unknown connection error";
     
-    // Map common error types to user-friendly messages
     const errorMap = {
-      'timeout': 'Connection timeout - server may be unavailable',
-      'transport error': 'Network connection failed',
+      'timeout': 'Connection timeout - please check your internet connection',
+      'transport error': 'Network connection failed - retrying...',
       'xhr poll error': 'Network connection interrupted',
-      'websocket error': 'WebSocket connection failed',
+      'websocket error': 'WebSocket connection failed - falling back to polling',
       'parse error': 'Invalid server response',
       'transport close': 'Connection was closed unexpectedly',
     };
@@ -723,26 +777,29 @@ class SocketManager {
   }
 
   calculateReconnectDelay() {
-    // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s (max)
+    // More aggressive backoff for mobile networks
+    const isMobile = this.isMobileSafari();
+    const multiplier = isMobile ? 3 : 2;
+    
     const delay = Math.min(
-      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts),
+      this.baseReconnectDelay * Math.pow(multiplier, this.reconnectAttempts),
       this.maxReconnectDelay
     );
     
-    // Add some jitter to prevent thundering herd
+    // Add jitter to prevent thundering herd
     const jitter = Math.random() * 0.3 * delay;
     return delay + jitter;
   }
 
   handleReconnect(reason = "unknown") {
-    // Prevent multiple concurrent reconnection attempts
-    if (this.isReconnecting) {
+    if (this.isReconnecting || this.isManuallyDisconnected) {
+      console.log("🔄 Reconnection already in progress or manually disconnected");
       return;
     }
 
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.error("❌ Max reconnection attempts reached");
-      const finalError = `Failed to reconnect after ${this.maxReconnectAttempts} attempts. ${reason ? `Last reason: ${reason}` : ''}`;
+      const finalError = `Unable to reconnect after ${this.maxReconnectAttempts} attempts. Please check your internet connection and refresh the page.`;
       store.dispatch(setConnectionError(finalError));
       store.dispatch(setConnectionHealth('bad'));
       store.dispatch(setReconnecting(false));
@@ -751,53 +808,53 @@ class SocketManager {
 
     this.reconnectAttempts++;
     this.isReconnecting = true;
+    this.connectionStable = false;
     
-    // Update Redux state
     store.dispatch(setReconnectAttempts(this.reconnectAttempts));
     store.dispatch(setReconnecting(true));
     
-    // Set connection health based on attempts
-    if (this.reconnectAttempts <= 2) {
+    // Set connection health
+    if (this.reconnectAttempts <= 1) {
       store.dispatch(setConnectionHealth('poor'));
-    } else if (this.reconnectAttempts <= 5) {
+    } else if (this.reconnectAttempts <= 3) {
       store.dispatch(setConnectionHealth('bad'));
     }
     
     const delay = this.calculateReconnectDelay();
     const delaySeconds = Math.round(delay / 1000);
     
-    console.log(
-      `🔄 Attempting to reconnect in ${delaySeconds}s... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-    );
+    console.log(`🔄 Attempting to reconnect in ${delaySeconds}s... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
     
-    // Update Redux state with reconnection info
-    const reconnectMessage = `Reconnecting in ${delaySeconds}s (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`;
+    const reconnectMessage = `Reconnecting in ${delaySeconds}s (${this.reconnectAttempts}/${this.maxReconnectAttempts})`;
     store.dispatch(setConnectionError(reconnectMessage));
 
     this.reconnectTimer = setTimeout(() => {
-      if (this.socket && !this.socket.connected) {
+      if (!this.isManuallyDisconnected) {
         console.log(`🔄 Reconnection attempt ${this.reconnectAttempts}...`);
-        store.dispatch(setConnecting());
-        this.isReconnecting = false;
-        this.socket.connect();
-      } else {
-        this.isReconnecting = false;
-        store.dispatch(setReconnecting(false));
+        
+        // Get fresh token
+        const token = localStorage.getItem('access_token');
+        if (token) {
+          this.isReconnecting = false; // Reset flag before connecting
+          this.connect(token);
+        } else {
+          console.error("❌ No token available for reconnection");
+          store.dispatch(setConnectionError("Authentication token not available"));
+          this.isReconnecting = false;
+        }
       }
     }, delay);
   }
 
   disconnect() {
-    // Clear reconnection timer
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
+    console.log("🔌 Manually disconnecting socket");
+    this.isManuallyDisconnected = true;
+    this.connectionStable = false;
     
-    this.isReconnecting = false;
-    this.reconnectAttempts = 0;
+    this.clearTimers();
     
     if (this.socket) {
+      this.socket.removeAllListeners();
       this.socket.disconnect();
       store.dispatch(disconnectSocket());
       this.socket = null;
@@ -808,27 +865,27 @@ class SocketManager {
   manualReconnect() {
     console.log("🔄 Manual reconnection requested");
     
-    // Reset reconnection state
+    // Reset all reconnection state
     this.reconnectAttempts = 0;
     this.isReconnecting = false;
+    this.isManuallyDisconnected = false;
+    this.connectionStable = false;
     
-    // Clear any existing timer
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
+    this.clearTimers();
     
     // Clear error state
     store.dispatch(clearError());
+    store.dispatch(setConnectionHealth('connecting'));
     
-    // Disconnect and reconnect
+    // Disconnect existing socket cleanly
     if (this.socket) {
+      this.socket.removeAllListeners();
       this.socket.disconnect();
+      this.socket = null;
     }
     
-    // Get token from store and reconnect
-    const state = store.getState();
-    const token = state.user?.token || state.auth?.token;
+    // Get token and reconnect
+    const token = localStorage.getItem('access_token');
     
     if (token) {
       this.connect(token);
@@ -843,11 +900,12 @@ class SocketManager {
     const state = store.getState();
     return {
       status: state.socket.connectionStatus,
-      isConnected: state.socket.isConnected,
+      isConnected: state.socket.isConnected && this.connectionStable,
       reconnectAttempts: this.reconnectAttempts,
       maxReconnectAttempts: this.maxReconnectAttempts,
       lastError: state.socket.lastError,
       isReconnecting: this.isReconnecting,
+      connectionHealth: state.socket.connectionHealth,
     };
   }
 
@@ -855,17 +913,14 @@ class SocketManager {
   handleMedicalRecordEvent(eventData, eventType) {
     console.log(`Processing medical record ${eventType} event:`, eventData);
     
-    // Extract patient data from the event - it might be nested in a 'patient' property
     const patientData = eventData.patient;
     
-    // Primary approach: Update patient data if provided
     if (patientData) {
       console.log(`Updating patient data for medical record ${eventType}:`, patientData.id);
       store.dispatch(updatePatient(patientData));
       return;
     }
     
-    // Secondary approach: If only patientId is provided, update the specific patient
     if (eventData.patientId) {
       const state = store.getState();
       const currentPatient = state.patient?.patients?.find(p => p.id === eventData.patientId);
@@ -873,12 +928,10 @@ class SocketManager {
       if (currentPatient) {
         console.log(`Found patient ${eventData.patientId} in state, updating with medical record ${eventType}`);
         
-        // Check for medical record data in different possible properties
         const medicalRecordData = eventData.medicalRecord || eventData.record;
         const recordType = eventData.recordType || eventData.modelName || medicalRecordData?.type;
         
         if (medicalRecordData && recordType) {
-          // Map the record type to the correct patient array property
           let mappedRecordType = recordType;
           switch (recordType) {
             case 'patienthistory':
@@ -903,7 +956,6 @@ class SocketManager {
               break;
           }
           
-          // Use the specialized medical record update action
           store.dispatch(updatePatientMedicalRecord({
             patientId: eventData.patientId,
             recordType: mappedRecordType,
@@ -913,7 +965,6 @@ class SocketManager {
           
           console.log(`Patient ${eventData.patientId} updated with ${recordType} medical record ${eventType}`);
         } else {
-          // If no specific medical record data, just update the patient's timestamp
           const updatedPatient = { ...currentPatient, lastUpdated: new Date().toISOString() };
           store.dispatch(updatePatient(updatedPatient));
           console.log(`Patient ${eventData.patientId} timestamp updated for medical record ${eventType}`);
@@ -923,7 +974,6 @@ class SocketManager {
       }
     }
     
-    // Log the event for debugging
     console.log(`Medical record ${eventType} processed:`, {
       patientId: eventData.patientId,
       recordType: eventData.recordType || eventData.modelName,
@@ -939,18 +989,15 @@ class SocketManager {
     const allUsers = state.user.users;
     const userOrganizations = this.getCurrentUserOrganizations();
     
-    // Create organization-specific online user mapping
     const onlineUsersByOrg = {};
     
     userOrganizations.forEach(orgId => {
       onlineUsersByOrg[orgId] = [];
     });
     
-    // Categorize online users by their organizations
     filteredUserIds.forEach(userId => {
       const user = allUsers.find(u => u.id === userId);
       if (user) {
-        // Add user to their organization's online list
         if (user.organizationId && userOrganizations.includes(user.organizationId)) {
           if (!onlineUsersByOrg[user.organizationId]) {
             onlineUsersByOrg[user.organizationId] = [];
@@ -958,7 +1005,6 @@ class SocketManager {
           onlineUsersByOrg[user.organizationId].push(userId);
         }
         
-        // Handle users with multiple organizations
         if (user.organizationIds && Array.isArray(user.organizationIds)) {
           user.organizationIds.forEach(orgId => {
             if (userOrganizations.includes(orgId)) {
@@ -985,7 +1031,6 @@ class SocketManager {
     
     const user = allUsers.find(u => u.id === userId);
     if (user) {
-      // Add user to their organization's online list
       if (user.organizationId && userOrganizations.includes(user.organizationId)) {
         store.dispatch(addOnlineUserToOrganization({
           organizationId: user.organizationId,
@@ -993,7 +1038,6 @@ class SocketManager {
         }));
       }
       
-      // Handle users with multiple organizations
       if (user.organizationIds && Array.isArray(user.organizationIds)) {
         user.organizationIds.forEach(orgId => {
           if (userOrganizations.includes(orgId)) {
@@ -1007,7 +1051,7 @@ class SocketManager {
     }
   }
 
-  // Helper methods to emit events
+  // Emit methods
   emitUserUpdate(userData) {
     if (this.socket?.connected) {
       this.socket.emit("user_updated", userData);
@@ -1038,7 +1082,6 @@ class SocketManager {
     }
   }
 
-  // Organization events
   emitOrganizationCreated(orgData) {
     if (this.socket?.connected) {
       this.socket.emit("organization_created", orgData);
@@ -1057,7 +1100,6 @@ class SocketManager {
     }
   }
 
-  // Patient events
   emitPatientCreated(patientData) {
     if (this.socket?.connected) {
       this.socket.emit("patient_created", patientData);
@@ -1076,7 +1118,6 @@ class SocketManager {
     }
   }
 
-  // Organization member management
   emitUserAddedToOrganization(data) {
     if (this.socket?.connected) {
       this.socket.emit("user_added_to_organization", data);
@@ -1101,7 +1142,6 @@ class SocketManager {
     }
   }
 
-  // Medical records
   emitMedicalRecordCreated(data) {
     if (this.socket?.connected) {
       this.socket.emit("medical_record_created", data);
@@ -1114,7 +1154,6 @@ class SocketManager {
     }
   }
 
-  // Feedback
   emitFeedbackCreated(data) {
     if (this.socket?.connected) {
       this.socket.emit("feedback_created", data);
@@ -1127,71 +1166,60 @@ class SocketManager {
     }
   }
 
-  // Request online users
   requestOnlineUsers() {
     if (this.socket?.connected) {
       this.socket.emit("get_online_users");
     }
   }
 
-  // Request online counts
   requestOnlineCounts() {
     if (this.socket?.connected) {
       this.socket.emit("get_online_counts");
     }
   }
 
-  // Request online users update
   requestOnlineUsersUpdate() {
     if (this.socket?.connected) {
       this.socket.emit("online_users_updated");
     }
   }
 
-  // Get organization-filtered online users for the current user
   getOrganizationFilteredOnlineUsers() {
     const state = store.getState();
     const onlineUsers = state.user.onlineUsers;
     return this.filterOnlineUsersByOrganization(onlineUsers);
   }
 
-  // Get current user's organization IDs (public method for external use)
   getUserOrganizations() {
     return this.getCurrentUserOrganizations();
   }
 
-  // Get online users for a specific organization
   getOnlineUsersForOrganization(organizationId) {
     const state = store.getState();
     return state.user.onlineUsersByOrganization[organizationId] || [];
   }
 
-  // Get online counts for all accessible organizations
   getOnlineCountsByOrganization() {
     const state = store.getState();
     return state.user.onlineCountsByOrganization;
   }
 
-  // Get online count for a specific organization
   getOnlineCountForOrganization(organizationId) {
     const state = store.getState();
     return state.user.onlineCountsByOrganization[organizationId] || 0;
   }
 
-  // Get all online users across all accessible organizations
   getAllOnlineUsersByOrganization() {
     const state = store.getState();
     return state.user.onlineUsersByOrganization;
   }
 
-  // Get current socket instance
   getSocket() {
     return this.socket;
   }
 
-  // Check if connected
   isConnected() {
-    return this.socket?.connected || false;
+    return this.socket?.connected && this.connectionStable || false;
   }
 }
 

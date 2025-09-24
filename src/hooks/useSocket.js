@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import socketManager from '../config/socket.js';
-import { setConnecting, setConnectionError } from '../reducers/Slices/socketSlice.js';
+import { setConnecting, setConnectionError, clearError } from '../reducers/Slices/socketSlice.js';
 
 export const useSocket = () => {
   const dispatch = useDispatch();
@@ -14,169 +14,209 @@ export const useSocket = () => {
   } = useSelector(state => state.socket);
   const { currentUser } = useSelector(state => state.user);
 
+  // Use refs to track connection state and prevent multiple connections
+  const connectionInitialized = useRef(false);
+  const currentUserId = useRef(null);
 
-
-  useEffect(() => {
-    // Only connect if we have a user AND no existing socket connection
-    if (currentUser && !socket) {
-      console.log('🔄 Initializing socket connection...');
-      dispatch(setConnecting());
-      
-      try {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-          console.log(token)
-          socketManager.connect(token);
-        } else {
-          console.error('❌ No token found for socket connection');
-          dispatch(setConnectionError('No authentication token found'));
-        }
-      } catch (error) {
-        console.error('Socket connection error:', error);
-        dispatch(setConnectionError(error.message));
-      }
+  // Memoized connection function to prevent unnecessary re-connections
+  const initializeConnection = useCallback(() => {
+    if (!currentUser || connectionInitialized.current) {
+      return;
     }
 
-    // Cleanup on component unmount
+    // Check if user changed (for user switching scenarios)
+    if (currentUserId.current && currentUserId.current !== currentUser.id) {
+      console.log('🔄 User changed, reinitializing connection...');
+      socketManager.disconnect();
+      connectionInitialized.current = false;
+      currentUserId.current = null;
+    }
+
+    console.log('🔄 Initializing socket connection...');
+    dispatch(setConnecting());
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        console.log('🔑 Token found, connecting...');
+        socketManager.connect(token);
+        connectionInitialized.current = true;
+        currentUserId.current = currentUser.id;
+      } else {
+        console.error('❌ No token found for socket connection');
+        dispatch(setConnectionError('No authentication token found'));
+      }
+    } catch (error) {
+      console.error('Socket connection error:', error);
+      dispatch(setConnectionError(error.message));
+      connectionInitialized.current = false;
+    }
+  }, [currentUser, dispatch]);
+
+  useEffect(() => {
+    // Only initialize if we have a user and haven't initialized yet
+    if (currentUser && !connectionInitialized.current) {
+      // Small delay to ensure user data is fully loaded
+      const timer = setTimeout(() => {
+        initializeConnection();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+
+    // Handle user logout/change
+    if (!currentUser && connectionInitialized.current) {
+      console.log('🔌 User logged out, disconnecting socket...');
+      socketManager.disconnect();
+      connectionInitialized.current = false;
+      currentUserId.current = null;
+    }
+  }, [currentUser, initializeConnection]);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      // Only disconnect if specifically needed, not on every re-render
+      // Only disconnect if the component is truly unmounting (page navigation, etc.)
+      // Don't disconnect on re-renders
     };
-  }, [currentUser, socket, dispatch]); // Add socket to dependencies
+  }, []);
 
-
-  const disconnect = () => {
+  // Memoized emit functions to prevent unnecessary re-creations
+  const disconnect = useCallback(() => {
     socketManager.disconnect();
-  };
+    connectionInitialized.current = false;
+    currentUserId.current = null;
+  }, []);
 
-  const emitUserUpdate = (userData) => {
+  const manualReconnect = useCallback(() => {
+    console.log('🔄 Manual reconnection requested by user');
+    connectionInitialized.current = false;
+    currentUserId.current = null;
+    dispatch(clearError());
+    
+    // Small delay to ensure clean state reset
+    setTimeout(() => {
+      initializeConnection();
+    }, 500);
+  }, [initializeConnection, dispatch]);
+
+  const emitUserUpdate = useCallback((userData) => {
     socketManager.emitUserUpdate(userData);
-  };
+  }, []);
 
-  const emitPatientUpdate = (patientData) => {
+  const emitPatientUpdate = useCallback((patientData) => {
     socketManager.emitPatientUpdate(patientData);
-  };
+  }, []);
 
-  const emitOrganizationUpdate = (orgData) => {
+  const emitOrganizationUpdate = useCallback((orgData) => {
     socketManager.emitOrganizationUpdate(orgData);
-  };
+  }, []);
 
-  const emitUserCreated = (userData) => {
+  const emitUserCreated = useCallback((userData) => {
     socketManager.emitUserCreated(userData);
-  };
+  }, []);
 
-  const emitUserDeleted = (userData) => {
+  const emitUserDeleted = useCallback((userData) => {
     socketManager.emitUserDeleted(userData);
-  };
+  }, []);
 
-  // Organization methods
-  const emitOrganizationCreated = (orgData) => {
+  const emitOrganizationCreated = useCallback((orgData) => {
     socketManager.emitOrganizationCreated(orgData);
-  };
+  }, []);
 
-  const emitOrganizationDeleted = (orgData) => {
+  const emitOrganizationDeleted = useCallback((orgData) => {
     socketManager.emitOrganizationDeleted(orgData);
-  };
+  }, []);
 
-  const emitOrganizationsUpdate = (orgsData) => {
+  const emitOrganizationsUpdate = useCallback((orgsData) => {
     socketManager.emitOrganizationsUpdate(orgsData);
-  };
+  }, []);
 
-  // Patient methods
-  const emitPatientCreated = (patientData) => {
+  const emitPatientCreated = useCallback((patientData) => {
     socketManager.emitPatientCreated(patientData);
-  };
+  }, []);
 
-  const emitPatientDeleted = (patientData) => {
+  const emitPatientDeleted = useCallback((patientData) => {
     socketManager.emitPatientDeleted(patientData);
-  };
+  }, []);
 
-  const emitPatientsUpdate = (patientsData) => {
+  const emitPatientsUpdate = useCallback((patientsData) => {
     socketManager.emitPatientsUpdate(patientsData);
-  };
+  }, []);
 
-  // Organization member management
-  const emitUserAddedToOrganization = (data) => {
+  const emitUserAddedToOrganization = useCallback((data) => {
     socketManager.emitUserAddedToOrganization(data);
-  };
+  }, []);
 
-  const emitUserCreatedForOrganization = (data) => {
+  const emitUserCreatedForOrganization = useCallback((data) => {
     socketManager.emitUserCreatedForOrganization(data);
-  };
+  }, []);
 
-  const emitUserRemovedFromOrganization = (data) => {
+  const emitUserRemovedFromOrganization = useCallback((data) => {
     socketManager.emitUserRemovedFromOrganization(data);
-  };
+  }, []);
 
-  const emitUserRoleUpdated = (data) => {
+  const emitUserRoleUpdated = useCallback((data) => {
     socketManager.emitUserRoleUpdated(data);
-  };
+  }, []);
 
-  // Medical records
-  const emitMedicalRecordCreated = (data) => {
+  const emitMedicalRecordCreated = useCallback((data) => {
     socketManager.emitMedicalRecordCreated(data);
-  };
+  }, []);
 
-  const emitMedicalRecordUpdated = (data) => {
+  const emitMedicalRecordUpdated = useCallback((data) => {
     socketManager.emitMedicalRecordUpdated(data);
-  };
+  }, []);
 
-  // Feedback
-  const emitFeedbackCreated = (data) => {
+  const emitFeedbackCreated = useCallback((data) => {
     socketManager.emitFeedbackCreated(data);
-  };
+  }, []);
 
-  const emitFeedbackStatusUpdated = (data) => {
+  const emitFeedbackStatusUpdated = useCallback((data) => {
     socketManager.emitFeedbackStatusUpdated(data);
-  };
+  }, []);
 
-  // Request methods
-  const requestOnlineUsers = () => {
+  const requestOnlineUsers = useCallback(() => {
     socketManager.requestOnlineUsers();
-  };
+  }, []);
 
-  const requestOnlineCounts = () => {
+  const requestOnlineCounts = useCallback(() => {
     socketManager.requestOnlineCounts();
-  };
+  }, []);
 
-  const requestOnlineUsersUpdate = () => {
+  const requestOnlineUsersUpdate = useCallback(() => {
     socketManager.requestOnlineUsersUpdate();
-  };
+  }, []);
 
-  // Organization filtering methods
-  const getOrganizationFilteredOnlineUsers = () => {
+  const getOrganizationFilteredOnlineUsers = useCallback(() => {
     return socketManager.getOrganizationFilteredOnlineUsers();
-  };
+  }, []);
 
-  const getUserOrganizations = () => {
+  const getUserOrganizations = useCallback(() => {
     return socketManager.getUserOrganizations();
-  };
+  }, []);
 
-  // Organization-specific online user methods
-  const getOnlineUsersForOrganization = (organizationId) => {
+  const getOnlineUsersForOrganization = useCallback((organizationId) => {
     return socketManager.getOnlineUsersForOrganization(organizationId);
-  };
+  }, []);
 
-  const getOnlineCountsByOrganization = () => {
+  const getOnlineCountsByOrganization = useCallback(() => {
     return socketManager.getOnlineCountsByOrganization();
-  };
+  }, []);
 
-  const getOnlineCountForOrganization = (organizationId) => {
+  const getOnlineCountForOrganization = useCallback((organizationId) => {
     return socketManager.getOnlineCountForOrganization(organizationId);
-  };
+  }, []);
 
-  const getAllOnlineUsersByOrganization = () => {
+  const getAllOnlineUsersByOrganization = useCallback(() => {
     return socketManager.getAllOnlineUsersByOrganization();
-  };
+  }, []);
 
-  // New connection management methods
-  const manualReconnect = () => {
-    socketManager.manualReconnect();
-  };
-
-  const getConnectionStatus = () => {
+  const getConnectionStatus = useCallback(() => {
     return socketManager.getConnectionStatus();
-  };
+  }, []);
 
+  // Return stable object with memoized functions
   return {
     socket: socketManager.getSocket(),
     isConnected: socketManager.isConnected(),
@@ -206,20 +246,20 @@ export const useSocket = () => {
     emitUserCreatedForOrganization,
     emitUserRemovedFromOrganization,
     emitUserRoleUpdated,
-    // Medical record methods (Requirements 3.1, 5.3)
+    // Medical record methods
     emitMedicalRecordCreated,
     emitMedicalRecordUpdated,
-    // Feedback methods (Requirements 3.2, 5.3)
+    // Feedback methods
     emitFeedbackCreated,
     emitFeedbackStatusUpdated,
-    // Request methods for organization-filtered online users (Requirements 3.3, 5.3)
+    // Request methods
     requestOnlineUsers,
     requestOnlineCounts,
     requestOnlineUsersUpdate,
     // Organization filtering methods
     getOrganizationFilteredOnlineUsers,
     getUserOrganizations,
-    // Organization-specific online user methods (Requirements 4.1, 4.2, 4.3, 4.4)
+    // Organization-specific online user methods
     getOnlineUsersForOrganization,
     getOnlineCountsByOrganization,
     getOnlineCountForOrganization,
