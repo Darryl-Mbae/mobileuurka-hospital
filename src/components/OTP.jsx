@@ -103,7 +103,7 @@ const OTPForm = ({
 
       <div className="password-container">
         {Array.from({ length: 6 }).map((_, index) => (
-          <div className="pin-input" key={index}>
+          <div className="pin-input" key={index} >
             <input
               type="text"
               inputMode="text"
@@ -117,6 +117,9 @@ const OTPForm = ({
               className={`otp-input ${error ? "error" : ""}`}
               disabled={loading}
               autoCapitalize="characters"
+              style={{
+                fontSize:"16px"
+              }}
             />
           </div>
         ))}
