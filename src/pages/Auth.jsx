@@ -37,6 +37,7 @@ const Auth = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+  const token = localStorage.getItem("access_token");
   const [requiresPasswordChange, setRequiresPasswordChange] = useState(false);
   const [userHasDefaultPassword, setUserHasDefaultPassword] = useState(false);
 
@@ -87,8 +88,12 @@ const Auth = () => {
 
       const recaptchaResponse = await fetch(`${SERVER}/recaptcha`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recaptchaToken: token }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
+            body: JSON.stringify({ recaptchaToken: token }),
       });
 
       if (!recaptchaResponse.ok) {
@@ -130,8 +135,12 @@ const Auth = () => {
     try {
       const response = await fetch(`${SERVER}/auth/check-credentials`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
+            body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
@@ -163,8 +172,12 @@ const Auth = () => {
     try {
       const response = await fetch(`${SERVER}/otp`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          // ...options.headers,
+        },
+            body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
