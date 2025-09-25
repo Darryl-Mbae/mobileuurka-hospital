@@ -46,6 +46,53 @@ if (!Object.hasOwn) {
   };
 }
 
+// URL.parse polyfill (for older browsers)
+if (!URL.parse) {
+  URL.parse = function (url, base) {
+    try {
+      return new URL(url, base);
+    } catch (error) {
+      return null;
+    }
+  };
+}
+
+// URL constructor polyfill for very old browsers
+if (typeof URL === 'undefined' || !URL) {
+  window.URL = function(url, base) {
+    // Very basic URL parsing for compatibility
+    const a = document.createElement('a');
+    if (base) {
+      const baseA = document.createElement('a');
+      baseA.href = base;
+      a.href = new URL(url, baseA.href).href;
+    } else {
+      a.href = url;
+    }
+    
+    return {
+      href: a.href,
+      protocol: a.protocol,
+      host: a.host,
+      hostname: a.hostname,
+      port: a.port,
+      pathname: a.pathname,
+      search: a.search,
+      hash: a.hash,
+      origin: a.protocol + '//' + a.host
+    };
+  };
+  
+  // Add static parse method
+  window.URL.parse = function(url, base) {
+    try {
+      return new window.URL(url, base);
+    } catch (error) {
+      return null;
+    }
+  };
+}
+
 // Add global error handler for unhandled promise rejections
 window.addEventListener("unhandledrejection", function (event) {
   console.error("Unhandled promise rejection:", event.reason);
@@ -57,12 +104,97 @@ window.addEventListener("unhandledrejection", function (event) {
 window.addEventListener("error", function (event) {
   console.error("Global error:", event.error || event.message);
 
-  // If it's a Promise.withResolvers error, show a user-friendly message
+  // Handle specific compatibility issues
   if (event.message && event.message.includes("Promise.withResolvers")) {
-    console.warn(
-      "Browser compatibility issue detected. Polyfill should handle this."
-    );
+    console.warn("Browser compatibility issue: Promise.withResolvers not supported. Polyfill should handle this.");
+  }
+  
+  if (event.message && event.message.includes("URL.parse")) {
+    console.warn("Browser compatibility issue: URL.parse not supported. Polyfill should handle this.");
+  }
+  
+  if (event.message && event.message.includes("URL")) {
+    console.warn("Browser compatibility issue: URL constructor issues detected.");
   }
 });
+
+// Additional polyfills for older browsers
+
+// Array.prototype.find polyfill
+if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this == null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = parseInt(list.length) || 0;
+    var thisArg = arguments[1];
+    for (var i = 0; i < length; i++) {
+      var element = list[i];
+      if (predicate.call(thisArg, element, i, list)) {
+        return element;
+      }
+    }
+    return undefined;
+  };
+}
+
+// Array.prototype.findIndex polyfill
+if (!Array.prototype.findIndex) {
+  Array.prototype.findIndex = function(predicate) {
+    if (this == null) {
+      throw new TypeError('Array.prototype.findIndex called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = parseInt(list.length) || 0;
+    var thisArg = arguments[1];
+    for (var i = 0; i < length; i++) {
+      var element = list[i];
+      if (predicate.call(thisArg, element, i, list)) {
+        return i;
+      }
+    }
+    return -1;
+  };
+}
+
+// Array.prototype.includes polyfill
+if (!Array.prototype.includes) {
+  Array.prototype.includes = function(searchElement, fromIndex) {
+    if (this == null) {
+      throw new TypeError('Array.prototype.includes called on null or undefined');
+    }
+    var O = Object(this);
+    var len = parseInt(O.length) || 0;
+    if (len === 0) {
+      return false;
+    }
+    var n = parseInt(fromIndex) || 0;
+    var k;
+    if (n >= 0) {
+      k = n;
+    } else {
+      k = len + n;
+      if (k < 0) {
+        k = 0;
+      }
+    }
+    function sameValueZero(x, y) {
+      return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+    }
+    for (; k < len; k++) {
+      if (sameValueZero(O[k], searchElement)) {
+        return true;
+      }
+    }
+    return false;
+  };
+}
 
 console.log("✅ Polyfills loaded successfully");
