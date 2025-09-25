@@ -76,9 +76,9 @@ export const createSocketConfig = (serverUrl, token) => {
     // Timeout settings based on network conditions
     timeout: env.isSlowNetwork ? 90000 : 60000,
     
-    // Transport optimization
-    transports: env.isMobile || env.isSafari ? ['polling', 'websocket'] : ['websocket', 'polling'],
-    upgrade: !env.isSafari, // Disable upgrade on Safari for stability
+    // Transport optimization - prioritize polling for mobile Safari stability
+    transports: env.isSafari ? ['polling'] : env.isMobile ? ['polling', 'websocket'] : ['websocket', 'polling'],
+    upgrade: false, // Disable upgrade completely for mobile stability
     rememberUpgrade: false,
     
     // Polling settings for mobile compatibility
@@ -105,8 +105,10 @@ export const createSocketConfig = (serverUrl, token) => {
     // iOS specific fixes
     ...(env.isIOS && {
       closeOnBeforeunload: false, // Prevent premature disconnection
-      pingInterval: 30000, // Longer ping interval for iOS
-      pingTimeout: 90000
+      pingInterval: 45000, // Even longer ping interval for iOS Safari
+      pingTimeout: 120000, // Much longer timeout for iOS Safari
+      forceBase64: false, // Disable base64 encoding for better performance
+      perMessageDeflate: false // Disable compression for stability
     })
   };
   
