@@ -60,15 +60,12 @@ export const createSocketConfig = (serverUrl, token) => {
   
   // Base configuration
   const config = {
-    // Authentication - multiple methods for compatibility
+    // Authentication - secure methods only (no query params)
     auth: {
       token: token
     },
-    query: {
-      token: token // Fallback for older implementations
-    },
     extraHeaders: {
-      'Authorization': `Bearer ${token}` // Additional fallback
+      'Authorization': `Bearer ${token}`
     },
     
     // Connection options
