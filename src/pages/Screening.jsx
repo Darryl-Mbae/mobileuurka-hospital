@@ -6,7 +6,7 @@ import PatientVisit from "../forms/PatientVisit";
 import Triage from "../forms/Triage";
 import Ultrasound from "../forms/Ultrasound";
 import Lifestyle from "../forms/Lifestyle";
-import Fetal from "../forms/Fetal";
+import FetalUltrasound from "../forms/FetalUltrasound";
 import Infections from "../forms/Infections";
 import Prescription from "../forms/Prescription";
 import Allergies from "../forms/Allergies";
@@ -68,15 +68,10 @@ const testCategories = [
     path: 2.9,
   },
   {
-    title: "Fetal Development",
+    title: "Fetal & Ultrasound ",
     description:
-      "Monitor and document fetal growth and development milestones.",
+      "Comprehensive fetal measurements and ultrasound findings in one form.",
     path: 2.11,
-  },
-  {
-    title: "Ultrasound",
-    description: "Record ultrasound details and image references.",
-    path: 2.12,
   },
 
   {
@@ -191,15 +186,12 @@ const Screening = ({ internalTab, setInternalTab }) => {
             {internalTab === 2.9 && (
               <Infections setInternalTab={setInternalTab} />
             )}
-            {internalTab === 2.11 && <Fetal setInternalTab={setInternalTab} />}
+            {internalTab === 2.11 && <FetalUltrasound setInternalTab={setInternalTab} />}
             {internalTab === 2.13 && (
               <Prescription
                 setInternalTab={setInternalTab}
                 patientId={patientId}
               />
-            )}
-            {internalTab === 2.12 && (
-              <Ultrasound setInternalTab={setInternalTab} />
             )}
           </div>
         )}

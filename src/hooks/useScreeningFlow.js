@@ -24,8 +24,7 @@ export const useScreeningFlow = (setInternalTab) => {
       'Pregnancy': 2.7,
       'Labwork': 2.8,
       'Infections': 2.9,
-      'Fetal': 2.11,
-      'Ultrasound': 2.12,
+      'FetalUltrasound': 2.11,
       'Prescription': 2.13
     };
     console.log(nextStep)

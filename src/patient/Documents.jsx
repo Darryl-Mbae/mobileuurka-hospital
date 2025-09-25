@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { RiSearchLine } from "react-icons/ri";
-import { IoDocumentTextOutline, IoWarningOutline } from "react-icons/io5";
+import { IoDocumentTextOutline, IoWarningOutline, IoClose } from "react-icons/io5";
 import "./css/Document.css";
 import { IoIosWarning, IoMdAdd } from "react-icons/io";
 import { useSelector } from "react-redux";
-import { FaShieldAlt } from "react-icons/fa";
+import { FaShieldAlt, FaImage } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Document from "./Document";
 import { usePagination } from "../hooks/usePagination";
@@ -27,10 +27,10 @@ const useIsMobile = (breakpoint = 768) => {
 
 const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
   const users = useSelector((s) => s.user.users);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-
 
   const riskLevelColors = {
     high: "#FF3B30",
@@ -192,6 +192,12 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           }
         }
 
+        if (title === "Ultrasound") {
+          if (item.imageUrl) {
+            result += "";
+          }
+        }
+
         if (title === "Pregnancy Journey") {
           // Match explanations by visit_id
           const relatedExplanations = patient?.explanations?.filter((exp) => {
@@ -203,8 +209,8 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           // Join risk_levels found
           result = relatedExplanations?.length
             ? relatedExplanations
-              .map((exp) => exp.risklevel || "No risk level")
-              .join(", ")
+                .map((exp) => exp.risklevel || "No risk level")
+                .join(", ")
             : "No explanations";
         }
 
@@ -220,6 +226,9 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
           result,
           // Add raw date for sorting
           sortDate: documentDate ? new Date(documentDate) : new Date(0),
+          // Add image info for ultrasounds
+          hasImage: title === "Ultrasound" && item.imageUrl,
+          imageUrl: item.imageUrl,
         };
       }) || []
     );
@@ -230,6 +239,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     ...buildRecord(patient?.labworks, "Lab Work"),
     ...buildRecord(patient?.currentPregnancies, "Pregnancy Journey"),
     ...buildRecord(patient?.infections, "Infections"),
+    ...buildRecord(patient?.ultrasounds, "Ultrasound"),
     ...buildRecord(patient?.SymptomReasoningReport, "AI Analysis"),
   ];
 
@@ -264,6 +274,15 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
     handlePageChange(1); // Reset to first page when searching
   };
 
+  const handleImageClick = (imageUrl, e) => {
+    e.stopPropagation(); // Prevent document click
+    setSelectedImage(imageUrl);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+  };
+
   return (
     <div id="notes" className="content doc">
       {document?.title ? (
@@ -294,10 +313,12 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
               {isMobile ? "" : "Add Document"}
             </div>
           </div>
-          <div className="med-grid"
-          style={{
-            overflowX:"scroll"
-          }}>
+          <div
+            className="med-grid"
+            style={{
+              overflowX: "scroll",
+            }}
+          >
             <div className="documents new">
               <div className="title">
                 <div className="title-name">Name</div>
@@ -314,10 +335,17 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
                 >
                   <div className="doc">
                     <div className="icon">
-                      <IoDocumentTextOutline />
+                      {record.title === "Ultrasound" && record.hasImage ? (
+                        <IoDocumentTextOutline />
+                      ) : (
+                        <IoDocumentTextOutline />
+                      )}
                     </div>
                     <div className="details">
-                      <div className="doc-name">{record.title}</div>
+                      <div className="doc-name">
+                        {record.title}
+
+                      </div>
                       <div className="doc-visit">{record.visit_id}</div>
                     </div>
                   </div>
@@ -336,7 +364,43 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
                         }}
                       />
                     )}
-                    {renderResult(record)}
+                                            {record.hasImage && (
+                          <span 
+                            style={{ 
+                              marginLeft: "8px", 
+                              fontSize: "12px",
+                              display:"flex",
+                              flexDirection:"row",
+                              alignItems:"center",
+                              gap:"10px", 
+                              cursor: "pointer"
+                              
+
+                            }}
+                            onClick={(e) => handleImageClick(record.imageUrl, e)}
+                          >
+                            <FaImage />
+
+                            View Image
+                          </span>
+                        )}
+                    {/* {renderResult(record)} */}
+                    {/* {record.hasImage && (
+                      <img
+                        src={record.imageUrl}
+                        alt="Ultrasound thumbnail"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                          marginLeft: "10px",
+                          cursor: "pointer",
+                          border: "1px solid #ddd"
+                        }}
+                        onClick={(e) => handleImageClick(record.imageUrl, e)}
+                      />
+                    )} */}
                   </div>
                 </div>
               ))}
@@ -358,6 +422,77 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
             />
           )}
         </>
+      )}
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div 
+          className="image-modal-overlay"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100000,
+            padding: "20px"
+          }}
+          onClick={closeImageModal}
+        >
+          <div 
+            className="image-modal-content"
+            style={{
+              position: "relative",
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              padding: "20px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeImageModal}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "none",
+                border: "none",
+                fontSize: "24px",
+                cursor: "pointer",
+                color: "#666",
+                zIndex: 1001
+              }}
+            >
+              <IoClose />
+            </button>
+            <img
+              src={selectedImage}
+              alt="Ultrasound"
+              style={{
+                width: "100%",
+                height: "auto",
+                maxHeight: "80vh",
+                objectFit: "contain",
+                borderRadius: "4px"
+              }}
+            />
+            <div style={{
+              marginTop: "10px",
+              textAlign: "center",
+              color: "#666",
+              fontSize: "14px"
+            }}>
+              Ultrasound Image - Click outside to close
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

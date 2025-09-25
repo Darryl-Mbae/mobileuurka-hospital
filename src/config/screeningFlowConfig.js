@@ -94,10 +94,10 @@ export const SCREENING_FLOWS = {
       },
       
       {
-        id: 'ultrasound',
-        name: 'Ultrasound',
-        component: 'Ultrasound',
-        description: 'Fetal ultrasound examination',
+        id: 'fetal-ultrasound',
+        name: 'Fetal & Ultrasound ',
+        component: 'FetalUltrasound',
+        description: 'Comprehensive fetal measurements and ultrasound findings',
         icon: '🔍',
         required: false
       },
