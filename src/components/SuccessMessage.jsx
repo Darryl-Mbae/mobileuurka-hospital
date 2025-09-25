@@ -31,12 +31,12 @@ const SuccessMessage = ({
   const navigate = useNavigate();
 
   const handleGoToScreening = () => {
-    navigate(`/Screening`);
+    console.log('Navigating to Screening...');
+    navigate(`/Screening`, { replace: true, state: null });
   };
 
   const handleGoToFeedback = () => {
     navigate(`/Feedback`);
-    window.location.reload();
   };
 
   const handleNext = () => {
@@ -85,7 +85,9 @@ const SuccessMessage = ({
         {showScreeningButton && (
           <button
             className="next-screening-btn"
-            onClick={handleGoToScreening}
+            onClick={()=> 
+              navigate(`/Screening`, { replace: true, state: null })
+            }
             style={{
               backgroundColor:
                 title == "Action Needed" ? "#ffc187" : "#008540",

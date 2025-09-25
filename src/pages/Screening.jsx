@@ -93,72 +93,120 @@ const testCategories = [
   // },
 ];
 
-const Screening = ({ internalTab, setInternalTab}) => {
-  const { getScreeningContext } = useScreeningFlow(setInternalTab);
-  const screeningContext = getScreeningContext();
+const Screening = ({ internalTab, setInternalTab }) => {
+  console.log("Screening component rendered with internalTab:", internalTab);
 
-  const location = useLocation();
-  const { patientId, formType, returnTo, internalTab: internalTabFromNav } = location.state || {};
+  try {
+    const { getScreeningContext } = useScreeningFlow(setInternalTab);
+    const screeningContext = getScreeningContext();
 
-  // If internalTab (prop) is empty, set it from navigation state
-  useEffect(() => {
-    console.log(patientId)
-    if (!internalTab && internalTabFromNav) {
-      setInternalTab(internalTabFromNav);
-    }
-  }, [internalTab, internalTabFromNav, setInternalTab]);
+    const location = useLocation();
+    const {
+      patientId,
+      formType,
+      returnTo,
+      replace,
+      internalTab: internalTabFromNav,
+    } = location.state || {};
 
-  return (
-    <div className="screening">
-      {internalTab === null ? (
-        <div className="components">
-          {/* Mini-tabs navigation */}
-          <div className="tests">
-            {testCategories.map((test, index) => (
-              <div
-                key={index}
-                className="test"
-                onClick={() => setInternalTab(test.path)} // Set internal tab based on user selection
-              >
-                <div className="title">{test.title}</div>
-                <p>{test.description}</p>
-              </div>
-            ))}
+    console.log("Screening - location state:", location.state);
+
+    // If internalTab (prop) is empty, set it from navigation state
+    // But only if we're coming from a specific navigation with intent to show a form
+    useEffect(() => {
+      console.log(
+        "Screening useEffect - patientId:",
+        patientId,
+        "internalTabFromNav:",
+        internalTabFromNav,
+        "current internalTab:",
+        internalTab
+      );
+      if (internalTab === null && internalTabFromNav && patientId) {
+        // Only set from navigation if we have both a specific form and patient ID
+        console.log("Setting internalTab from navigation:", internalTabFromNav);
+        setInternalTab(internalTabFromNav);
+      }
+      else{
+        if (replace){
+          setInternalTab(null)
+        }      
+      }
+    }, [internalTab, internalTabFromNav, setInternalTab, patientId]);
+
+    return (
+      <div className="screening">
+        {internalTab === null ? (
+          <div className="components">
+            {/* Mini-tabs navigation */}
+            <div className="tests">
+              {testCategories.map((test, index) => (
+                <div
+                  key={index}
+                  className="test"
+                  onClick={() => setInternalTab(test.path)} // Set internal tab based on user selection
+                >
+                  <div className="title">{test.title}</div>
+                  <p>{test.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="components">
-          {internalTab === 2.1 && (
-            <PatientIntake setInternalTab={setInternalTab} />
-          )}
-          {internalTab === 2.2 && (
-            <PatientHistory setInternalTab={setInternalTab} />
-          )}
-          {internalTab === 2.3 && <Lifestyle setInternalTab={setInternalTab} />}
-          {internalTab === 2.4 && (
-            <PatientVisit 
-              setInternalTab={setInternalTab} 
-              selectedPatientId={screeningContext.patientId}
-            />
-          )}
-          {internalTab === 2.5 && <Allergies setInternalTab={setInternalTab} />}
-          {internalTab === 2.6 && <Triage setInternalTab={setInternalTab} />}
-          {internalTab === 2.7 && <Pregnancy setInternalTab={setInternalTab} />}
-          {internalTab === 2.8 && <Labwork setInternalTab={setInternalTab} />}
-          {internalTab === 2.9 && (
-            <Infections setInternalTab={setInternalTab} />
-          )}
-          {internalTab === 2.11 && <Fetal setInternalTab={setInternalTab} />}
-          {internalTab === 2.13 && (
-            <Prescription setInternalTab={setInternalTab} patientId={patientId}/>
-          )}
-          {internalTab === 2.12 && (
-            <Ultrasound setInternalTab={setInternalTab} />
-          )}
-        </div>
-      )}
-    </div>
-  );
+        ) : (
+          <div className="components">
+            {internalTab === 2.1 && (
+              <PatientIntake setInternalTab={setInternalTab} />
+            )}
+            {internalTab === 2.2 && (
+              <PatientHistory setInternalTab={setInternalTab} />
+            )}
+            {internalTab === 2.3 && (
+              <Lifestyle setInternalTab={setInternalTab} />
+            )}
+            {internalTab === 2.4 && (
+              <PatientVisit
+                setInternalTab={setInternalTab}
+                selectedPatientId={screeningContext.patientId}
+              />
+            )}
+            {internalTab === 2.5 && (
+              <Allergies setInternalTab={setInternalTab} />
+            )}
+            {internalTab === 2.6 && <Triage setInternalTab={setInternalTab} />}
+            {internalTab === 2.7 && (
+              <Pregnancy setInternalTab={setInternalTab} />
+            )}
+            {internalTab === 2.8 && <Labwork setInternalTab={setInternalTab} />}
+            {internalTab === 2.9 && (
+              <Infections setInternalTab={setInternalTab} />
+            )}
+            {internalTab === 2.11 && <Fetal setInternalTab={setInternalTab} />}
+            {internalTab === 2.13 && (
+              <Prescription
+                setInternalTab={setInternalTab}
+                patientId={patientId}
+              />
+            )}
+            {internalTab === 2.12 && (
+              <Ultrasound setInternalTab={setInternalTab} />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error("Error in Screening component:", error);
+    return (
+      <div className="screening-error">
+        <h2>Error Loading Screening</h2>
+        <p>
+          There was an error loading the screening component. Please try
+          refreshing the page.
+        </p>
+        <pre>{error.message}</pre>
+      </div>
+    );
+  }
 };
 
 export default Screening;

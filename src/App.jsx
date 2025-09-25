@@ -58,8 +58,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    console.log('App useEffect - page:', page, 'id:', id);
     if (page) {
+      console.log('Setting activeItem to:', page);
       setActiveItem(page);
+      
+      // Reset internalTab when navigating to Screening to show the main menu
+      if (page === 'Screening') {
+        console.log('Resetting internalTab to null for Screening page');
+        setInternalTab(null);
+      }
     }
     if (id) {
       setSelectedPatientId(id);
@@ -250,6 +258,7 @@ function App() {
   }, [currentUser]);
 
   const renderContent = () => {
+    console.log('renderContent - activeItem:', activeItem);
     switch (activeItem) {
       case "Dashboard":
         return <DashboardPage />;
