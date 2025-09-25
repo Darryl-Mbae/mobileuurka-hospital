@@ -27,13 +27,19 @@ const SuccessMessage = ({
   currentStepId = null,
   patientId = null,
   onNextScreening = null,
-setInternalTab
+  setInternalTab 
 },  
 ) => {
   const navigate = useNavigate();
 
   const handleGoToScreening = () => {
-    setInternalTab(null);
+    if (setInternalTab && typeof setInternalTab === 'function') {
+      setInternalTab(null);
+    } else {
+      console.warn('setInternalTab is not available or not a function');
+      // Fallback: navigate to screening page
+      navigate('/Screening');
+    }
   };
 
   const handleGoToFeedback = () => {
