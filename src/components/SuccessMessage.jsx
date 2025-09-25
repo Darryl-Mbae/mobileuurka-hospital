@@ -32,7 +32,6 @@ const SuccessMessage = ({
 
   const handleGoToScreening = () => {
     navigate(`/Screening`);
-    window.location.reload();
   };
 
   const handleGoToFeedback = () => {
