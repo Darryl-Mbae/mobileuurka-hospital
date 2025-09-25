@@ -20,13 +20,24 @@ export const useSocket = () => {
 
   // Memoized connection function to prevent unnecessary re-connections
   const initializeConnection = useCallback(() => {
-    if (!currentUser || connectionInitialized.current) {
+    if (!currentUser?.id || connectionInitialized.current) {
+      console.log('🔄 Skipping connection - no user or already initialized');
       return;
     }
 
-    // Check if user changed (for user switching scenarios)
+    // Check if socket is already connected and stable
+    if (socketManager.isConnected() && socketManager.getConnectionStatus().isConnected) {
+      console.log('✅ Socket already connected and stable');
+      connectionInitialized.current = true;
+      currentUserId.current = currentUser.id;
+      return;
+    }
+
+    // Only disconnect if user actually changed (different user ID)
+    // Don't disconnect for user object updates/refreshes
     if (currentUserId.current && currentUserId.current !== currentUser.id) {
-      console.log('🔄 User changed, reinitializing connection...');
+      console.log('🔄 Different user detected, reinitializing connection...');
+      console.log(`Previous user: ${currentUserId.current}, New user: ${currentUser.id}`);
       socketManager.disconnect();
       connectionInitialized.current = false;
       currentUserId.current = null;
@@ -55,7 +66,8 @@ export const useSocket = () => {
 
   useEffect(() => {
     // Only initialize if we have a user and haven't initialized yet
-    if (currentUser && !connectionInitialized.current) {
+    if (currentUser?.id && !connectionInitialized.current) {
+      console.log('🔄 Initializing socket for user:', currentUser.id);
       // Small delay to ensure user data is fully loaded
       const timer = setTimeout(() => {
         initializeConnection();
@@ -64,14 +76,14 @@ export const useSocket = () => {
       return () => clearTimeout(timer);
     }
 
-    // Handle user logout/change
-    if (!currentUser && connectionInitialized.current) {
+    // Handle user logout (only disconnect if user is completely gone, not just updating)
+    if (!currentUser?.id && connectionInitialized.current) {
       console.log('🔌 User logged out, disconnecting socket...');
       socketManager.disconnect();
       connectionInitialized.current = false;
       currentUserId.current = null;
     }
-  }, [currentUser, initializeConnection]);
+  }, [currentUser?.id, initializeConnection]);
 
   // Cleanup on unmount
   useEffect(() => {

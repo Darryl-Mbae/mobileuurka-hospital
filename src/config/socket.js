@@ -88,28 +88,33 @@ class SocketManager {
 
       if (
         this.isAppVisible &&
-        this.socket &&
-        !this.socket.connected &&
+        !this.isConnected() &&
         !this.isManuallyDisconnected
       ) {
-        console.log("🔄 App became visible - checking connection");
+        console.log(
+          "🔄 App became visible and socket disconnected - checking connection"
+        );
         setTimeout(() => {
-          if (!this.socket?.connected) {
+          if (!this.isConnected()) {
+            console.log("🔄 Reconnecting after visibility change");
             this.manualReconnect();
           }
-        }, 1000);
+        }, 2000); // Longer delay to avoid unnecessary reconnections
       }
     });
 
     // Handle page focus/blur
     window.addEventListener("focus", () => {
       console.log("🎯 Window focused");
-      if (
-        this.socket &&
-        !this.socket.connected &&
-        !this.isManuallyDisconnected
-      ) {
-        setTimeout(() => this.manualReconnect(), 500);
+      if (!this.isConnected() && !this.isManuallyDisconnected) {
+        console.log(
+          "🔄 Window focused and socket disconnected - will reconnect"
+        );
+        setTimeout(() => {
+          if (!this.isConnected()) {
+            this.manualReconnect();
+          }
+        }, 1000); // Delay to avoid unnecessary reconnections
       }
     });
 
@@ -286,11 +291,11 @@ class SocketManager {
       this.setupEventListeners();
 
       // Set connection timeout based on client environment
-      const timeoutDuration = clientEnv.isSafari
+      const timeoutDuration = clientEnv.isMobile
         ? 180000
         : clientEnv.isSlowNetwork
         ? 120000
-        : 90000; // 3min for Safari
+        : 90000; // 3min for all mobile devices
       this.connectionTimeout = setTimeout(() => {
         if (!this.socket?.connected) {
           console.log("⏰ Connection timeout - attempting manual intervention");
@@ -870,10 +875,13 @@ class SocketManager {
       clearInterval(this.heartbeatInterval);
     }
 
-    // Adjust heartbeat interval for mobile Safari
-    const isMobileSafari = this.isMobileSafari();
-    const heartbeatInterval = isMobileSafari ? 60000 : 25000; // 60s for mobile Safari, 25s for others
-    const pongTimeout = isMobileSafari ? 180000 : 70000; // 3min for mobile Safari, 70s for others
+    // Adjust heartbeat interval for all mobile devices
+    const isMobile =
+      /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    const heartbeatInterval = isMobile ? 60000 : 25000; // 60s for all mobile devices, 25s for desktop
+    const pongTimeout = isMobile ? 180000 : 70000; // 3min for all mobile devices, 70s for desktop
 
     console.log(
       `💗 Starting heartbeat - interval: ${heartbeatInterval}ms, timeout: ${pongTimeout}ms`
