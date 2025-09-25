@@ -109,21 +109,33 @@ function App() {
 
     async function getUser() {
       try {
+        console.log('🔍 Checking authentication...');
+        
         if (!isAuthenticated()) {
+          console.log('❌ No token found, redirecting to auth');
           navigate("/auth");
           setLoading(false);
           return;
         }
 
+        console.log('✅ Token found, fetching user data...');
         const { fetchCurrentUser } = await import("./config/api.js");
         const data = await fetchCurrentUser();
 
+        console.log('✅ User data fetched successfully:', data);
         dispatch(setUser(data));
         initialDataFetched.current.user = true;
       } catch (error) {
-        console.error("Error fetching user:", error);
-        setError("Failed to load user data");
-        navigate("/auth");
+        console.error("❌ Error fetching user:", error);
+        
+        // Check if it's an auth error
+        if (error.message.includes('Authentication expired') || error.message.includes('401')) {
+          console.log('🔄 Authentication expired, redirecting to login');
+          localStorage.removeItem('access_token');
+          navigate("/auth");
+        } else {
+          setError(`Failed to load user data: ${error.message}`);
+        }
       } finally {
         setLoading(false);
       }

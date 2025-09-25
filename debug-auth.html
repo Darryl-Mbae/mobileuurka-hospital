@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Auth Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { margin: 5px; padding: 10px; }
+        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Frontend Authentication Debug</h1>
+    
+    <div class="test info">
+        <h3>Environment Check</h3>
+        <p><strong>Server URL:</strong> <span id="serverUrl"></span></p>
+        <p><strong>Socket URL:</strong> <span id="socketUrl"></span></p>
+        <p><strong>Current Token:</strong> <span id="currentToken"></span></p>
+    </div>
+
+    <div class="test">
+        <h3>Tests</h3>
+        <button onclick="testServerHealth()">1. Test Server Health</button>
+        <button onclick="testCORS()">2. Test CORS</button>
+        <button onclick="testAuthEndpoint()">3. Test Auth Endpoint</button>
+        <button onclick="testLogin()">4. Test Login</button>
+        <button onclick="clearToken()">Clear Token</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const SERVER_URL = 'https://mobileuurka-gcp-server-v2-864851114868.europe-west4.run.app/api/v1';
+        const SOCKET_URL = 'https://mobileuurka-gcp-server-v2-864851114868.europe-west4.run.app';
+        
+        // Update environment display
+        document.getElementById('serverUrl').textContent = SERVER_URL;
+        document.getElementById('socketUrl').textContent = SOCKET_URL;
+        updateTokenDisplay();
+
+        function updateTokenDisplay() {
+            const token = localStorage.getItem('access_token');
+            document.getElementById('currentToken').textContent = token ? 
+                token.substring(0, 20) + '...' : 'None';
+        }
+
+        function addResult(title, success, message, details = null) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test ${success ? 'success' : 'error'}`;
+            
+            let html = `<h4>${success ? '✅' : '❌'} ${title}</h4><p>${message}</p>`;
+            if (details) {
+                html += `<pre>${JSON.stringify(details, null, 2)}</pre>`;
+            }
+            
+            div.innerHTML = html;
+            results.appendChild(div);
+        }
+
+        async function testServerHealth() {
+            try {
+                const response = await fetch(SERVER_URL.replace('/api/v1', '/health'));
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult('Server Health', true, 'Server is healthy', data);
+                } else {
+                    addResult('Server Health', false, 'Server health check failed', data);
+                }
+            } catch (error) {
+                addResult('Server Health', false, `Cannot reach server: ${error.message}`);
+            }
+        }
+
+        async function testCORS() {
+            try {
+                const response = await fetch(`${SERVER_URL}/cors-test`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('CORS', true, 'CORS test passed', data);
+                } else {
+                    addResult('CORS', false, `CORS test failed: ${response.status}`);
+                }
+            } catch (error) {
+                addResult('CORS', false, `CORS test error: ${error.message}`);
+            }
+        }
+
+        async function testAuthEndpoint() {
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token && { 'Authorization': `Bearer ${token}` })
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult('Auth Endpoint', true, 'Successfully authenticated', data);
+                } else if (response.status === 401) {
+                    addResult('Auth Endpoint', false, 'Authentication required (expected if no token)', data);
+                } else {
+                    addResult('Auth Endpoint', false, `Unexpected response: ${response.status}`, data);
+                }
+            } catch (error) {
+                addResult('Auth Endpoint', false, `Auth endpoint error: ${error.message}`);
+            }
+        }
+
+        async function testLogin() {
+            const email = prompt('Enter test email:');
+            const password = prompt('Enter test password:');
+            
+            if (!email || !password) {
+                addResult('Login Test', false, 'Email and password required');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SERVER_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        email, 
+                        password,
+                        clientType: 'web'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.token) {
+                        localStorage.setItem('access_token', data.token);
+                        updateTokenDisplay();
+                    }
+                    addResult('Login Test', true, 'Login successful', data);
+                } else {
+                    addResult('Login Test', false, `Login failed: ${data.error || data.message}`, data);
+                }
+            } catch (error) {
+                addResult('Login Test', false, `Login error: ${error.message}`);
+            }
+        }
+
+        function clearToken() {
+            localStorage.removeItem('access_token');
+            updateTokenDisplay();
+            addResult('Clear Token', true, 'Token cleared from localStorage');
+        }
+
+        // Auto-run basic tests on load
+        window.onload = function() {
+            setTimeout(() => {
+                testServerHealth();
+                setTimeout(() => testCORS(), 1000);
+                setTimeout(() => testAuthEndpoint(), 2000);
+            }, 500);
+        };
+    </script>
+</body>
+</html>

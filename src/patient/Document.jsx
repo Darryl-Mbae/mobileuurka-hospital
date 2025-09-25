@@ -310,14 +310,16 @@ const Document = ({ document, title, patient }) => {
 
       const commentData = {
         patientId: patient?.id,
-        documentId: document?.id,
+        documentId: document?.history_id || document?.id || 'default-doc-id',
         selection: comment.selection,
         text: text.trim(),
         y: comment.y,
         yPercentage: comment.yPercentage,
       };
 
-      console.log(commentData);
+      console.log('Document object:', document);
+      console.log('Document ID:', document?.id);
+      console.log('Comment data:', commentData);
 
       const url = !isNewComment
         ? `${SERVER}/patients/medical/comments`

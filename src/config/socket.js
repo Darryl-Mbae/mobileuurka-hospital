@@ -1,4 +1,5 @@
 import io from "socket.io-client";
+import { createEnhancedSocket, getAuthToken, getClientEnvironment } from "../utils/socket-connection-fix.js";
 import { store } from "./store.js";
 import {
   setSocket,
@@ -165,15 +166,25 @@ class SocketManager {
   }
 
   connect(token) {
-    console.log("🔄 Initializing socket connection...");
-    console.log(token);
-    console.log("📱 UserAgent:", navigator.userAgent);
+    console.log("🔄 Initializing enhanced socket connection...");
+    
+    // Use provided token or get from storage
+    const authToken = token || getAuthToken();
+    const clientEnv = getClientEnvironment();
+    
+    console.log("📱 Client Environment:", clientEnv);
     console.log("🔗 Server URL:", SERVER);
-    console.log("🔑 Token exists:", !!token);
+    console.log("🔑 Token exists:", !!authToken);
 
     if (this.socket?.connected && this.connectionStable) {
       console.log("✅ Socket already connected and stable");
       return this.socket;
+    }
+
+    if (!authToken) {
+      console.error("❌ No authentication token available");
+      store.dispatch(setConnectionError("Authentication token not available"));
+      return null;
     }
 
     // Reset manual disconnect flag
@@ -190,63 +201,28 @@ class SocketManager {
     }
   
     store.dispatch(setConnecting());
-    console.log("🔄 Connecting to socket server...");
+    console.log("🔄 Connecting to socket server with enhanced configuration...");
 
-    // Optimize connection options for mobile Safari and unstable networks
-    const isMobile = this.isMobileSafari();
-    const isSlowNetwork = this.isProblematicNetwork();
-    
-    const socketOptions = {
-      auth: { token },
-      forceNew: true,
+    try {
+      // Use enhanced socket creation
+      this.socket = createEnhancedSocket(SERVER, authToken);
+      this.setupEventListeners();
       
-      // Transport optimization for mobile Safari
-      transports: isMobile ? ["polling"] : ["websocket", "polling"],
-      
-      // Timeout adjustments based on network conditions
-      timeout: isSlowNetwork ? 90000 : 60000,
-      
-      // Reconnection settings - more conservative
-      reconnection: false, // We'll handle reconnection manually for better control
-      
-      // Polling optimization for mobile
-      upgrade: !isMobile, // Disable upgrade on mobile Safari
-      rememberUpgrade: false, // Always start fresh
-      
-      // Additional options for stability
-      autoConnect: true,
-      closeOnBeforeunload: true,
-      
-      // Heartbeat settings
-      pingInterval: 25000,
-      pingTimeout: 60000,
-      
-      // Additional mobile optimizations
-      ...(isMobile && {
-        jsonp: false, // Disable JSONP fallback
-        enablesXDR: false, // Disable XDomainRequest
-      })
-    };
+      // Set connection timeout based on client environment
+      const timeoutDuration = clientEnv.isSlowNetwork ? 120000 : 90000;
+      this.connectionTimeout = setTimeout(() => {
+        if (!this.socket?.connected) {
+          console.log("⏰ Connection timeout - attempting manual intervention");
+          this.handleConnectionTimeout();
+        }
+      }, timeoutDuration);
 
-    console.log("📡 Socket options:", {
-      transports: socketOptions.transports,
-      timeout: socketOptions.timeout,
-      isMobile,
-      isSlowNetwork
-    });
-
-    this.socket = io(SERVER, socketOptions);
-    this.setupEventListeners();
-    
-    // Set connection timeout
-    this.connectionTimeout = setTimeout(() => {
-      if (!this.socket?.connected) {
-        console.log("⏰ Connection timeout - attempting manual intervention");
-        this.handleConnectionTimeout();
-      }
-    }, socketOptions.timeout + 5000);
-
-    return this.socket;
+      return this.socket;
+    } catch (error) {
+      console.error("❌ Failed to create enhanced socket:", error.message);
+      store.dispatch(setConnectionError(`Socket creation failed: ${error.message}`));
+      return null;
+    }
   }
 
   clearTimers() {

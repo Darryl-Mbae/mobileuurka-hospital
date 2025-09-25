@@ -1,11 +1,11 @@
 const SERVER = import.meta.env.VITE_SERVER_URL;
-const token = localStorage.getItem("access_token");
-
 
 /**
  * Core fetch with automatic token & auth handling
  */
 export const fetchWithAuth = async (url, options = {}) => {
+  // Get fresh token each time
+  const token = localStorage.getItem("access_token");
 
   const defaultOptions = {
     credentials: "include", // send cookies too
@@ -106,20 +106,25 @@ export const logout = async () => {
 
 export const refreshToken = async () => {
   try {
+    // Get fresh token each time
+    const token = localStorage.getItem("access_token");
+    
     const response = await fetch(`${SERVER}/auth/refresh`, {
-      method: "POST",
+      method: "GET", // Changed to GET as per your backend route
       credentials: "include",
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
-        // ...options.headers,
-      },    });
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+      },
+    });
+    
     if (response.ok) {
       const data = await response.json();
       if (data.token) {
         localStorage.setItem("access_token", data.token);
         return data.token;
       }
+      return token; // Return existing token if no new one provided
     }
     return null;
   } catch (err) {
