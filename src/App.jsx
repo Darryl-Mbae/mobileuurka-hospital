@@ -43,30 +43,34 @@ function App() {
 
   // Initialize socket connection with better management
   const socketHook = useSocket();
-  
+
   // Track initial data fetch states to prevent multiple fetches
   const initialDataFetched = useRef({
     user: false,
     organizations: false,
-    patients: false
+    patients: false,
   });
 
   // Memoized auth headers function
   const authHeaders = useCallback(() => {
     const token = localStorage.getItem("access_token");
-    return token ? { "Authorization": `Bearer ${token}` } : {};
+    return token ? { Authorization: `Bearer ${token}` } : {};
   }, []);
 
   useEffect(() => {
-    console.log('App useEffect - page:', page, 'id:', id);
+    console.log("App useEffect - page:", page, "id:", id);
     if (page) {
-      console.log('Setting activeItem to:', page);
+      console.log("Setting activeItem to:", page);
       setActiveItem(page);
-      
+
       // Reset internalTab when navigating to Screening to show the main menu
-      if (page === 'Screening') {
-        console.log('Resetting internalTab to null for Screening page');
+      if (page === "Screening") {
+        console.log(
+          "Resetting internalTab to null for Screening page, current value:",
+          internalTab
+        );
         setInternalTab(null);
+        console.log("After reset, internalTab should be null");
       }
     }
     if (id) {
@@ -117,29 +121,32 @@ function App() {
 
     async function getUser() {
       try {
-        console.log('🔍 Checking authentication...');
-        
+        console.log("🔍 Checking authentication...");
+
         if (!isAuthenticated()) {
-          console.log('❌ No token found, redirecting to auth');
+          console.log("❌ No token found, redirecting to auth");
           navigate("/auth");
           setLoading(false);
           return;
         }
 
-        console.log('✅ Token found, fetching user data...');
+        console.log("✅ Token found, fetching user data...");
         const { fetchCurrentUser } = await import("./config/api.js");
         const data = await fetchCurrentUser();
 
-        console.log('✅ User data fetched successfully:', data);
+        console.log("✅ User data fetched successfully:", data);
         dispatch(setUser(data));
         initialDataFetched.current.user = true;
       } catch (error) {
         console.error("❌ Error fetching user:", error);
-        
+
         // Check if it's an auth error
-        if (error.message.includes('Authentication expired') || error.message.includes('401')) {
-          console.log('🔄 Authentication expired, redirecting to login');
-          localStorage.removeItem('access_token');
+        if (
+          error.message.includes("Authentication expired") ||
+          error.message.includes("401")
+        ) {
+          console.log("🔄 Authentication expired, redirecting to login");
+          localStorage.removeItem("access_token");
           navigate("/auth");
         } else {
           setError(`Failed to load user data: ${error.message}`);
@@ -252,13 +259,13 @@ function App() {
       initialDataFetched.current = {
         user: false,
         organizations: false,
-        patients: false
+        patients: false,
       };
     }
   }, [currentUser]);
 
   const renderContent = () => {
-    console.log('renderContent - activeItem:', activeItem);
+    console.log("renderContent - activeItem:", activeItem);
     switch (activeItem) {
       case "Dashboard":
         return <DashboardPage />;
@@ -319,11 +326,11 @@ function App() {
       </div>
     );
   }
-  
+
   if (error) {
     return <div className="admin-error">{error}</div>;
   }
-  
+
   return (
     <div className="admin">
       <Terms ref={dialog} pdfUrl={pdfurl} onAccept={() => setAccepted(true)} />

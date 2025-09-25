@@ -23,16 +23,17 @@ const SuccessMessage = ({
   onClose = null,
   // New props for screening flow
   showNextScreening = false,
-  flowId = 'PATIENT_SCREENING',
+  flowId = "PATIENT_SCREENING",
   currentStepId = null,
   patientId = null,
   onNextScreening = null,
-}) => {
+setInternalTab
+},  
+) => {
   const navigate = useNavigate();
 
   const handleGoToScreening = () => {
-    console.log('Navigating to Screening...');
-    navigate(`/Screening`, { replace: true, state: null });
+    setInternalTab(null);
   };
 
   const handleGoToFeedback = () => {
@@ -81,16 +82,13 @@ const SuccessMessage = ({
             className="success-next-screening"
           />
         )}
-        
+
         {showScreeningButton && (
           <button
             className="next-screening-btn"
-            onClick={()=> 
-              navigate(`/Screening`, { replace: true, state: null })
-            }
+            onClick={handleGoToScreening}
             style={{
-              backgroundColor:
-                title == "Action Needed" ? "#ffc187" : "#008540",
+              backgroundColor: title == "Action Needed" ? "#ffc187" : "#008540",
             }}
           >
             Go to Screening
@@ -99,7 +97,6 @@ const SuccessMessage = ({
         )}
 
         <div className="success-buttons">
-
           {showFeedbackButton && (
             <button
               className="success-btn primary"

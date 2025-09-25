@@ -96,23 +96,30 @@ const testCategories = [
 const Screening = ({ internalTab, setInternalTab }) => {
   console.log("Screening component rendered with internalTab:", internalTab);
 
+  // Add useEffect to track internalTab changes
+  useEffect(() => {
+    console.log("internalTab changed to:", internalTab);
+  }, [internalTab]);
+
+
+  const location = useLocation();
+  const {
+    patientId,
+    formType,
+    returnTo,
+    internalTab: internalTabFromNav,
+  } = location.state || {};
+
+  console.log(location);
+
   try {
     const { getScreeningContext } = useScreeningFlow(setInternalTab);
     const screeningContext = getScreeningContext();
 
-    const location = useLocation();
-    const {
-      patientId,
-      formType,
-      returnTo,
-      replace,
-      internalTab: internalTabFromNav,
-    } = location.state || {};
+    console.log("Screening context from sessionStorage:", screeningContext);
 
-    console.log("Screening - location state:", location.state);
 
-    // If internalTab (prop) is empty, set it from navigation state
-    // But only if we're coming from a specific navigation with intent to show a form
+    // Handle internalTab logic
     useEffect(() => {
       console.log(
         "Screening useEffect - patientId:",
@@ -122,16 +129,20 @@ const Screening = ({ internalTab, setInternalTab }) => {
         "current internalTab:",
         internalTab
       );
-      if (internalTab === null && internalTabFromNav && patientId) {
-        // Only set from navigation if we have both a specific form and patient ID
+
+      // If we have navigation state with specific form, use it
+      if (
+        !internalTab &&
+        internalTabFromNav &&
+        screeningContext.currentStepId
+      ) {
+
         console.log("Setting internalTab from navigation:", internalTabFromNav);
         setInternalTab(internalTabFromNav);
+
+
       }
-      else{
-        if (replace){
-          setInternalTab(null)
-        }      
-      }
+      // If we don't have any navigation context and internalTab is not null, reset to show main menu
     }, [internalTab, internalTabFromNav, setInternalTab, patientId]);
 
     return (
@@ -196,16 +207,7 @@ const Screening = ({ internalTab, setInternalTab }) => {
     );
   } catch (error) {
     console.error("Error in Screening component:", error);
-    return (
-      <div className="screening-error">
-        <h2>Error Loading Screening</h2>
-        <p>
-          There was an error loading the screening component. Please try
-          refreshing the page.
-        </p>
-        <pre>{error.message}</pre>
-      </div>
-    );
+    return <div>Error loading Screening component</div>;
   }
 };
 

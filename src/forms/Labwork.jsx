@@ -468,7 +468,7 @@ const Labwork = ({ setInternalTab, selectedPatientId }) => {
 
   return (
     <div className="form">
-      {showSuccess && <SuccessMessage {...successConfig} />}
+      {showSuccess && <SuccessMessage {...successConfig} setInternalTab={setInternalTab}/>}
 
       <form onSubmit={handleSubmit} className="form-container">
         <h2>Laboratory Work</h2>

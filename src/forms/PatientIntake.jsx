@@ -264,7 +264,7 @@ const PatientIntake = ({ setInternalTab }) => {
 
   return (
     <div className="form">
-      {showSuccess && <SuccessMessage {...successConfig} />}
+      {showSuccess && <SuccessMessage {...successConfig} setInternalTab={setInternalTab}/>}
 
       <form action={handleSubmit} className="form-container">
         <h2>Patient Registration</h2>
