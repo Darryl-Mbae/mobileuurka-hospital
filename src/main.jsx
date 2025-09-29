@@ -14,11 +14,13 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 // Enhanced Android crash fixes - load first
 import { initAndroidCrashFix, shouldEnableSafeMode, enableSafeMode } from "./utils/androidCrashFix.js";
 import { initRecaptchaErrorHandling } from "./utils/recaptchaWrapper.js";
+import { initEmergencyPatientFix } from "./utils/emergencyPatientFix.js";
 import "./utils/simpleAndroidFix.js";
 
 // Initialize crash fixes immediately
 initAndroidCrashFix();
 initRecaptchaErrorHandling();
+initEmergencyPatientFix();
 
 // Check if safe mode should be enabled
 if (shouldEnableSafeMode()) {

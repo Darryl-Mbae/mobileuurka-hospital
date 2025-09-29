@@ -10,6 +10,11 @@ import {
   safeGet,
   safeArray,
 } from "../utils/patientDataGuard.js";
+import {
+  createEmergencyPatient,
+  shouldUseEmergencyMode,
+  markChartErrors,
+} from "../utils/emergencyPatientFix.js";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { IoFlagSharp } from "react-icons/io5";
 import defaultImg from "../assets/images/Default.png";
@@ -78,7 +83,14 @@ const Patient = ({ id }) => {
 
   // Validate and ensure safe patient data
   const { isValid, safePatient } = validatePatientData(rawPatient);
-  const patient = isValid ? safePatient : createEmptyPatient();
+
+  // Use emergency patient data if needed
+  const useEmergencyMode = shouldUseEmergencyMode();
+  const patient = isValid
+    ? safePatient
+    : useEmergencyMode
+    ? createEmergencyPatient()
+    : createEmptyPatient();
 
   useEffect(() => {
     if (id) {
@@ -286,6 +298,15 @@ const Patient = ({ id }) => {
   }
 
   if (error) {
+    // Mark chart errors if this is a chart-related error
+    if (
+      error.includes("getPropertyValue") ||
+      error.includes("canvas") ||
+      error.includes("chart")
+    ) {
+      markChartErrors();
+    }
+
     return (
       <div className="patient-page">
         <div className="error">

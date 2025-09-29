@@ -10,6 +10,7 @@ import Weight from "../charts/Weight";
 import BloodPressure from "../charts/BloodPressure";
 import { Tooltip } from "react-tooltip";
 import { ChartErrorBoundary, safeArray } from "../utils/patientDataGuard.js";
+import SafeChartWrapper from "../components/SafeChartWrapper.jsx";
 
 const Overview = ({ patient, setActiveTab }) => {
   // Ensure safe data access for charts
@@ -21,50 +22,66 @@ const Overview = ({ patient, setActiveTab }) => {
     <div className="p-overview">
       <div className="grid-3">
         <div className="chart" style={{ overflow: "visible" }}>
-          <ChartErrorBoundary>
-            <Weight patient={safeTriages} />
-          </ChartErrorBoundary>
+          <SafeChartWrapper fallbackMessage="Weight chart loading...">
+            <ChartErrorBoundary>
+              <Weight patient={safeTriages} />
+            </ChartErrorBoundary>
+          </SafeChartWrapper>
         </div>
         <div className="chart fetal">
-          <ChartErrorBoundary>
-            <Fetal patient={safeFetalInfos} />
-          </ChartErrorBoundary>
+          <SafeChartWrapper fallbackMessage="Fetal chart loading...">
+            <ChartErrorBoundary>
+              <Fetal patient={safeFetalInfos} />
+            </ChartErrorBoundary>
+          </SafeChartWrapper>
         </div>
         <div className="chart">
-          <ChartErrorBoundary>
-            <Predisposition patient={patient} setActiveTab={setActiveTab} />
-          </ChartErrorBoundary>
+          <SafeChartWrapper fallbackMessage="Risk assessment loading...">
+            <ChartErrorBoundary>
+              <Predisposition patient={patient} setActiveTab={setActiveTab} />
+            </ChartErrorBoundary>
+          </SafeChartWrapper>
         </div>
       </div>
       <div className="grid-2">
         <div className="chart x2">
-          <ChartErrorBoundary>
-            <Riskassessment patient={patient} />
-          </ChartErrorBoundary>
+          <SafeChartWrapper fallbackMessage="Risk assessment loading...">
+            <ChartErrorBoundary>
+              <Riskassessment patient={patient} />
+            </ChartErrorBoundary>
+          </SafeChartWrapper>
         </div>
         <div className="chart lab">
-          <ChartErrorBoundary>
-            <Lab patient={safeLabworks} />
-          </ChartErrorBoundary>
+          <SafeChartWrapper fallbackMessage="Lab results loading...">
+            <ChartErrorBoundary>
+              <Lab patient={safeLabworks} />
+            </ChartErrorBoundary>
+          </SafeChartWrapper>
         </div>
       </div>
       <div className="grid-2 reverse">
         <div className="chart ">
-          <ChartErrorBoundary>
-            <Medications patient={patient} setActiveTab={setActiveTab} />
-          </ChartErrorBoundary>
+          <SafeChartWrapper fallbackMessage="Medications loading...">
+            <ChartErrorBoundary>
+              <Medications patient={patient} setActiveTab={setActiveTab} />
+            </ChartErrorBoundary>
+          </SafeChartWrapper>
         </div>
         <div className="chart x2 bt">
           <div className="inner-grid">
             <div className="in-chart one" >
-              <ChartErrorBoundary>
-                <BloodPressure patient={safeTriages} />
-              </ChartErrorBoundary>
+              <SafeChartWrapper fallbackMessage="Blood pressure loading...">
+                <ChartErrorBoundary>
+                  <BloodPressure patient={safeTriages} />
+                </ChartErrorBoundary>
+              </SafeChartWrapper>
             </div>
             <div className="in-chart two">
-              <ChartErrorBoundary>
-                <Symptom patient={patient} setActiveTab={setActiveTab} />
-              </ChartErrorBoundary>
+              <SafeChartWrapper fallbackMessage="Symptoms loading...">
+                <ChartErrorBoundary>
+                  <Symptom patient={patient} setActiveTab={setActiveTab} />
+                </ChartErrorBoundary>
+              </SafeChartWrapper>
             </div>
           </div>
         </div>
