@@ -343,8 +343,10 @@ const Patient = ({ id }) => {
     { label: "Age", value: calculateAge(patient?.dob) },
     {
       label: "Gravida + Parity",
-      value: ` ${patient?.patientHistories?.[0]?.gravida}+${patient?.patientHistories?.[0]?.parity}`,
-    },
+      value: patient?.patientHistories?.[0]
+      ? `${patient.patientHistories[0].gravida}+${patient.patientHistories[0].parity}`
+      : "Undefined",
+        },
     {
       label: (
         <span
