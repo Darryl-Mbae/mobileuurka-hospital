@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Mode Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            background: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-danger { background: #dc3545; color: white; }
+        .performance-meter {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .performance-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .good { background: #28a745; }
+        .fair { background: #ffc107; }
+        .poor { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>Android Safe Mode Test</h1>
+    
+    <div class="test-section" id="deviceInfo">
+        <h2>Device Information</h2>
+        <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+        <p><strong>Android Version:</strong> <span id="androidVersion"></span></p>
+        <p><strong>Needs Safe Mode:</strong> <span id="needsSafeMode"></span></p>
+        <p><strong>Device Memory:</strong> <span id="deviceMemory"></span></p>
+        <p><strong>CPU Cores:</strong> <span id="cpuCores"></span></p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Performance Monitor</h2>
+        <p>JavaScript Execution Time:</p>
+        <div class="performance-meter">
+            <div class="performance-bar good" id="performanceBar" style="width: 100%"></div>
+        </div>
+        <p id="performanceText">Good (< 50ms)</p>
+        <button class="btn-primary" onclick="runPerformanceTest()">Run Performance Test</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Font Loading Test</h2>
+        <p style="font-family: Inter, system-ui, sans-serif;" id="fontTest">
+            This text should display in system fonts on old Android devices.
+        </p>
+        <p><strong>Computed Font:</strong> <span id="computedFont"></span></p>
+        <button class="btn-primary" onclick="testFontLoading()">Test Font Loading</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Safe Mode Actions</h2>
+        <button class="btn-success" onclick="loadSafeMode()">Load Safe Mode</button>
+        <button class="btn-warning" onclick="loadFullApp()">Load Full App</button>
+        <button class="btn-danger" onclick="simulateError()">Simulate Error</button>
+        <div id="actionResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Memory Usage</h2>
+        <p><strong>Used Memory:</strong> <span id="usedMemory">Unknown</span></p>
+        <p><strong>Total Memory:</strong> <span id="totalMemory">Unknown</span></p>
+        <button class="btn-primary" onclick="checkMemory()">Check Memory</button>
+        <button class="btn-warning" onclick="forceGC()">Force Cleanup</button>
+    </div>
+
+    <script>
+        // Device detection functions
+        function detectAndroidVersion() {
+            const userAgent = navigator.userAgent;
+            const match = userAgent.match(/Android (\d+(?:\.\d+)?)/);
+            return match ? parseFloat(match[1]) : null;
+        }
+        
+        function needsSafeMode() {
+            const androidVersion = detectAndroidVersion();
+            const isOldAndroid = androidVersion !== null && androidVersion <= 10;
+            const isLowEnd = (
+                (navigator.deviceMemory && navigator.deviceMemory <= 2) ||
+                (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2)
+            );
+            return isOldAndroid || isLowEnd;
+        }
+        
+        // Update device info
+        function updateDeviceInfo() {
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('androidVersion').textContent = detectAndroidVersion() || 'Not Android';
+            document.getElementById('needsSafeMode').textContent = needsSafeMode() ? 'Yes' : 'No';
+            document.getElementById('deviceMemory').textContent = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'Unknown';
+            document.getElementById('cpuCores').textContent = navigator.hardwareConcurrency || 'Unknown';
+            
+            // Update computed font
+            const fontTest = document.getElementById('fontTest');
+            const computedFont = getComputedStyle(fontTest).fontFamily;
+            document.getElementById('computedFont').textContent = computedFont;
+            
+            // Color code the device info section
+            const deviceInfoSection = document.getElementById('deviceInfo');
+            if (needsSafeMode()) {
+                deviceInfoSection.classList.add('warning');
+            } else {
+                deviceInfoSection.classList.add('success');
+            }
+        }
+        
+        // Performance testing
+        function runPerformanceTest() {
+            const start = performance.now();
+            
+            // Simulate some work
+            let result = 0;
+            for (let i = 0; i < 100000; i++) {
+                result += Math.random();
+            }
+            
+            const duration = performance.now() - start;
+            updatePerformanceMeter(duration);
+            
+            console.log(`Performance test completed in ${duration.toFixed(2)}ms`);
+        }
+        
+        function updatePerformanceMeter(duration) {
+            const bar = document.getElementById('performanceBar');
+            const text = document.getElementById('performanceText');
+            
+            if (duration < 50) {
+                bar.className = 'performance-bar good';
+                bar.style.width = '100%';
+                text.textContent = `Good (${duration.toFixed(2)}ms)`;
+            } else if (duration < 100) {
+                bar.className = 'performance-bar fair';
+                bar.style.width = '70%';
+                text.textContent = `Fair (${duration.toFixed(2)}ms)`;
+            } else {
+                bar.className = 'performance-bar poor';
+                bar.style.width = '30%';
+                text.textContent = `Poor (${duration.toFixed(2)}ms)`;
+            }
+        }
+        
+        // Font testing
+        function testFontLoading() {
+            const fontTest = document.getElementById('fontTest');
+            const computedFont = getComputedStyle(fontTest).fontFamily;
+            
+            console.log('Current font family:', computedFont);
+            
+            // Test if Inter font is loaded
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            context.font = '12px Inter';
+            const interWidth = context.measureText('Test').width;
+            
+            context.font = '12px Arial';
+            const arialWidth = context.measureText('Test').width;
+            
+            const interLoaded = interWidth !== arialWidth;
+            
+            alert(`Font test results:\nComputed font: ${computedFont}\nInter loaded: ${interLoaded ? 'Yes' : 'No'}`);
+        }
+        
+        // Safe mode actions
+        function loadSafeMode() {
+            const results = document.getElementById('actionResults');
+            results.innerHTML = '<p style="color: #28a745;">Loading safe mode...</p>';
+            
+            // Simulate safe mode loading
+            setTimeout(() => {
+                results.innerHTML = '<p style="color: #28a745;">✅ Safe mode would be loaded for this device</p>';
+            }, 1000);
+        }
+        
+        function loadFullApp() {
+            const results = document.getElementById('actionResults');
+            results.innerHTML = '<p style="color: #ffc107;">Loading full app...</p>';
+            
+            // Redirect to main app
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
+        
+        function simulateError() {
+            const results = document.getElementById('actionResults');
+            results.innerHTML = '<p style="color: #dc3545;">Simulating font error...</p>';
+            
+            // Create a problematic font link
+            const link = document.createElement('link');
+            link.href = 'data:font/woff2;base64,invalid-font-data';
+            link.rel = 'stylesheet';
+            document.head.appendChild(link);
+            
+            setTimeout(() => {
+                link.remove();
+                results.innerHTML = '<p style="color: #dc3545;">❌ Font error simulated and cleaned up</p>';
+            }, 2000);
+        }
+        
+        // Memory checking
+        function checkMemory() {
+            if (performance.memory) {
+                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                const total = Math.round(performance.memory.totalJSHeapSize / 1048576);
+                
+                document.getElementById('usedMemory').textContent = used + ' MB';
+                document.getElementById('totalMemory').textContent = total + ' MB';
+            } else {
+                document.getElementById('usedMemory').textContent = 'Not available';
+                document.getElementById('totalMemory').textContent = 'Not available';
+            }
+        }
+        
+        function forceGC() {
+            if (typeof window.gc === 'function') {
+                window.gc();
+                alert('Garbage collection forced');
+            } else {
+                alert('Garbage collection not available');
+            }
+            checkMemory();
+        }
+        
+        // Initialize
+        updateDeviceInfo();
+        checkMemory();
+        
+        // Run initial performance test
+        setTimeout(runPerformanceTest, 1000);
+        
+        // Monitor performance periodically
+        setInterval(() => {
+            if (performance.memory) {
+                checkMemory();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

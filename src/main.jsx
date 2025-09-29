@@ -11,6 +11,19 @@ import ForgotPassword from "./components/ForgotPassword.jsx";
 import ResetPassword from "./components/ResetPassword.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
+// CRITICAL: Load emergency font fix FIRST
+import "./utils/emergencyFontFix.js";
+
+// Load performance optimizer
+import { initPerformanceOptimizations, scheduleTask, optimizedSetTimeout, throttle } from "./utils/performanceOptimizer.js";
+
+// Load polyfills for older browsers
+import "./utils/polyfills.js";
+import "./utils/androidFontFix.js";
+import { checkBrowserCompatibility, showCompatibilityWarning } from "./utils/browserCheck.js";
+import { initializeFonts } from "./utils/fontLoader.js";
+import { isOldAndroid } from "./utils/androidFontFix.js";
+
 // Ensure root element exists and is visible
 const ensureRootElement = () => {
   const root = document.getElementById("root");
@@ -28,22 +41,41 @@ const ensureRootElement = () => {
   return true;
 };
 
-// CRITICAL: Load emergency font fix FIRST
-import "./utils/emergencyFontFix.js";
+// Check if we need safe mode FIRST
+const needsSafeMode = () => {
+  const userAgent = navigator.userAgent;
+  const androidMatch = userAgent.match(/Android (\d+(?:\.\d+)?)/);
+  return androidMatch && parseFloat(androidMatch[1]) <= 10;
+};
 
-// Load polyfills for older browsers
-import "./utils/polyfills.js";
-import "./utils/androidFontFix.js";
-import "./utils/fontTest.js";
-import { checkBrowserCompatibility, showCompatibilityWarning } from "./utils/browserCheck.js";
-import { initializeFonts } from "./utils/fontLoader.js";
-import { isOldAndroid } from "./utils/androidFontFix.js";
+const shouldForceFullVersion = () => {
+  return localStorage.getItem('force-full-version') === 'true';
+};
 
-// Check browser compatibility
-const compatibility = checkBrowserCompatibility();
-if (!compatibility.isCompatible) {
-  showCompatibilityWarning(compatibility.warnings);
-}
+// If old Android and not forcing full version, use safe mode
+if (needsSafeMode() && !shouldForceFullVersion()) {
+  console.log('🛡️ Old Android detected, loading safe mode');
+  
+  // Import and create safe mode
+  import("./utils/androidSafeMode.js").then(({ createSafeModeApp }) => {
+    createSafeModeApp();
+  });
+  
+  // Don't continue with normal app loading
+} else {
+
+
+
+// Initialize performance optimizations immediately
+initPerformanceOptimizations();
+
+// Check browser compatibility (scheduled to avoid blocking)
+scheduleTask(() => {
+  const compatibility = checkBrowserCompatibility();
+  if (!compatibility.isCompatible) {
+    showCompatibilityWarning(compatibility.warnings);
+  }
+}, 'low');
 
 // Initialize fonts safely and render app
 const initializeApp = async () => {
@@ -51,16 +83,20 @@ const initializeApp = async () => {
     // Skip font loading entirely for old Android devices
     if (isOldAndroid()) {
       console.log('Old Android detected, using system fonts only');
-      document.body.classList.add('font-fallback', 'android-safe-mode');
       
-      // Ensure no fonts are loaded
-      const fontLinks = document.querySelectorAll('link[href*="font"]');
-      fontLinks.forEach(link => link.remove());
-      
-      // Set safe fonts immediately
-      const safeFonts = 'system-ui, -apple-system, Roboto, Arial, sans-serif';
-      document.documentElement.style.setProperty('--font-family-primary', safeFonts);
-      document.documentElement.style.setProperty('--font-family-fallback', safeFonts);
+      // Schedule font cleanup to avoid blocking
+      scheduleTask(() => {
+        document.body.classList.add('font-fallback', 'android-safe-mode');
+        
+        // Remove font links in chunks
+        const fontLinks = document.querySelectorAll('link[href*="font"]');
+        fontLinks.forEach(link => link.remove());
+        
+        // Set safe fonts
+        const safeFonts = 'system-ui, -apple-system, Roboto, Arial, sans-serif';
+        document.documentElement.style.setProperty('--font-family-primary', safeFonts);
+        document.documentElement.style.setProperty('--font-family-fallback', safeFonts);
+      }, 'high');
       
     } else {
       await initializeFonts();
@@ -68,12 +104,14 @@ const initializeApp = async () => {
     }
   } catch (error) {
     console.warn('Font initialization failed:', error);
-    document.body.classList.add('font-fallback');
     
-    // Apply emergency fallback
-    const emergencyFonts = 'Arial, Helvetica, sans-serif';
-    document.documentElement.style.setProperty('--font-family-primary', emergencyFonts);
-    document.documentElement.style.setProperty('--font-family-fallback', emergencyFonts);
+    // Schedule fallback application
+    scheduleTask(() => {
+      document.body.classList.add('font-fallback');
+      const emergencyFonts = 'Arial, Helvetica, sans-serif';
+      document.documentElement.style.setProperty('--font-family-primary', emergencyFonts);
+      document.documentElement.style.setProperty('--font-family-fallback', emergencyFonts);
+    }, 'high');
   }
   
   createRoot(document.getElementById("root")).render(
@@ -99,8 +137,8 @@ const initializeApp = async () => {
 // Add loading class initially
 document.body.classList.add('font-loading');
 
-// Global error handler for font-related errors
-window.addEventListener('error', (event) => {
+// Optimized error handlers (throttled to prevent performance issues)
+const handleFontError = (event) => {
   const isFontError = event.message && (
     event.message.includes('font') ||
     event.message.includes('CFF') ||
@@ -110,34 +148,44 @@ window.addEventListener('error', (event) => {
   );
   
   if (isFontError) {
-    console.warn('Font loading error detected, applying emergency fallback');
-    
-    // Remove problematic classes
-    document.body.classList.remove('font-loading');
-    
-    // Add emergency fallback
-    document.body.classList.add('emergency-font-fallback');
-    
-    // Set safe fonts
-    const emergencyFonts = 'Arial, Helvetica, sans-serif';
-    document.documentElement.style.setProperty('--font-family-primary', emergencyFonts);
-    document.documentElement.style.setProperty('--font-family-fallback', emergencyFonts);
-    
-    // Remove any font links
-    const fontLinks = document.querySelectorAll('link[href*="font"]');
-    fontLinks.forEach(link => link.remove());
+    // Schedule font fallback to avoid blocking
+    scheduleTask(() => {
+      console.warn('Font loading error detected, applying emergency fallback');
+      
+      document.body.classList.remove('font-loading');
+      document.body.classList.add('emergency-font-fallback');
+      
+      const emergencyFonts = 'Arial, Helvetica, sans-serif';
+      document.documentElement.style.setProperty('--font-family-primary', emergencyFonts);
+      document.documentElement.style.setProperty('--font-family-fallback', emergencyFonts);
+      
+      // Remove font links in chunks to avoid blocking
+      const fontLinks = document.querySelectorAll('link[href*="font"]');
+      fontLinks.forEach(link => link.remove());
+    }, 'high');
     
     event.preventDefault();
     return false;
   }
+};
+
+// Throttled error handlers to prevent performance issues
+let errorHandlerTimeout;
+window.addEventListener('error', (event) => {
+  if (errorHandlerTimeout) return;
+  errorHandlerTimeout = optimizedSetTimeout(() => {
+    handleFontError(event);
+    errorHandlerTimeout = null;
+  }, 10);
 });
 
-// Additional handler for unhandled promise rejections related to fonts
 window.addEventListener('unhandledrejection', (event) => {
   if (event.reason && event.reason.message && 
       event.reason.message.includes('font')) {
-    console.warn('Font promise rejection, applying fallback');
-    document.body.classList.add('emergency-font-fallback');
+    scheduleTask(() => {
+      console.warn('Font promise rejection, applying fallback');
+      document.body.classList.add('emergency-font-fallback');
+    }, 'high');
     event.preventDefault();
   }
 });
@@ -185,13 +233,18 @@ const startApp = () => {
   });
 };
 
-// Start app immediately
-startApp();
+// Start app with optimized scheduling
+scheduleTask(() => {
+  startApp();
+}, 'high');
 
-// Fallback timeout - force start after 3 seconds if nothing happens
-setTimeout(() => {
+// Fallback timeout - force start after 5 seconds if nothing happens (longer for old devices)
+const fallbackTimeout = isOldAndroid() ? 8000 : 3000;
+optimizedSetTimeout(() => {
   if (document.getElementById('initial-loading')) {
     console.warn('App startup timeout, forcing initialization');
-    startApp();
+    scheduleTask(() => startApp(), 'high');
   }
-}, 3000);
+}, fallbackTimeout);
+
+} // End of else block for non-safe-mode devices
