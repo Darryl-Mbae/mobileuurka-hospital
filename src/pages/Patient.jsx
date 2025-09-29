@@ -52,7 +52,7 @@ const Patient = ({ id }) => {
   const currentUser = useSelector((s) => s.user.currentUser);
   const dispatch = useDispatch();
   const isMobile = useIsMobile();
-  const [mobileView, setMobileView] = useState("Analytics")
+  const [mobileView, setMobileView] = useState("Summary"); // "Sabi", "Summary", "Analytics"
   const [open, setOpen] = useState(false);
 
   const options = ["Sabi", "Summary", "Analytics"];
@@ -320,6 +320,26 @@ const Patient = ({ id }) => {
   }
 
   const patientMainDetails = [
+    isMobile ? { 
+     label: "Patient ID",
+    value: (
+      <span style={{ display: "flex", alignItems: "center" }}>
+        {patient?.id}
+        <span
+          onClick={handleCopyId}
+          style={{
+            cursor: "pointer",
+            marginLeft: "8px",
+            color: copied ? "#4CAF50" : "#666",
+            transition: "color 0.3s ease",
+          }}
+          title={copied ? "Copied!" : "Copy ID"}
+        >
+          {copied ? <TiTick /> : <FaRegCopy />}
+        </span>
+      </span>
+    ),
+    } : null,
     { label: "Age", value: calculateAge(patient?.dob) },
     {
       label: "Gravida + Parity",
