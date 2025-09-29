@@ -15,7 +15,7 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./utils/emergencyFontFix.js";
 
 // Load performance optimizer
-import { initPerformanceOptimizations, scheduleTask, optimizedSetTimeout, throttle } from "./utils/performanceOptimizer.js";
+import { initPerformanceOptimizations, scheduleTask, optimizedSetTimeout } from "./utils/performanceOptimizer.js";
 
 // Load polyfills for older browsers
 import "./utils/polyfills.js";
@@ -41,25 +41,15 @@ const ensureRootElement = () => {
   return true;
 };
 
-// Check if we need safe mode FIRST
-const needsSafeMode = () => {
-  const userAgent = navigator.userAgent;
-  const androidMatch = userAgent.match(/Android (\d+(?:\.\d+)?)/);
-  return androidMatch && parseFloat(androidMatch[1]) <= 10;
-};
-
-const shouldForceFullVersion = () => {
-  return localStorage.getItem('force-full-version') === 'true';
-};
+// Import safe mode functions
+import { needsSafeMode, shouldForceFullVersion, createSafeModeApp } from "./utils/androidSafeMode.js";
 
 // If old Android and not forcing full version, use safe mode
 if (needsSafeMode() && !shouldForceFullVersion()) {
   console.log('🛡️ Old Android detected, loading safe mode');
   
-  // Import and create safe mode
-  import("./utils/androidSafeMode.js").then(({ createSafeModeApp }) => {
-    createSafeModeApp();
-  });
+  // Create safe mode app and exit
+  createSafeModeApp();
   
   // Don't continue with normal app loading
 } else {
