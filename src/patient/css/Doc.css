@@ -96,6 +96,7 @@
         padding-top: 10px;
         transform: translateX(100%);
         transition: .3s ease-in-out;
+        overflow-y: auto;
         
     }
     .doc-grid .doc-grid-comments.active{
@@ -110,6 +111,11 @@
         gap: 10px;
         font-size: .9em;
         margin-bottom: 20px;
+        /* Disable text selection on back button */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
     .form-template .header .document-info h2{
         text-align: left;
@@ -120,5 +126,39 @@
         height: auto;
         font-size: 16px;
       }
+
+    /* Improve mobile text selection */
+    .doc-main {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+        /* Prevent accidental text selection on buttons and UI elements */
+    }
+    
+    /* Disable text selection on interactive elements */
+    .doc-main button,
+    .doc-main .button,
+    .doc-main .icon,
+    .doc-main .back {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Improve touch targets for mobile */
+    .doc-main p,
+    .doc-main div.field-value,
+    .doc-main .content-area {
+        line-height: 1.6;
+        padding: 8px 4px;
+        /* Make text easier to select on mobile */
+        -webkit-touch-callout: default;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
 
   }

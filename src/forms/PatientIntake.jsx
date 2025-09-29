@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import "../css/Form.css";
+import "../css/MobileFixes.css";
 import { FiChevronDown } from "react-icons/fi";
 import useSuccessMessage from "../hooks/useSuccessMessage";
 import SuccessMessage from "../components/SuccessMessage";
@@ -10,8 +11,9 @@ import { addPatient } from "../reducers/Slices/patientsSlice";
 import { useScreeningFlow } from "../hooks/useScreeningFlow";
 
 const PatientIntake = ({ setInternalTab }) => {
-  const { navigateToNextStep, getCurrentStepInfo } = useScreeningFlow(setInternalTab);
-  const screeningInfo = getCurrentStepInfo('PatientIntake');
+  const { navigateToNextStep, getCurrentStepInfo } =
+    useScreeningFlow(setInternalTab);
+  const screeningInfo = getCurrentStepInfo("PatientIntake");
   const socket = useSelector((state) => state.socket.socket);
   // Initialize form state to match your desired output structure
   const [formData, setFormData] = useState({
@@ -47,7 +49,6 @@ const PatientIntake = ({ setInternalTab }) => {
   const { showSuccess, successConfig, showSuccessMessage } =
     useSuccessMessage(clearForm);
 
-
   const currentUser = useSelector((s) => s.user.currentUser);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
@@ -56,7 +57,7 @@ const PatientIntake = ({ setInternalTab }) => {
       ...prev,
       editor: currentUser?.name || "",
     }));
-    console.log(currentUser)
+    console.log(currentUser);
   }, [currentUser]);
 
   useEffect(() => {
@@ -69,26 +70,31 @@ const PatientIntake = ({ setInternalTab }) => {
     if (!socket) return;
 
     const handlePatientCreated = (eventData) => {
-      console.log('🔍 Socket patient_created event:', eventData);
-      
+      console.log("🔍 Socket patient_created event:", eventData);
+
       // Extract patient data from the event
       const patientData = eventData.patient || eventData;
-      console.log('🔍 Extracted patient data:', patientData);
-      console.log('🔍 Patient ID from socket:', patientData.id || patientData.patientId);
-      
+      console.log("🔍 Extracted patient data:", patientData);
+      console.log(
+        "🔍 Patient ID from socket:",
+        patientData.id || patientData.patientId
+      );
+
       // Check if this is the patient we just created (match by name or other fields)
-      if (patientData.name === formData.name || 
-          patientData.patientId === formData.patientId ||
-          patientData.phone === formData.phone) {
-        console.log('🎯 Found matching patient from socket event!');
+      if (
+        patientData.name === formData.name ||
+        patientData.patientId === formData.patientId ||
+        patientData.phone === formData.phone
+      ) {
+        console.log("🎯 Found matching patient from socket event!");
         setCreatedPatientId(patientData.id || patientData.patientId);
       }
     };
 
-    socket.on('patient_created', handlePatientCreated);
+    socket.on("patient_created", handlePatientCreated);
 
     return () => {
-      socket.off('patient_created', handlePatientCreated);
+      socket.off("patient_created", handlePatientCreated);
     };
   }, [socket, formData.name, formData.patientId, formData.phone]);
 
@@ -97,11 +103,10 @@ const PatientIntake = ({ setInternalTab }) => {
 
     try {
       const response = await fetch(`${SERVER}/patients/ids`, {
-
         credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }), // Add token header if available
           // ...options.headers,
         },
       });
@@ -118,23 +123,30 @@ const PatientIntake = ({ setInternalTab }) => {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
+          ...(token && { Authorization: `Bearer ${token}` }), // Add token header if available
         },
-
       });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch hospitals: ${response.status} ${response.statusText}`);
+      }
+      
       const data = await response.json();
-      console.log(data);
+      console.log('🏥 Hospital API response:', data);
 
       // Extract hospital names from organizationTenants
       const hospitalNames = [];
       if (Array.isArray(data)) {
-        data.forEach(org => {
-          if (org.organizationTenants && Array.isArray(org.organizationTenants)) {
-            org.organizationTenants.forEach(orgTenant => {
+        data.forEach((org) => {
+          if (
+            org.organizationTenants &&
+            Array.isArray(org.organizationTenants)
+          ) {
+            org.organizationTenants.forEach((orgTenant) => {
               if (orgTenant.tenant && orgTenant.tenant.name) {
                 hospitalNames.push({
                   id: orgTenant.tenant.id,
-                  name: orgTenant.tenant.name
+                  name: orgTenant.tenant.name,
                 });
               }
             });
@@ -142,9 +154,21 @@ const PatientIntake = ({ setInternalTab }) => {
         });
       }
 
+      console.log('🏥 Processed hospitals:', hospitalNames);
       setHospitals(hospitalNames);
+      
+      // Auto-select hospital if there's only one
+      if (hospitalNames.length === 1) {
+        console.log('🏥 Auto-selecting single hospital:', hospitalNames[0].name);
+        setFormData(prev => ({
+          ...prev,
+          hospital: hospitalNames[0].name
+        }));
+      }
     } catch (error) {
-      console.error("Error fetching hospitals:", error);
+      console.error("❌ Error fetching hospitals:", error);
+      // Set empty array to show "No hospitals available" message
+      setHospitals([]);
     }
   };
 
@@ -186,16 +210,20 @@ const PatientIntake = ({ setInternalTab }) => {
     setLoading(true);
 
     // Validate phone number format
-    if (formData.phone && !formData.phone.startsWith('+')) {
-      alert('Phone number must be in international format starting with + (e.g., +254712345678)');
+    if (formData.phone && !formData.phone.startsWith("+")) {
+      alert(
+        "Phone number must be in international format starting with + (e.g., +254712345678)"
+      );
       setLoading(false);
       return;
     }
 
     if (formData.phone) {
       const phoneRegex = /^\+[1-9]\d{1,14}$/;
-      if (!phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
-        alert('Invalid phone number format. Please use international format: +[country code][number]');
+      if (!phoneRegex.test(formData.phone.replace(/[\s\-\(\)]/g, ""))) {
+        alert(
+          "Invalid phone number format. Please use international format: +[country code][number]"
+        );
         setLoading(false);
         return;
       }
@@ -203,33 +231,31 @@ const PatientIntake = ({ setInternalTab }) => {
 
     console.log(formData);
 
-
     try {
       const response = await fetch(`${SERVER}/patients`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json" ,
-          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
-
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }), // Add token header if available
         },
-          
+
         credentials: "include",
-        
+
         body: JSON.stringify({ ...formData }),
       });
 
       if (!response.ok) throw new Error("Submission failed");
 
       const data = await response.json();
-      console.log('🔍 Patient creation API response:', data);
-      console.log('🔍 Available fields:', Object.keys(data));
-      console.log('🔍 Checking ID fields:', {
-        'data.id': data.id,
-        'data.patientId': data.patientId,
-        'data._id': data._id,
-        'formData.patientId': formData.patientId
+      console.log("🔍 Patient creation API response:", data);
+      console.log("🔍 Available fields:", Object.keys(data));
+      console.log("🔍 Checking ID fields:", {
+        "data.id": data.id,
+        "data.patientId": data.patientId,
+        "data._id": data._id,
+        "formData.patientId": formData.patientId,
       });
-      
+
       if (formData.rh == "-") {
         const alertData = {
           alert:
@@ -241,12 +267,14 @@ const PatientIntake = ({ setInternalTab }) => {
       // Show success message with next screening step
       showSuccessMessage({
         title: "Registration Completed Successfully!",
-        message: `Patient intake form completed for ${formData?.name || "the patient"
-          }. Thank you for capturing their details.`,
+        message: `Patient intake form completed for ${
+          formData?.name || "the patient"
+        }. Thank you for capturing their details.`,
         showNextScreening: true,
         flowId: screeningInfo.flowId,
         currentStepId: screeningInfo.stepId,
-        patientId: data.id || createdPatientId || data.patientId ||  formData.patientId,
+        patientId:
+          data.id || createdPatientId || data.patientId || formData.patientId,
         onNextScreening: navigateToNextStep,
         nextButtonAction: () => {
           clearForm();
@@ -264,7 +292,9 @@ const PatientIntake = ({ setInternalTab }) => {
 
   return (
     <div className="form">
-      {showSuccess && <SuccessMessage {...successConfig} setInternalTab={setInternalTab}/>}
+      {showSuccess && (
+        <SuccessMessage {...successConfig} setInternalTab={setInternalTab} />
+      )}
 
       <form action={handleSubmit} className="form-container">
         <h2>Patient Registration</h2>
@@ -331,7 +361,6 @@ const PatientIntake = ({ setInternalTab }) => {
                     pattern="^\+[1-9]\d{1,14}$"
                     title="Phone number must be in international format starting with + (e.g., +254712345678)"
                   />
-
                 </div>
                 <div className="form-group">
                   <label>Email</label>
@@ -432,18 +461,38 @@ const PatientIntake = ({ setInternalTab }) => {
                       name="hospital"
                       value={formData?.hospital || ""}
                       onChange={handleChange}
+                      style={{
+                        fontSize: '16px', // Prevents zoom on iOS
+                        minHeight: '44px', // Better touch target
+                      }}
                     >
                       <option value="" disabled>
-                        Select a Hospital
+                        {hospitals.length === 0 
+                          ? "Loading hospitals..." 
+                          : hospitals.length === 1 && formData?.hospital
+                          ? formData.hospital
+                          : "Select a Hospital"
+                        }
                       </option>
-                      {hospitals.map((hospital) => (
-                        <option key={hospital.name} value={hospital.name}>
-                          {hospital.name}
-                        </option>
-                      ))}
+                      {hospitals.length === 0 ? (
+                        <option value="" disabled>No hospitals available</option>
+                      ) : (
+                        hospitals.map((hospital) => (
+                          <option key={hospital.name} value={hospital.name}>
+                            {hospital.name}
+                          </option>
+                        ))
+                      )}
                     </select>
                     <FiChevronDown className="select-icon" />
                   </div>
+                  {/* Debug info - remove in production */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <small style={{ color: '#666', fontSize: '12px' }}>
+                      Debug: {hospitals.length} hospitals loaded
+                      {hospitals.length > 0 && `, Selected: ${formData?.hospital || 'none'}`}
+                    </small>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Insurance</label>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { RiSearchLine } from "react-icons/ri";
 import { IoDocumentTextOutline, IoWarningOutline, IoClose } from "react-icons/io5";
 import "./css/Document.css";
@@ -30,6 +30,7 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const users = useSelector((s) => s.user.users);
   const navigate = useNavigate();
+  const  noteRef = useRef(null)
   const isMobile = useIsMobile();
 
   const riskLevelColors = {
@@ -98,6 +99,12 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
 
     return <span>{record.result}</span>;
   };
+
+  function scrollToTop() {
+    if(noteRef.current){
+      noteRef.current.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -284,13 +291,16 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
   };
 
   return (
-    <div id="notes" className="content doc">
+    <div id="notes" className="content doc"
+    ref={noteRef}
+    >
       {document?.title ? (
         <>
           <Document
             document={document?.source}
             title={document?.title}
             patient={patient}
+            srcolltoTop={ scrollToTop}
             onBack={() => setDocument(null)}
           />
         </>
@@ -384,6 +394,39 @@ const Documents = ({ setDocument, setActiveTitle, patient, document }) => {
                             View Image
                           </span>
                         )}
+                    {/* Mobile PDF alternative - show share button */}
+                    {isMobile && (
+                      <button
+                        style={{
+                          marginLeft: "8px",
+                          padding: "4px 8px",
+                          fontSize: "12px",
+                          backgroundColor: "#007bff",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Mobile share functionality
+                          if (navigator.share) {
+                            navigator.share({
+                              title: `${record.title} - ${patient?.name}`,
+                              text: `Medical document: ${record.title}`,
+                              url: window.location.href
+                            }).catch(console.error);
+                          } else {
+                            // Fallback: copy link to clipboard
+                            navigator.clipboard.writeText(window.location.href)
+                              .then(() => alert("Document link copied to clipboard"))
+                              .catch(() => alert("Unable to share document on this device"));
+                          }
+                        }}
+                      >
+                        Share
+                      </button>
+                    )}
                     {/* {renderResult(record)} */}
                     {/* {record.hasImage && (
                       <img
