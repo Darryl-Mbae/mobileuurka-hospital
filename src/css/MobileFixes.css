@@ -47,8 +47,6 @@
 
   /* Improve touch targets */
   button, .button, .clickable {
-    min-height: 44px; /* iOS recommended touch target size */
-    min-width: 44px;
     touch-action: manipulation; /* Prevents double-tap zoom */
   }
 
