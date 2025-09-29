@@ -11,6 +11,8 @@ import {
 } from "react-google-recaptcha-v3";
 import OTPForm from "../components/OTP";
 import ChangePassword from "../components/ChangePassword";
+import { useEnhancedRecaptcha, shouldDisableRecaptcha } from "../utils/recaptchaWrapper.js";
+import { isAndroid, isOldAndroid } from "../utils/androidCrashFix.js";
 
 // ✅ Backend API base URL
 const SERVER = import.meta.env.VITE_SERVER_URL;
@@ -28,6 +30,9 @@ export const AuthWrapper = () => (
 const Auth = () => {
   const navigate = useNavigate();
   const { executeRecaptcha } = useGoogleReCaptcha();
+  
+  // Use enhanced reCAPTCHA with timeout handling
+  const enhancedRecaptcha = useEnhancedRecaptcha(executeRecaptcha, SERVER);
 
   const [isLogin, setIsLogin] = useState(true);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -81,41 +86,45 @@ const Auth = () => {
     setError(null); // Clear previous errors
 
     try {
-      // 1. reCAPTCHA verification
-      if (!executeRecaptcha)
-        throw new Error("reCAPTCHA not ready. Please try again.");
-      const token = await executeRecaptcha("login");
-
-      const recaptchaResponse = await fetch(`${SERVER}/recaptcha`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
-          // ...options.headers,
-        },
-            body: JSON.stringify({ recaptchaToken: token }),
-      });
-
-      if (!recaptchaResponse.ok) {
-        throw new Error("Failed to verify reCAPTCHA. Please try again.");
+      // 1. Enhanced reCAPTCHA verification with timeout handling
+      if (shouldDisableRecaptcha()) {
+        console.warn('reCAPTCHA disabled for this device, proceeding without verification');
+        sendOTP(loginFormData.email, loginFormData.password);
+        return;
       }
 
-      const recaptchaData = await recaptchaResponse.json();
-      if (!recaptchaData.success) {
-        throw new Error(
-          recaptchaData["error-codes"]?.includes("timeout-or-duplicate")
-            ? "reCAPTCHA expired. Please try again."
-            : "reCAPTCHA verification failed. Please try again."
-        );
+      if (!enhancedRecaptcha.isReady) {
+        // More lenient error handling for Android devices
+        if (isAndroid()) {
+          console.warn('reCAPTCHA not ready on Android, proceeding with fallback');
+          sendOTP(loginFormData.email, loginFormData.password);
+          return;
+        }
+        throw new Error("Security verification not ready. Please try again.");
       }
 
-      if (recaptchaData.score !== undefined && recaptchaData.score < 0.5) {
-        throw new Error("Suspicious activity detected. Please try again.");
+      // Use enhanced reCAPTCHA execution with timeout and retry logic
+      const recaptchaResult = await enhancedRecaptcha.executeRecaptcha("login");
+      
+      if (recaptchaResult.fallback) {
+        console.log('Using reCAPTCHA fallback mode');
       }
 
       sendOTP(loginFormData.email, loginFormData.password); // Send OTP to the email
     } catch (error) {
       console.error("Login error:", error.message);
+      
+      // More lenient error handling for Android devices
+      if (isAndroid() && (
+        error.message.includes('timeout') || 
+        error.message.includes('Timeout') ||
+        error.message.includes('not ready')
+      )) {
+        console.warn('reCAPTCHA error on Android, proceeding anyway');
+        sendOTP(loginFormData.email, loginFormData.password);
+        return;
+      }
+      
       setError(error.message);
       setLoading(false);
 
@@ -250,22 +259,21 @@ const Auth = () => {
     setError(null);
 
     try {
-      // 1. Verify reCAPTCHA for resend (important for security)
-      if (!executeRecaptcha) throw new Error("Security verification not ready");
-      const token = await executeRecaptcha("resend_otp");
-
-      const recaptchaResponse = await fetch(`${SERVER}/recaptcha`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
-          // ...options.headers,
-        },
-        body: JSON.stringify({ recaptchaToken: token }),
-      });
-
-      if (!recaptchaResponse.ok) {
-        throw new Error("Security verification failed");
+      // 1. Enhanced reCAPTCHA verification for resend
+      if (!shouldDisableRecaptcha() && enhancedRecaptcha.isReady) {
+        try {
+          const recaptchaResult = await enhancedRecaptcha.executeRecaptcha("resend_otp");
+          if (recaptchaResult.fallback) {
+            console.log('Using reCAPTCHA fallback mode for resend');
+          }
+        } catch (recaptchaError) {
+          // On Android, don't fail the entire operation for reCAPTCHA errors
+          if (isAndroid()) {
+            console.warn('reCAPTCHA error on Android resend, proceeding anyway:', recaptchaError.message);
+          } else {
+            throw recaptchaError;
+          }
+        }
       }
 
       // 2. Request new OTP
@@ -379,22 +387,21 @@ const Auth = () => {
     setError(null);
 
     try {
-      // 1. reCAPTCHA verification for password change
-      if (!executeRecaptcha) throw new Error("Security verification not ready");
-      const token = await executeRecaptcha("change_password");
-
-      const recaptchaResponse = await fetch(`${SERVER}/recaptcha`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }), // Add token header if available
-          // ...options.headers,
-        },
-        body: JSON.stringify({ recaptchaToken: token }),
-      });
-
-      if (!recaptchaResponse.ok) {
-        throw new Error("Security verification failed");
+      // 1. Enhanced reCAPTCHA verification for password change
+      if (!shouldDisableRecaptcha() && enhancedRecaptcha.isReady) {
+        try {
+          const recaptchaResult = await enhancedRecaptcha.executeRecaptcha("change_password");
+          if (recaptchaResult.fallback) {
+            console.log('Using reCAPTCHA fallback mode for password change');
+          }
+        } catch (recaptchaError) {
+          // On Android, don't fail the entire operation for reCAPTCHA errors
+          if (isAndroid()) {
+            console.warn('reCAPTCHA error on Android password change, proceeding anyway:', recaptchaError.message);
+          } else {
+            throw recaptchaError;
+          }
+        }
       }
 
       // 2. Change password

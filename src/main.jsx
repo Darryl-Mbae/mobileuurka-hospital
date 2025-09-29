@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
+import "./css/AndroidPerformance.css";
 import App from "./App.jsx";
 import Auth from "./pages/Auth.jsx";
 import store from "./config/store.js";
@@ -10,8 +11,20 @@ import ForgotPassword from "./components/ForgotPassword.jsx";
 import ResetPassword from "./components/ResetPassword.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
-// Simple Android fix - load first
+// Enhanced Android crash fixes - load first
+import { initAndroidCrashFix, shouldEnableSafeMode, enableSafeMode } from "./utils/androidCrashFix.js";
+import { initRecaptchaErrorHandling } from "./utils/recaptchaWrapper.js";
 import "./utils/simpleAndroidFix.js";
+
+// Initialize crash fixes immediately
+initAndroidCrashFix();
+initRecaptchaErrorHandling();
+
+// Check if safe mode should be enabled
+if (shouldEnableSafeMode()) {
+  console.warn('Extremely old/slow device detected, enabling safe mode');
+  enableSafeMode();
+}
 
 // Simple font error handler
 window.addEventListener('error', (e) => {

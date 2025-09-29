@@ -15,32 +15,94 @@
       }, 15000);
     </script>
     
-    <!-- Simple Android fix -->
+    <!-- Enhanced Android crash prevention -->
     <script>
-      // Block font loading for all Android devices
+      // Comprehensive Android crash prevention
       var ua = navigator.userAgent;
-      if (/Android/i.test(ua)) {
-        console.log('Android detected, blocking fonts');
+      var isAndroid = /Android/i.test(ua);
+      var isOldAndroid = false;
+      
+      if (isAndroid) {
+        var match = ua.match(/Android (\d+)/);
+        var version = match ? parseInt(match[1]) : 0;
+        isOldAndroid = version <= 10;
         
-        // Block font loading immediately
+        console.log('Android detected (version: ' + version + '), applying crash fixes');
+        
+        // 1. Block font loading immediately
         if (window.FontFace) {
           window.FontFace = function() { return { load: function() { return Promise.resolve(); } }; };
         }
         
-        // Apply safe fonts
+        // 2. Apply safe fonts
         var style = document.createElement('style');
         style.textContent = '* { font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important; }';
         document.head.appendChild(style);
         
-        // Block font errors
+        // 3. Enhanced error handling
         window.addEventListener('error', function(e) {
-          if (e.message && (e.message.includes('font') || e.message.includes('CFF') || e.message.includes('OTS'))) {
+          var message = e.message || '';
+          var filename = e.filename || '';
+          
+          // Block font errors
+          if (message.includes('font') || message.includes('CFF') || message.includes('OTS')) {
             console.log('Font error blocked');
             e.stopPropagation();
             e.preventDefault();
             return false;
           }
+          
+          // Block reCAPTCHA errors
+          if (message.includes('Timeout') && filename.includes('recaptcha')) {
+            console.log('reCAPTCHA timeout error blocked');
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+          }
+          
+          // Block other reCAPTCHA errors
+          if (filename.includes('recaptcha') || message.includes('recaptcha')) {
+            console.log('reCAPTCHA error blocked');
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+          }
         }, true);
+        
+        // 4. Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e.reason || {};
+          var message = reason.message || reason.toString() || '';
+          
+          if (message.includes('recaptcha') || message.includes('Timeout')) {
+            console.log('reCAPTCHA promise rejection blocked');
+            e.preventDefault();
+            return false;
+          }
+        });
+        
+        // 5. Override setTimeout for old Android devices
+        if (isOldAndroid) {
+          var originalSetTimeout = window.setTimeout;
+          window.setTimeout = function(callback, delay) {
+            // Minimum 100ms delay for old Android
+            delay = Math.max(delay || 0, 100);
+            return originalSetTimeout.call(this, callback, delay);
+          };
+        }
+        
+        // 6. Disable complex animations on old devices
+        if (isOldAndroid) {
+          var animStyle = document.createElement('style');
+          animStyle.textContent = `
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+            }
+          `;
+          document.head.appendChild(animStyle);
+        }
       }
     </script>
     

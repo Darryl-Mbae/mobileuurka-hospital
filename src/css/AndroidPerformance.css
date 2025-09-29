@@ -1,0 +1,328 @@
+/* Android Performance Optimizations */
+/* Addresses performance violations and forced reflows */
+
+/* Prevent layout thrashing on Android */
+@media screen and (max-width: 768px) {
+  /* Force hardware acceleration for better performance */
+  .app, .admin, .content {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Optimize scrolling performance */
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Reduce repaints and reflows */
+  .loading, .admin-loading {
+    contain: layout style paint;
+    transform: translateZ(0);
+  }
+  
+  /* Optimize animations for Android */
+  @keyframes spin {
+    0% { transform: rotate(0deg) translateZ(0); }
+    100% { transform: rotate(360deg) translateZ(0); }
+  }
+  
+  /* Prevent forced reflows in forms */
+  input, textarea, select, button {
+    contain: layout;
+    transform: translateZ(0);
+  }
+  
+  /* Optimize image rendering */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    transform: translateZ(0);
+  }
+  
+  /* Reduce paint complexity */
+  .sidebar, .content, .form-container {
+    contain: layout style paint;
+  }
+  
+  /* Optimize text rendering */
+  body, * {
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent layout shifts */
+  .patient-card, .form-field, .button {
+    contain: layout;
+  }
+  
+  /* Optimize flexbox performance */
+  .flex-container {
+    contain: layout;
+    transform: translateZ(0);
+  }
+  
+  /* Reduce composite layers */
+  .modal, .overlay, .dropdown {
+    will-change: opacity, transform;
+    contain: layout style paint;
+  }
+  
+  /* Optimize table performance */
+  table, .table-container {
+    contain: layout;
+    table-layout: fixed;
+  }
+  
+  /* Prevent expensive CSS operations */
+  .shadow, .box-shadow {
+    box-shadow: none !important;
+  }
+  
+  .gradient, .background-gradient {
+    background: #f8f9fa !important;
+  }
+  
+  /* Optimize border-radius for performance */
+  .rounded, .border-radius {
+    border-radius: 4px !important;
+  }
+  
+  /* Reduce filter effects */
+  .filter, .blur, .brightness {
+    filter: none !important;
+  }
+  
+  /* Optimize transitions */
+  .transition, .animated {
+    transition: opacity 0.2s ease !important;
+  }
+  
+  /* Prevent expensive transforms */
+  .transform, .scale, .rotate {
+    transform: none !important;
+  }
+}
+
+/* Specific optimizations for old Android devices */
+@media screen and (max-width: 768px) and (-webkit-max-device-pixel-ratio: 2) {
+  /* Disable all animations on old devices */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Simplify layouts */
+  .complex-layout {
+    display: block !important;
+  }
+  
+  .grid {
+    display: block !important;
+  }
+  
+  .flex {
+    display: block !important;
+  }
+  
+  /* Remove expensive visual effects */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+  }
+  
+  /* Optimize fonts */
+  * {
+    font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important;
+    font-weight: normal !important;
+  }
+  
+  /* Reduce color complexity */
+  .colorful, .gradient, .complex-bg {
+    background: #ffffff !important;
+    color: #333333 !important;
+  }
+}
+
+/* Performance optimizations for reCAPTCHA container */
+.grecaptcha-badge {
+  contain: layout style paint !important;
+  transform: translateZ(0) !important;
+  will-change: opacity !important;
+}
+
+/* Optimize loading states */
+.loading-spinner {
+  contain: layout style paint;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Prevent layout shifts during loading */
+.loading-container {
+  min-height: 100vh;
+  contain: layout;
+}
+
+/* Optimize modal performance */
+.modal-backdrop {
+  contain: layout style paint;
+  will-change: opacity;
+}
+
+.modal-content {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Optimize form performance */
+.form-group {
+  contain: layout;
+}
+
+.form-control {
+  contain: layout;
+  transform: translateZ(0);
+}
+
+/* Optimize button performance */
+.btn, button {
+  contain: layout;
+  transform: translateZ(0);
+  will-change: background-color;
+}
+
+/* Optimize navigation performance */
+.nav, .navbar {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Optimize sidebar performance */
+.sidebar {
+  contain: layout style paint;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize content area performance */
+.main-content {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Optimize chat performance */
+.chat-container {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+.chat-message {
+  contain: layout;
+}
+
+/* Optimize patient card performance */
+.patient-card {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Optimize document viewer performance */
+.document-viewer {
+  contain: layout style paint;
+  transform: translateZ(0);
+}
+
+/* Optimize screening form performance */
+.screening-form {
+  contain: layout style paint;
+}
+
+.screening-step {
+  contain: layout;
+}
+
+/* Critical performance fixes for Android crashes */
+@supports (-webkit-appearance: none) {
+  /* WebKit-specific optimizations */
+  * {
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Emergency performance mode for extremely slow devices */
+.performance-emergency * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  border-radius: 0 !important;
+}
+
+.performance-emergency {
+  font-family: system-ui, Arial, sans-serif !important;
+  background: white !important;
+  color: black !important;
+}
+
+/* Optimize for low memory devices */
+@media (max-device-width: 768px) and (max-device-height: 1024px) {
+  /* Reduce memory usage */
+  .high-memory-usage {
+    display: none !important;
+  }
+  
+  /* Simplify complex components */
+  .complex-component {
+    display: block !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  /* Optimize images for low memory */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    image-rendering: -webkit-optimize-contrast !important;
+  }
+}
+
+/* Prevent memory leaks in CSS */
+.cleanup-after-use {
+  contain: layout style paint size;
+}
+
+/* Optimize for touch devices */
+@media (pointer: coarse) {
+  /* Larger touch targets */
+  button, .clickable {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Optimize touch scrolling */
+  .scrollable {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-scrolling: touch !important;
+  }
+  
+  /* Prevent accidental selections */
+  .no-select {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+}
