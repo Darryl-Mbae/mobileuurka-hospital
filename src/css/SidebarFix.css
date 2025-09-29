@@ -1,0 +1,71 @@
+/* Sidebar Click Fix - Override performance optimizations that break interactivity */
+
+/* Ensure sidebar and all its children are clickable */
+.sidebar,
+.sidebar *,
+.sidebar .navigation,
+.sidebar .navigation ul,
+.sidebar .navigation ul li,
+.sidebar .company,
+.sidebar .company .signout {
+  pointer-events: auto !important;
+  /* Remove any containment that might block events */
+  contain: none !important;
+}
+
+/* Specifically target sidebar navigation items */
+.sidebar .navigation ul li {
+  cursor: pointer !important;
+  /* Ensure click events work */
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Ensure hover effects still work */
+.sidebar .navigation ul li:hover {
+  background: rgba(239, 239, 239, 0.57) !important;
+  transform: translateX(5px) !important;
+}
+
+/* Fix for mobile hamburger menu */
+.sidebar .hamburger {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 1000 !important;
+}
+
+/* Fix for signout buttons */
+.sidebar .signout,
+.sidebar .company .signout {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+}
+
+/* Override any transform or containment issues */
+@media screen and (max-width: 768px) {
+  .sidebar .navigation ul li {
+    /* Remove any performance optimizations that break clicks on mobile */
+    contain: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+  
+  .sidebar .navigation ul li:hover {
+    transform: translateX(5px) !important;
+  }
+}
+
+/* Emergency fix for completely broken clicks */
+.sidebar-click-fix {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 999 !important;
+}
+
+/* Debug helper - add this class to see clickable areas */
+.debug-clicks {
+  outline: 2px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}

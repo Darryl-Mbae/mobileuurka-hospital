@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "../css/SideBar.css";
+import "../css/SidebarFix.css";
 import CompanyConfig from "../config/config.js";
 import "../css/hamburger.css";
 
@@ -54,6 +55,7 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
 
   const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
   const handleClick = (name) => {
+    console.log('Sidebar item clicked:', name);
     setActiveItem(name);
     setInternalTab(null);
     setSidebarOpen(false);
@@ -124,13 +126,14 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
           {ClientItems.map((item) => (
             <li
               key={item.name}
-              className={
+              className={`sidebar-click-fix ${
                 activeItem === item.name ||
                   (item.name === "Patients" && activeItem === "Patient")
                   ? "active"
                   : ""
-              }
+              }`}
               onClick={() => handleClick(item.name)}
+              style={{ pointerEvents: 'auto', cursor: 'pointer' }}
             >
               <div className="icon">{item.icon}</div>
               <span>{item.name}</span>
@@ -144,8 +147,9 @@ const SideBar = ({ activeItem, setActiveItem, setInternalTab }) => {
           {activityItems.map((item) => (
             <li
               key={item.name}
-              className={activeItem === item.name ? "active" : ""}
+              className={`sidebar-click-fix ${activeItem === item.name ? "active" : ""}`}
               onClick={() => handleClick(item.name)}
+              style={{ pointerEvents: 'auto', cursor: 'pointer' }}
             >
               <div className="icon">{item.icon}</div>
               <span className="label">{item.name}</span>

@@ -28,10 +28,16 @@
     100% { transform: rotate(360deg) translateZ(0); }
   }
   
-  /* Prevent forced reflows in forms */
-  input, textarea, select, button {
+  /* Prevent forced reflows in forms - preserve interactivity */
+  input, textarea, select {
     contain: layout;
     transform: translateZ(0);
+  }
+  
+  /* Buttons need special handling to preserve click events */
+  button {
+    transform: translateZ(0);
+    /* No containment to ensure clicks work */
   }
   
   /* Optimize image rendering */
@@ -41,9 +47,23 @@
     transform: translateZ(0);
   }
   
-  /* Reduce paint complexity */
-  .sidebar, .content, .form-container {
+  /* Reduce paint complexity - but preserve interactivity */
+  .content, .form-container {
     contain: layout style paint;
+  }
+  
+  /* Sidebar needs special handling to preserve click events */
+  .sidebar {
+    transform: translateZ(0);
+    will-change: transform;
+    /* Don't use containment on sidebar as it breaks click events */
+  }
+  
+  /* Ensure sidebar navigation items are clickable */
+  .sidebar .navigation ul li {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    /* No containment to preserve click events */
   }
   
   /* Optimize text rendering */
@@ -53,9 +73,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Prevent layout shifts */
-  .patient-card, .form-field, .button {
+  /* Prevent layout shifts - preserve interactivity */
+  .patient-card, .form-field {
     contain: layout;
+  }
+  
+  /* Interactive buttons should not have containment */
+  .button {
+    transform: translateZ(0);
+    /* No containment to preserve click events */
   }
   
   /* Optimize flexbox performance */
@@ -191,11 +217,11 @@
   transform: translateZ(0);
 }
 
-/* Optimize button performance */
+/* Optimize button performance - preserve click events */
 .btn, button {
-  contain: layout;
   transform: translateZ(0);
   will-change: background-color;
+  /* Removed containment to ensure clicks work properly */
 }
 
 /* Optimize navigation performance */
@@ -204,12 +230,7 @@
   transform: translateZ(0);
 }
 
-/* Optimize sidebar performance */
-.sidebar {
-  contain: layout style paint;
-  transform: translateZ(0);
-  will-change: transform;
-}
+/* Sidebar performance optimized above - removed duplicate */
 
 /* Optimize content area performance */
 .main-content {
@@ -250,12 +271,19 @@
 
 /* Critical performance fixes for Android crashes */
 @supports (-webkit-appearance: none) {
-  /* WebKit-specific optimizations */
-  * {
+  /* WebKit-specific optimizations - but preserve interactivity */
+  .non-interactive {
     -webkit-backface-visibility: hidden;
     -webkit-perspective: 1000;
     -webkit-transform: translate3d(0, 0, 0);
   }
+}
+
+/* Ensure all interactive elements work properly */
+button, .clickable, .sidebar li, [onclick], [role="button"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  /* Override any performance optimizations that break clicks */
 }
 
 /* Emergency performance mode for extremely slow devices */
@@ -309,6 +337,9 @@
   button, .clickable {
     min-height: 44px !important;
     min-width: 44px !important;
+    /* Ensure clickable elements work properly */
+    pointer-events: auto !important;
+    cursor: pointer !important;
   }
   
   /* Optimize touch scrolling */
