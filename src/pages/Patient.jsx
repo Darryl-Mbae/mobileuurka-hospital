@@ -130,10 +130,17 @@ const Patient = ({ id }) => {
     const updateData = {
       nextVisit: nextVisitValue, // you can send as ISO string or timestamp depending on backend
     };
+
+    const token = localStorage.getItem("access_token");
+
     try {
       const response = await fetch(`${SERVER}/patients/medical/visit/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" ,
+          ...(token && { Authorization: `Bearer ${token}` }), // Add token header if available
+
+
+        },
         credentials: "include",
         body: JSON.stringify(updateData),
       });
