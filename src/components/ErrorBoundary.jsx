@@ -14,6 +14,24 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     // Log the error
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // Check if it's a font-related error
+    const isFontError = error.message && (
+      error.message.includes('font') ||
+      error.message.includes('CFF') ||
+      error.message.includes('OTS parsing error') ||
+      error.message.includes('Invalid font data')
+    );
+    
+    if (isFontError) {
+      console.warn('Font-related error detected, applying fallback fonts');
+      document.body.classList.add('font-fallback');
+      document.documentElement.style.setProperty(
+        '--font-family-primary', 
+        'system-ui, -apple-system, Roboto, sans-serif'
+      );
+    }
+    
     this.setState({
       error: error,
       errorInfo: errorInfo

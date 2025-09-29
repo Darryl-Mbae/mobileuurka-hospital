@@ -197,4 +197,47 @@ if (!Array.prototype.includes) {
   };
 }
 
+// Font loading polyfill for older browsers
+if (!('fonts' in document)) {
+  // Create a simple fonts object for older browsers
+  document.fonts = {
+    check: function() {
+      return false; // Always return false for older browsers
+    },
+    load: function() {
+      return Promise.resolve();
+    },
+    ready: Promise.resolve()
+  };
+}
+
+// CSS.supports polyfill
+if (!window.CSS || !CSS.supports) {
+  window.CSS = window.CSS || {};
+  CSS.supports = function(property, value) {
+    // Basic feature detection
+    var element = document.createElement('div');
+    try {
+      element.style[property] = value;
+      return element.style[property] === value;
+    } catch (e) {
+      return false;
+    }
+  };
+}
+
+// FontFace constructor polyfill (basic)
+if (!window.FontFace) {
+  window.FontFace = function(family, source, descriptors) {
+    this.family = family;
+    this.source = source;
+    this.descriptors = descriptors || {};
+    this.status = 'unloaded';
+    
+    this.load = function() {
+      return Promise.resolve(this);
+    };
+  };
+}
+
 console.log("✅ Polyfills loaded successfully");

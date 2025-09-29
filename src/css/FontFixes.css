@@ -1,0 +1,84 @@
+/* Font fixes for older Android devices */
+
+/* Ensure all text elements use safe fonts */
+* {
+  font-family: var(--font-family-primary) !important;
+}
+
+/* Specific fixes for form elements */
+input, textarea, select, button {
+  font-family: var(--font-family-primary) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix for older Android WebView */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  body, * {
+    font-family: var(--font-family-fallback) !important;
+  }
+}
+
+/* Android-specific font fixes */
+@media screen and (max-width: 768px) {
+  .android-font-fix {
+    font-family: 'Roboto', 'Droid Sans', sans-serif !important;
+  }
+}
+
+/* Prevent font loading errors */
+@supports not (font-display: swap) {
+  * {
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+}
+
+/* Safe font loading for older browsers */
+.font-loading {
+  font-family: system-ui, -apple-system, sans-serif;
+  visibility: hidden;
+}
+
+.font-loaded {
+  font-family: var(--font-family-primary);
+  visibility: visible;
+}
+
+/* Fallback for when fonts fail to load */
+.font-fallback {
+  font-family: var(--font-family-fallback) !important;
+}
+
+/* Android WebView specific fixes */
+.android-old-device * {
+  font-family: system-ui, -apple-system, Roboto, "Droid Sans", Arial, sans-serif !important;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Prevent font loading on old Android */
+.android-old-device @font-face {
+  font-family: 'Inter';
+  src: local('Roboto'), local('Arial'), local('sans-serif');
+}
+
+/* Force hardware acceleration for better performance */
+.android-old-device {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Fix for Android WebView font rendering */
+@media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 1) {
+  body {
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+}
+
+/* Emergency fallback for all font issues */
+.emergency-font-fallback * {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
