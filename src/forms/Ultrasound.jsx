@@ -108,9 +108,17 @@ const Ultrasound = ({ setInternalTab, selectedPatientId }) => {
     uploadFormData.append('type', 'ultrasound');
 
     try {
+      // Get authentication token for mobile compatibility
+      const token = localStorage.getItem('access_token');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${SERVER}/upload`, {
         method: 'POST',
         credentials: 'include',
+        headers,
         body: uploadFormData,
       });
 

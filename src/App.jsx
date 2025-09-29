@@ -25,6 +25,7 @@ import FeedbackForm from "./forms/FeedbackForm.jsx";
 import { setPatients } from "./reducers/Slices/patientsSlice.js";
 import useSocket from "./hooks/useSocket.js";
 import ConnectionStatus from "./components/ConnectionStatus.jsx";
+import { authSocketSync } from "./utils/auth-socket-sync.js";
 
 function App() {
   const [activeItem, setActiveItem] = useState("Patients");
@@ -118,6 +119,9 @@ function App() {
     if (initialDataFetched.current.user) {
       return;
     }
+
+    // Initialize auth-socket synchronization
+    authSocketSync.init();
 
     async function getUser() {
       try {
@@ -340,7 +344,7 @@ function App() {
         setInternalTab={setInternalTab}
       />
       <div className={`content ${activeItem === "Patient" && "active"}`}>
-        <ConnectionStatus />
+        {/* <ConnectionStatus /> */}
         {renderContent()}
       </div>
     </div>

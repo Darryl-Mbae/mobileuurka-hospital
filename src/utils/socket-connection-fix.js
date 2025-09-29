@@ -58,6 +58,11 @@ export const createSocketConfig = (serverUrl, token) => {
   console.log('🔑 Token available:', !!token);
   console.log('🌐 Server URL:', serverUrl);
   
+  // Ensure token is fresh and valid
+  if (!token) {
+    throw new Error('Authentication token is required for socket connection');
+  }
+  
   // Base configuration
   const config = {
     // Authentication - secure methods only (no query params)

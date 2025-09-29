@@ -1,5 +1,9 @@
 // WhatsApp Service for handling API calls
-import { getApiConfigForTemplate, getBackendPayloadData } from '../config/whatsappTemplates.js';
+import {
+  getApiConfigForTemplate,
+  getBackendPayloadData,
+} from "../config/whatsappTemplates.js";
+import { fetchWithAuth } from "../config/api.js";
 
 class WhatsAppService {
   constructor() {
@@ -8,59 +12,88 @@ class WhatsAppService {
   }
 
   // Send WhatsApp message using the configured API
-  async sendMessage(template, processedMessage, patient, user, additionalData = {}) {
+  async sendMessage(
+    template,
+    processedMessage,
+    patient,
+    user,
+    additionalData = {}
+  ) {
     try {
       const apiConfig = getApiConfigForTemplate(template);
 
       // Build the request payload for your backend
-      const payload = this.buildBackendPayload(template, processedMessage, patient, user, additionalData);
+      const payload = this.buildBackendPayload(
+        template,
+        processedMessage,
+        patient,
+        user,
+        additionalData
+      );
 
-      // Prepare headers
-      const headers = { ...apiConfig.headers };
+      // Get authentication token for mobile compatibility
+      const token = localStorage.getItem("access_token");
+
+      // Prepare headers with authentication
+      const headers = {
+        ...apiConfig.headers,
+        ...(token && { Authorization: `Bearer ${token}` }),
+      };
 
       // Use your server URL
       const url = `${this.serverUrl}${template.apiEndpoint}`;
 
-      // Make the API call to your backend
-      const response = await fetch(url, {
+      // Make the API call to your backend using unified auth
+      const response = await fetchWithAuth(url, {
         method: apiConfig.method,
         headers,
         body: JSON.stringify(payload),
-        credentials: "include", // Include cookies for authentication
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Backend API error: ${response.status} - ${errorData.error || response.statusText}`);
+        throw new Error(
+          `Backend API error: ${response.status} - ${
+            errorData.error || response.statusText
+          }`
+        );
       }
 
       const result = await response.json();
 
       return {
         success: true,
-        messageId: result.data?.messageId || result.messageId || `msg_${Date.now()}`,
-        data: result
+        messageId:
+          result.data?.messageId || result.messageId || `msg_${Date.now()}`,
+        data: result,
       };
-
     } catch (error) {
-      console.error('WhatsApp send error:', error);
+      console.error("WhatsApp send error:", error);
 
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
 
   // Build payload for your backend API
-  buildBackendPayload(template, processedMessage, patient, user, additionalData = {}) {
+  buildBackendPayload(
+    template,
+    processedMessage,
+    patient,
+    user,
+    additionalData = {}
+  ) {
     // For free text messages, include the message content
-    if (template.id === 'text-message') {
+    if (template.id === "text-message") {
       additionalData.message = processedMessage;
     } else {
       // Try to extract selected time from the processed message if not provided in additionalData
       if (!additionalData.selectedTime) {
-        const timeMatch = processedMessage.match(/(\d{1,2}:\d{2}\s*(AM|PM|am|pm))/);
+        const timeMatch = processedMessage.match(
+          /(\d{1,2}:\d{2}\s*(AM|PM|am|pm))/
+        );
         if (timeMatch) {
           additionalData.selectedTime = timeMatch[1];
         }
@@ -68,7 +101,12 @@ class WhatsAppService {
     }
 
     // Get the properly formatted payload using the config function
-    const payload = getBackendPayloadData(template, patient, user, additionalData);
+    const payload = getBackendPayloadData(
+      template,
+      patient,
+      user,
+      additionalData
+    );
 
     return payload;
   }
@@ -78,9 +116,14 @@ class WhatsAppService {
     if (!isoDate) return null;
     const date = new Date(isoDate);
     const day = date.getDate();
-    const suffix = day % 10 === 1 && day !== 11 ? "st" :
-      day % 10 === 2 && day !== 12 ? "nd" :
-        day % 10 === 3 && day !== 13 ? "rd" : "th";
+    const suffix =
+      day % 10 === 1 && day !== 11
+        ? "st"
+        : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+        ? "rd"
+        : "th";
     const month = date.toLocaleString("en-US", { month: "long" });
     const year = date.getFullYear();
     const weekday = date.toLocaleString("en-US", { weekday: "long" });
@@ -89,51 +132,52 @@ class WhatsAppService {
 
   // Helper to escape regex characters
   escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   // Log message to your database
   async logMessageToDatabase(template, message, patient, user, apiResponse) {
     try {
-      const response = await fetch(`${this.serverUrl}/whatsapp-messages/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          patient_id: patient.id,
-          template_id: template.id,
-          template_title: template.title,
-          message_content: message,
-          whatsapp_message_id: apiResponse.id || apiResponse.message_id,
-          status: apiResponse.status || 'sent',
-          api_response: apiResponse,
-          sent_at: new Date().toISOString()
-        }),
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${this.serverUrl}/whatsapp-messages/`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: user.id,
+            patient_id: patient.id,
+            template_id: template.id,
+            template_title: template.title,
+            message_content: message,
+            whatsapp_message_id: apiResponse.id || apiResponse.message_id,
+            status: apiResponse.status || "sent",
+            api_response: apiResponse,
+            sent_at: new Date().toISOString(),
+          }),
+        }
+      );
 
       if (!response.ok) {
-        console.warn('Failed to log WhatsApp message to database:', response.status);
+        console.warn(
+          "Failed to log WhatsApp message to database:",
+          response.status
+        );
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error logging WhatsApp message:', error);
+      console.error("Error logging WhatsApp message:", error);
     }
   }
 
   // Get message delivery status
   async getMessageStatus(messageId) {
     try {
-      const response = await fetch(`${this.serverUrl}/whatsapp-messages/${messageId}/status`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${this.serverUrl}/whatsapp-messages/${messageId}/status`,
+        {
+          method: "GET",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Status check failed: ${response.status}`);
@@ -141,21 +185,20 @@ class WhatsAppService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error checking message status:', error);
-      return { status: 'unknown', error: error.message };
+      console.error("Error checking message status:", error);
+      return { status: "unknown", error: error.message };
     }
   }
 
   // Get patient messages
   async getPatientMessages(patientId, limit = 50) {
     try {
-      const response = await fetch(`${this.serverUrl}/messages/patient/${patientId}?limit=${limit}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${this.serverUrl}/messages/patient/${patientId}?limit=${limit}`,
+        {
+          method: "GET",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch patient messages: ${response.status}`);
@@ -164,7 +207,7 @@ class WhatsAppService {
       const result = await response.json();
       return result.data || [];
     } catch (error) {
-      console.error('Error fetching patient messages:', error);
+      console.error("Error fetching patient messages:", error);
       throw error;
     }
   }
@@ -172,13 +215,14 @@ class WhatsAppService {
   // Get message history by phone number
   async getMessageHistory(phoneNumber, limit = 50) {
     try {
-      const response = await fetch(`${this.serverUrl}/messages/phone/${encodeURIComponent(phoneNumber)}?limit=${limit}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${this.serverUrl}/messages/phone/${encodeURIComponent(
+          phoneNumber
+        )}?limit=${limit}`,
+        {
+          method: "GET",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch message history: ${response.status}`);
@@ -187,7 +231,7 @@ class WhatsAppService {
       const result = await response.json();
       return result.data || [];
     } catch (error) {
-      console.error('Error fetching message history:', error);
+      console.error("Error fetching message history:", error);
       throw error;
     }
   }
@@ -198,16 +242,15 @@ class WhatsAppService {
       const queryParams = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        ...filters
+        ...filters,
       });
 
-      const response = await fetch(`${this.serverUrl}/messages?${queryParams}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
+      const response = await fetchWithAuth(
+        `${this.serverUrl}/messages?${queryParams}`,
+        {
+          method: "GET",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch messages: ${response.status}`);
@@ -216,10 +259,10 @@ class WhatsAppService {
       const result = await response.json();
       return {
         messages: result.data || [],
-        pagination: result.pagination || {}
+        pagination: result.pagination || {},
       };
     } catch (error) {
-      console.error('Error fetching all messages:', error);
+      console.error("Error fetching all messages:", error);
       throw error;
     }
   }
@@ -231,24 +274,26 @@ class WhatsAppService {
     if (!phone) {
       return {
         valid: false,
-        error: 'Patient does not have a phone number on file'
+        error: "Patient does not have a phone number on file",
       };
     }
 
     // Strict validation - must start with + for international format
-    if (!phone.startsWith('+')) {
+    if (!phone.startsWith("+")) {
       return {
         valid: false,
-        error: 'Patient phone number must be in international format starting with + (e.g., +254712345678)'
+        error:
+          "Patient phone number must be in international format starting with + (e.g., +254712345678)",
       };
     }
 
     // Validate international phone number format
     const phoneRegex = /^\+[1-9]\d{1,14}$/;
-    if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+    if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ""))) {
       return {
         valid: false,
-        error: 'Patient phone number format is invalid. Use international format: +[country code][number]'
+        error:
+          "Patient phone number format is invalid. Use international format: +[country code][number]",
       };
     }
 

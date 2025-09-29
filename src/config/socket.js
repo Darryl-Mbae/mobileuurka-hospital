@@ -258,7 +258,14 @@ class SocketManager {
 
     if (this.socket?.connected && this.connectionStable) {
       console.log("✅ Socket already connected and stable");
-      return this.socket;
+      // Verify token is still valid for existing connection
+      if (authToken && this.socket.auth?.token !== authToken) {
+        console.log("🔄 Token changed, reconnecting socket...");
+        this.socket.disconnect();
+        this.socket = null;
+      } else {
+        return this.socket;
+      }
     }
 
     if (!authToken) {
