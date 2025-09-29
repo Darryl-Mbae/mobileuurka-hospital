@@ -145,21 +145,19 @@ export const withChartSafety = (ChartComponent) => {
     
     // If patient data is invalid, show loading state
     if (!isValid) {
-      return (
-        <div style={{
+      return React.createElement('div', {
+        style: {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           height: '100%',
           color: '#666',
           fontSize: '0.9em'
-        }}>
-          Loading chart data...
-        </div>
-      );
+        }
+      }, 'Loading chart data...');
     }
     
-    return <ChartComponent patient={safePatient} {...otherProps} />;
+    return React.createElement(ChartComponent, { patient: safePatient, ...otherProps });
   };
 };
 
@@ -180,8 +178,8 @@ export class ChartErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      return (
-        <div style={{
+      return React.createElement('div', {
+        style: {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -190,23 +188,22 @@ export class ChartErrorBoundary extends React.Component {
           fontSize: '0.9em',
           flexDirection: 'column',
           gap: '8px'
-        }}>
-          <div>Chart temporarily unavailable</div>
-          <button 
-            onClick={() => this.setState({ hasError: false, error: null })}
-            style={{
-              padding: '4px 8px',
-              fontSize: '0.8em',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              background: 'white',
-              cursor: 'pointer'
-            }}
-          >
-            Retry
-          </button>
-        </div>
-      );
+        }
+      }, [
+        React.createElement('div', { key: 'message' }, 'Chart temporarily unavailable'),
+        React.createElement('button', {
+          key: 'retry',
+          onClick: () => this.setState({ hasError: false, error: null }),
+          style: {
+            padding: '4px 8px',
+            fontSize: '0.8em',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            background: 'white',
+            cursor: 'pointer'
+          }
+        }, 'Retry')
+      ]);
     }
 
     return this.props.children;
