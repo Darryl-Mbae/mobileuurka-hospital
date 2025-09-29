@@ -61,7 +61,7 @@ const Patient = ({ id }) => {
   const [mobileView, setMobileView] = useState("Summary"); // "Sabi", "Summary", "Analytics"
 
   const options = ["Sabi", "Summary", "Analytics"];
-  const [profilePic, setProfilePic] = useState(defaultImg);
+  const [profilePic] = useState(defaultImg);
   const [chatActive, setChatActive] = useState(false);
   const [copied, setCopied] = useState(false);
   const [document, setDocument] = useState([]);
@@ -337,8 +337,8 @@ const Patient = ({ id }) => {
   }
 
   const patientMainDetails = [
-    isMobile
-      ? {
+    ...(isMobile
+      ? [{
           label: "Patient ID",
           value: (
             <span style={{ display: "flex", alignItems: "center" }}>
@@ -357,8 +357,8 @@ const Patient = ({ id }) => {
               </span>
             </span>
           ),
-        }
-      : null,
+        }]
+      : []),
     { label: "Age", value: calculateAge(patient?.dob) },
     {
       label: "Gravida + Parity",
@@ -539,7 +539,7 @@ const Patient = ({ id }) => {
     <section>
       <h4>{title}</h4>
       <div className="container">
-        {items.map((item, index) => (
+        {items.filter(item => item && item.label).map((item, index) => (
           <div className="list" key={index}>
             <div
               className="label"
