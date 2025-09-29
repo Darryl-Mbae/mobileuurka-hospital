@@ -96,10 +96,15 @@ const Notepad = ({ patient, user }) => {
   };
 
   async function sendToDB(formData) {
+    const token = localStorage.getItem("access_token");
+
+    
     const response = await fetch(`${SERVER}/patients/medical/note`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }), // Add token header if available
+
       },
       credentials: "include",
       body: JSON.stringify(formData),
