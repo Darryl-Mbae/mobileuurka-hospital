@@ -190,20 +190,35 @@ const Document = ({ document, title, patient ,srcolltoTop}) => {
   };
 
   // Handle text selection and context menu positioning
-  const handleContextMenu = (selectedText, clientX, clientY) => {
-    if (selectedText && componentRef.current) {
+// Handle text selection and context menu positioning
+const handleContextMenu = (selectedText, clientX, clientY) => {
+  if (selectedText && componentRef.current) {
+    // Get the Selection object to access the range
+    const selection = window.getSelection();
+    
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      console.log("Selection coordinates:", {
+        x: rect.left,
+        y: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      });
+      
       const containerRect = componentRef.current.getBoundingClientRect();
-      const relativeY =
-        clientY - containerRect.top + componentRef.current.scrollTop;
+      const relativeY = rect.bottom - containerRect.top + componentRef.current.scrollTop;
+      const relativeX = rect.left - containerRect.left + componentRef.current.scrollLeft;
 
       setSelection(selectedText);
       setContextMenuPosition({
-        x: clientX,
-        y: clientY, // Keep viewport coordinates for context menu
-        relativeY: relativeY, // Store relative position for comment placement
+        x: relativeX, // Position at start of selection
+        y: relativeY + (isMobile ? 140 : 120), // 5px below the selection
+        relativeY: relativeY,
       });
     }
-  };
+  }
+};
 
   // Desktop right-click handler
   const handleRightClick = (e) => {
