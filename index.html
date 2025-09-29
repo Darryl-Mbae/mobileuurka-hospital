@@ -8,102 +8,40 @@
     <!-- Fallback refresh for stuck pages -->
     <script>
       setTimeout(function() {
-        if (document.getElementById('initial-loading') && document.getElementById('initial-loading').style.display !== 'none') {
-          console.warn('Page appears stuck, attempting recovery');
-          document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;"><h2>Loading...</h2><p>If this persists, please refresh the page.</p><button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Now</button></div>';
+        if (document.getElementById('initial-loading')) {
+          console.warn('Page loading timeout, showing fallback');
+          document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;"><h2>Mobileuurka</h2><p>Loading the application...</p><button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh</button></div>';
         }
-      }, 10000);
+      }, 15000);
     </script>
     
-    <!-- Safe mode detection and emergency font fix -->
+    <!-- Simple Android fix -->
     <script>
-      (function() {
-        var ua = navigator.userAgent;
-        var androidMatch = ua.match(/Android (\d+(?:\.\d+)?)/);
-        var isOldAndroid = androidMatch && parseFloat(androidMatch[1]) <= 10;
-        var forceFullVersion = localStorage.getItem('force-full-version') === 'true';
+      // Block font loading for all Android devices
+      var ua = navigator.userAgent;
+      if (/Android/i.test(ua)) {
+        console.log('Android detected, blocking fonts');
         
-        if (isOldAndroid && !forceFullVersion) {
-          console.log('🛡️ Old Android detected, preparing safe mode');
-          
-          // Mark as safe mode
-          document.documentElement.setAttribute('data-safe-mode', 'true');
-          
-          // Apply safe styles immediately
-          var safeStyle = document.createElement('style');
-          safeStyle.textContent = `
-            * { 
-              font-family: Arial, Helvetica, sans-serif !important; 
-              box-sizing: border-box;
-            }
-            body { 
-              margin: 0; 
-              padding: 0; 
-              background: white; 
-              font-family: Arial, Helvetica, sans-serif !important; 
-            }
-            #initial-loading {
-              font-family: Arial, Helvetica, sans-serif !important;
-            }
-          `;
-          document.head.appendChild(safeStyle);
-          
-          // Block ALL font loading
-          window.FontFace = function() { 
-            console.log('FontFace blocked in safe mode');
-            return { load: function() { return Promise.resolve(); } }; 
-          };
-          
-          // Block font loading in document.fonts
-          Object.defineProperty(document, 'fonts', {
-            value: {
-              add: function() { console.log('Font add blocked in safe mode'); },
-              load: function() { console.log('Font load blocked in safe mode'); return Promise.resolve(); },
-              check: function() { return false; },
-              ready: Promise.resolve()
-            }
-          });
-          
-          // Nuclear error handler - prevent ANY font errors
-          window.addEventListener('error', function(e) {
-            if (e.message && (
-              e.message.includes('font') || 
-              e.message.includes('CFF') || 
-              e.message.includes('OTS') ||
-              e.message.includes('Invalid font data') ||
-              e.message.includes('Failed to parse table')
-            )) {
-              console.warn('Font error blocked in safe mode:', e.message);
-              e.stopImmediatePropagation();
-              e.preventDefault();
-              return false;
-            }
-          }, true);
-          
-        } else if (isOldAndroid) {
-          console.log('🚨 Old Android with forced full version, applying emergency font fix');
-          
-          // Apply emergency font fixes for forced full version
-          var style = document.createElement('style');
-          style.textContent = '* { font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important; }';
-          document.head.appendChild(style);
-          
-          // Block font loading APIs
-          if (window.FontFace) {
-            window.FontFace = function() { return { load: function() { return Promise.resolve(); } }; };
-          }
-          
-          // Add error handler
-          window.addEventListener('error', function(e) {
-            if (e.message && (e.message.includes('font') || e.message.includes('CFF') || e.message.includes('OTS'))) {
-              console.warn('Font error blocked:', e.message);
-              e.stopPropagation();
-              e.preventDefault();
-              return false;
-            }
-          }, true);
+        // Block font loading immediately
+        if (window.FontFace) {
+          window.FontFace = function() { return { load: function() { return Promise.resolve(); } }; };
         }
-      })();
+        
+        // Apply safe fonts
+        var style = document.createElement('style');
+        style.textContent = '* { font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important; }';
+        document.head.appendChild(style);
+        
+        // Block font errors
+        window.addEventListener('error', function(e) {
+          if (e.message && (e.message.includes('font') || e.message.includes('CFF') || e.message.includes('OTS'))) {
+            console.log('Font error blocked');
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+          }
+        }, true);
+      }
     </script>
     
     <!-- Mobile Web App Meta Tags -->
@@ -173,17 +111,15 @@
   </head>
   <body>
     <div id="root">
-      <!-- Loading screen with safe fonts -->
+      <!-- Simple loading screen -->
       <div id="initial-loading" style="
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: Arial, sans-serif;
         background: white;
         flex-direction: column;
-        padding: 20px;
-        text-align: center;
       ">
         <div style="
           width: 40px;
@@ -194,37 +130,11 @@
           animation: spin 1s linear infinite;
           margin-bottom: 20px;
         "></div>
-        <h2 style="
-          color: #333;
-          font-size: 24px;
-          font-family: Arial, Helvetica, sans-serif;
-          margin: 10px 0;
-        ">Mobileuurka</h2>
-        <p id="loading-message" style="
-          color: #666;
-          font-size: 16px;
-          font-family: Arial, Helvetica, sans-serif;
-          margin: 10px 0;
-        ">Loading...</p>
-        <p id="safe-mode-message" style="
-          color: #007bff;
-          font-size: 14px;
-          font-family: Arial, Helvetica, sans-serif;
-          margin: 10px 0;
-          display: none;
-        ">Optimizing for your device...</p>
+        <h2 style="color: #333; font-family: Arial, sans-serif;">Mobileuurka</h2>
+        <p style="color: #666; font-family: Arial, sans-serif;">Loading...</p>
       </div>
     </div>
-    
-    <script>
-      // Update loading message for safe mode
-      if (document.documentElement.getAttribute('data-safe-mode') === 'true') {
-        setTimeout(function() {
-          document.getElementById('loading-message').textContent = 'Preparing compatibility mode...';
-          document.getElementById('safe-mode-message').style.display = 'block';
-        }, 500);
-      }
-    </script>
+
     
     <style>
       @keyframes spin {

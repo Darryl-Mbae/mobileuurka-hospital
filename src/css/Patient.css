@@ -53,7 +53,6 @@
 }
 
 .patient .profile .profile-container .profile-pic {
-
   width: 113.7%;
   height: 100px;
   display: flex;
@@ -99,7 +98,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: .9em;
+  font-size: 0.9em;
   color: #333;
 }
 
@@ -109,8 +108,8 @@
 }
 
 .patient .profile .profile-container .profile-pic .details .phone {
-  font-size: .9em;
-  color: rgba(9, 9, 9, .5);
+  font-size: 0.9em;
+  color: rgba(9, 9, 9, 0.5);
 }
 
 .patient .profile .profile-container .profile-pic .edit {
@@ -214,7 +213,6 @@
 /* Custom scrollbar styling */
 .patient .tabs .tab::-webkit-scrollbar {
   display: none;
-
 }
 
 .patient .tabs .lists .ai-buttons {
@@ -246,19 +244,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: .7em;
+  font-size: 0.7em;
   position: absolute;
   top: -10%;
   right: -15%;
   z-index: 9999;
-
 }
 
 .patient .tabs .lists .ai-buttons .notification img {
   width: 50%;
   margin: auto;
 }
-
 
 .patient .chat {
   width: 133%;
@@ -289,8 +285,6 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-
-
 }
 
 .patient-page .loading .image img {
@@ -298,15 +292,14 @@
   margin: auto;
 }
 
-
-@media screen and (max-width:500px) {
+@media screen and (max-width: 500px) {
   .patient {
     grid-template-columns: 100%;
     margin-top: 0px;
     height: 100vh;
     overflow: hidden !important;
   }
-  .patient .tabs .tab{
+  .patient .tabs .tab {
     height: auto;
     overflow-y: scroll;
   }
@@ -328,7 +321,7 @@
   }
 
   .patient-container .main-search {
-    display: none
+    display: none;
   }
 
   .patient-container .switcher {
@@ -339,7 +332,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    z-index:999;
+    z-index: 999;
     /* background: red; */
   }
 
@@ -368,7 +361,6 @@
     /* margin-top: -5vh; */
     height: calc(80vh - 52px);
     margin-top: 0vh;
-
   }
 
   .patient .profile .profile-container .profile-pic {
@@ -442,21 +434,18 @@
     font-weight: 500;
   }
 
-
-
   .patient .tabs .tab form {
     grid-template-columns: 100% !important;
     gap: 0px !important;
   }
-  .form .form-group{
-    margin: 10px auto ;
+  .form .form-group {
+    margin: 10px auto;
   }
-  .form .grid2{
+  .form .grid2 {
     margin-left: 0px !important ;
     padding-top: 0px !important;
     padding-bottom: 40px;
   }
-
 }
 
 /* Mobile Header Styles */
@@ -477,7 +466,6 @@
   display: grid;
   margin: auto;
   grid-template-columns: 40% 60%;
-
 }
 
 .mobile-header .patient-info {
@@ -567,7 +555,7 @@
   border: 1px solid #ddd;
   border-top: none;
   border-radius: 0 0 6px 6px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
@@ -681,30 +669,30 @@
   .mobile-header {
     padding: 17px 12px;
   }
-  
+
   .mobile-header .patient-name {
     font-size: 16px;
   }
-  
+
   .mobile-header .header-controls {
     gap: 8px;
     padding-right: 10px;
   }
-  
+
   .mobile-header .tab-switcher {
     max-width: 120px;
   }
-  
+
   .mobile-header .page-switcher {
     max-width: 100px;
   }
-  
+
   .mobile-header .tabs-select-header,
   .mobile-header .dropdown-header {
     padding: 6px 10px;
     font-size: 13px;
   }
-  
+
   .mobile-header .notification {
     padding: 6px;
   }
