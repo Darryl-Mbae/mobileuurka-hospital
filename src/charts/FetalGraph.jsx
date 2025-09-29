@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { safeArray, safeChartData } from "../utils/patientDataGuard.js";
 
 const FetalGraph = ({ patient = [], selectedOption }) => {
   const chartRef = useRef(null);
@@ -18,10 +19,13 @@ const FetalGraph = ({ patient = [], selectedOption }) => {
   };
 
   const normalizeFetalData = (data) => {
-    const formatted = data
+    const safeData = safeArray(data);
+    
+    const formatted = safeData
+      .filter(entry => entry && entry.gestationWeek !== null && entry.gestationWeek !== undefined)
       .map((entry) => ({
-        date: formatWeekLabel(entry.gestationWeek),
-        rawWeek: entry.gestationweek,
+        date: formatWeekLabel(entry.gestationWeek || entry.gestationweek || 0),
+        rawWeek: entry.gestationweek || entry.gestationWeek || 0,
         value:
           entry[selectedOption] !== undefined && entry[selectedOption] !== null
             ? Number(entry[selectedOption])

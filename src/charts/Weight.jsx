@@ -4,6 +4,7 @@ import { FaArrowTrendDown, FaArrowTrendUp } from "react-icons/fa6";
 import WeightChart from "./WeightChart";
 import { IoFlagSharp } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
+import { safeArray, safeChartData } from "../utils/patientDataGuard.js";
 
 const Weight = ({ patient }) => {
   const [weightAnalysis, setWeightAnalysis] = useState(null);
@@ -12,12 +13,11 @@ const Weight = ({ patient }) => {
   const [flagMessage, setFlagMessage] = useState("");
 
   useEffect(() => {
-    if (!Array.isArray(patient) || patient.length === 0) return;
+    const safePatientData = safeArray(patient);
+    if (safePatientData.length === 0) return;
 
-    // Sort by date descending
-    const sorted = [...patient].sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
+    // Sort by date descending with safe data
+    const sorted = safeChartData.weight(safePatientData);
 
     // Get the latest gestation week from the most recent entry
     const latestGestationWeek = sorted[0]?.gestationweek;
@@ -102,7 +102,7 @@ const Weight = ({ patient }) => {
         gestationWeek: latestGestationWeek,
       });
     }
-  }, [patient]);
+  }, [safePatientData]);
 
   // UI logic
   function getWeightChangeUI(change, direction) {

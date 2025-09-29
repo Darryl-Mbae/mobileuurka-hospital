@@ -3,6 +3,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { addPatient, updatePatient } from "../reducers/Slices/patientsSlice.js";
 import MainSearch from "../components/MainSearch";
 import "../css/Patient.css";
+import {
+  validatePatientData,
+  createEmptyPatient,
+  safePatientFields,
+  safeGet,
+  safeArray,
+} from "../utils/patientDataGuard.js";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { IoFlagSharp } from "react-icons/io5";
 import defaultImg from "../assets/images/Default.png";
@@ -24,10 +31,9 @@ import { HiBellAlert, HiMiniPencilSquare } from "react-icons/hi2";
 import Alerts from "../dialog/Alerts.jsx";
 import { FaRegBell } from "react-icons/fa6";
 import { FiChevronDown } from "react-icons/fi";
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 
 const useIsMobile = (breakpoint = 768) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= breakpoint);
@@ -61,24 +67,27 @@ const Patient = ({ id }) => {
   const [copied, setCopied] = useState(false);
   const [document, setDocument] = useState([]);
   const [note, setNote] = useState("");
-  const [nextVisitChange, setNextVisitChange] = useState(false)
-  const [nextVisitValue, setNextVisitValue] = useState(null)
+  const [nextVisitChange, setNextVisitChange] = useState(false);
+  const [nextVisitValue, setNextVisitValue] = useState(null);
   const SERVER = import.meta.env.VITE_SERVER_URL;
 
-  // Get patient from Redux store instead of local state
-  const patient = useSelector((state) =>
+  // Get patient from Redux store with safety validation
+  const rawPatient = useSelector((state) =>
     state.patient?.patients?.find((p) => p.id === id)
   );
 
+  // Validate and ensure safe patient data
+  const { isValid, safePatient } = validatePatientData(rawPatient);
+  const patient = isValid ? safePatient : createEmptyPatient();
 
   useEffect(() => {
     if (id) {
-      // Only fetch if patient is not in Redux store
-      if (!patient) {
+      // Only fetch if patient is not in Redux store or is invalid
+      if (!rawPatient || !isValid) {
         fetchPatientById(id);
       }
     }
-  }, [id, patient]);
+  }, [id, rawPatient, isValid]);
 
   const alertsRef = useRef();
 
@@ -90,39 +99,38 @@ const Patient = ({ id }) => {
     if (!nextVisitValue) return;
 
     // Format the date nicely: e.g., "Thursday, 9 September 2025"
-    const formattedDate = new Date(nextVisitValue).toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    const formattedDate = new Date(nextVisitValue).toLocaleDateString("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
 
-    const confirmed = window.confirm(`Are you changing the next visit to ${formattedDate}?`);
+    const confirmed = window.confirm(
+      `Are you changing the next visit to ${formattedDate}?`
+    );
     if (confirmed) {
-      console.log(patient)
-      console.log(patient.visits)
-      console.log(patient.visits.length)
+      console.log(patient);
+      console.log(patient.visits);
+      console.log(patient.visits.length);
 
-      const id = patient.visits[patient?.visits?.length - 1].id
-      handleSubmitVisit(id, nextVisitValue)
+      const id = patient.visits[patient?.visits?.length - 1].id;
+      handleSubmitVisit(id, nextVisitValue);
     }
   };
 
   const handleSubmitVisit = async (id, nextVisitValue) => {
     // Prepare data to send
     const updateData = {
-      nextVisit: nextVisitValue // you can send as ISO string or timestamp depending on backend
+      nextVisit: nextVisitValue, // you can send as ISO string or timestamp depending on backend
     };
     try {
-      const response = await fetch(
-        `${SERVER}/patients/medical/visit/${id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(updateData),
-        }
-      );
+      const response = await fetch(`${SERVER}/patients/medical/visit/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updateData),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -148,7 +156,6 @@ const Patient = ({ id }) => {
       } else {
         dispatch(addPatient(patientData));
       }
-
     } catch (err) {
       console.error("Error fetching patient:", err);
       setError(err.message);
@@ -204,9 +211,9 @@ const Patient = ({ id }) => {
                 backgroundColor: "white",
                 borderRadius: 1,
 
-                '& .MuiInputBase-input': {
+                "& .MuiInputBase-input": {
                   fontSize: ".9em",
-                }
+                },
               }}
             >
               <Select
@@ -234,11 +241,13 @@ const Patient = ({ id }) => {
           <FormControl
             size="small"
             sx={{
-              minWidth: 100, backgroundColor: "white", borderRadius: 1,
+              minWidth: 100,
+              backgroundColor: "white",
+              borderRadius: 1,
 
-              '& .MuiInputBase-input': {
+              "& .MuiInputBase-input": {
                 fontSize: ".9em",
-              }
+              },
             }}
           >
             <Select
@@ -256,7 +265,7 @@ const Patient = ({ id }) => {
         </div>
       </div>
     </div>
-  )
+  );
 
   if (loading) {
     return (
@@ -290,7 +299,7 @@ const Patient = ({ id }) => {
     );
   }
 
-  if (!patient) {
+  if (!rawPatient && !loading) {
     return (
       <div className="patient-page">
         <div className="no-patient">
@@ -301,14 +310,7 @@ const Patient = ({ id }) => {
   }
 
   const calculateAge = (dob) => {
-    const today = new Date();
-    const birthDate = new Date(dob);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+    return safePatientFields.age({ dob });
   };
 
   function formatDate(dateStr) {
@@ -320,33 +322,35 @@ const Patient = ({ id }) => {
   }
 
   const patientMainDetails = [
-    isMobile ? { 
-     label: "Patient ID",
-    value: (
-      <span style={{ display: "flex", alignItems: "center" }}>
-        {patient?.id}
-        <span
-          onClick={handleCopyId}
-          style={{
-            cursor: "pointer",
-            marginLeft: "8px",
-            color: copied ? "#4CAF50" : "#666",
-            transition: "color 0.3s ease",
-          }}
-          title={copied ? "Copied!" : "Copy ID"}
-        >
-          {copied ? <TiTick /> : <FaRegCopy />}
-        </span>
-      </span>
-    ),
-    } : null,
+    isMobile
+      ? {
+          label: "Patient ID",
+          value: (
+            <span style={{ display: "flex", alignItems: "center" }}>
+              {patient?.id}
+              <span
+                onClick={handleCopyId}
+                style={{
+                  cursor: "pointer",
+                  marginLeft: "8px",
+                  color: copied ? "#4CAF50" : "#666",
+                  transition: "color 0.3s ease",
+                }}
+                title={copied ? "Copied!" : "Copy ID"}
+              >
+                {copied ? <TiTick /> : <FaRegCopy />}
+              </span>
+            </span>
+          ),
+        }
+      : null,
     { label: "Age", value: calculateAge(patient?.dob) },
     {
       label: "Gravida + Parity",
       value: patient?.patientHistories?.[0]
-      ? `${patient.patientHistories[0].gravida}+${patient.patientHistories[0].parity}`
-      : "Undefined",
-        },
+        ? `${patient.patientHistories[0].gravida}+${patient.patientHistories[0].parity}`
+        : "Undefined",
+    },
     {
       label: (
         <span
@@ -385,9 +389,10 @@ const Patient = ({ id }) => {
     },
     {
       label: "Next Visit",
-      value: nextVisitValue || patient?.visits?.length
-        ? formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
-        : "-",
+      value:
+        nextVisitValue || patient?.visits?.length
+          ? formatDate(patient?.visits?.[patient.visits.length - 1]?.nextVisit)
+          : "-",
     },
     {
       label: "Estimated Due date",
@@ -419,13 +424,14 @@ const Patient = ({ id }) => {
       label: "Caffeine Intake",
       value:
         patient?.lifestyles?.[patient?.lifestyles.length - 1]?.caffeine ===
-          "Yes"
+        "Yes"
           ? [
-            `${patient?.lifestyles?.[
-              patient?.lifestyles.length - 1
-            ]?.caffeineSources?.join(", ") || "Not specified"
-            }`,
-          ]
+              `${
+                patient?.lifestyles?.[
+                  patient?.lifestyles.length - 1
+                ]?.caffeineSources?.join(", ") || "Not specified"
+              }`,
+            ]
           : "None",
     },
     {
@@ -441,12 +447,12 @@ const Patient = ({ id }) => {
           Diet{" "}
           {patient?.lifestyles?.[patient?.lifestyles.length - 1]?.diet ===
             "Vegan" && (
-              <IoFlagSharp
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Patient is vegan — consider testing for Vitamin B12"
-                color="red"
-              />
-            )}
+            <IoFlagSharp
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Patient is vegan — consider testing for Vitamin B12"
+              color="red"
+            />
+          )}
         </span>
       ),
       value:
@@ -457,9 +463,10 @@ const Patient = ({ id }) => {
       label: "Exercise ",
       value:
         patient?.lifestyles?.[patient?.lifestyles.length - 1]?.exercise !==
-          undefined
-          ? `${patient.lifestyles[0].exercise} ${patient.lifestyles[0].exercise > 1 ? "hrs" : "hr"
-          }`
+        undefined
+          ? `${patient.lifestyles[0].exercise} ${
+              patient.lifestyles[0].exercise > 1 ? "hrs" : "hr"
+            }`
           : "Not specified",
     },
     {
@@ -519,7 +526,10 @@ const Patient = ({ id }) => {
       <div className="container">
         {items.map((item, index) => (
           <div className="list" key={index}>
-            <div className="label" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div
+              className="label"
+              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+            >
               {item.label}
               {item.label === "Next Visit" && (
                 <HiMiniPencilSquare
@@ -536,16 +546,22 @@ const Patient = ({ id }) => {
                   type="date"
                   className="special-date"
                   style={{
-                    border: "none"
+                    border: "none",
                   }}
-                  defaultValue={new Date(patient?.visits?.[patient.visits.length - 1]?.nextVisit).toISOString().split('T')[0]}
+                  defaultValue={
+                    new Date(
+                      patient?.visits?.[patient.visits.length - 1]?.nextVisit
+                    )
+                      .toISOString()
+                      .split("T")[0]
+                  }
                   onBlur={(e) => {
                     // Handle the date change here
                     setNextVisitValue(e.target.value);
                     setNextVisitChange(false); // Hide the input after editing
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       setNextVisitValue(e.target.value);
                       setNextVisitChange(false);
                     }
@@ -570,10 +586,7 @@ const Patient = ({ id }) => {
 
   return (
     <div className="patient-container">
-      <Tooltip
-        id="my-tooltip"
-        style={{ fontSize: ".8em", zIndex: "9999" }}
-      />
+      <Tooltip id="my-tooltip" style={{ fontSize: ".8em", zIndex: "9999" }} />
       <MainSearch />
       {isMobile ? (
         <div className="patient mobile-patient">
@@ -588,11 +601,17 @@ const Patient = ({ id }) => {
                   {patient?.name ? (
                     <div className="tab">
                       {activeTab === "overview" && (
-                        <Overview patient={patient} setActiveTab={setActiveTab} />
+                        <Overview
+                          patient={patient}
+                          setActiveTab={setActiveTab}
+                        />
                       )}
                       {activeTab === "profile" && <Profile patient={patient} />}
                       {activeTab === "medication" && (
-                        <Medication setActiveTab={setActiveTab} patient={patient} />
+                        <Medication
+                          setActiveTab={setActiveTab}
+                          patient={patient}
+                        />
                       )}
                       {activeTab === "documents" && (
                         <Documents
@@ -609,7 +628,9 @@ const Patient = ({ id }) => {
                           patient={patient}
                         />
                       )}
-                      {activeTab === "document" && <Document document={document} />}
+                      {activeTab === "document" && (
+                        <Document document={document} />
+                      )}
                       {activeTab === "note" && (
                         <Note note={note} user={currentUser} />
                       )}
@@ -728,9 +749,13 @@ const Patient = ({ id }) => {
                   </li>
                 </ul>
                 <div className="ai-buttons">
-                  <div className="notification" onClick={() => handleShowAlert()}>
+                  <div
+                    className="notification"
+                    onClick={() => handleShowAlert()}
+                  >
                     <FaRegBell style={{ color: "#333" }} />
-                    {patient?.alerts?.filter((alert) => !alert.read).length > 0 && (
+                    {patient?.alerts?.filter((alert) => !alert.read).length >
+                      0 && (
                       <span className="badge">
                         {patient?.alerts.filter((alert) => !alert.read).length}
                       </span>
