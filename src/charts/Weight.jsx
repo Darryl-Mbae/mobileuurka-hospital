@@ -13,11 +13,12 @@ const Weight = ({ patient }) => {
   const [flagMessage, setFlagMessage] = useState("");
 
   useEffect(() => {
-    const safePatientData = safeArray(patient);
-    if (safePatientData.length === 0) return;
+    if (!Array.isArray(patient) || patient.length === 0) return;
 
-    // Sort by date descending with safe data
-    const sorted = safeChartData.weight(safePatientData);
+    // Sort by date descending
+    const sorted = [...patient].sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
 
     // Get the latest gestation week from the most recent entry
     const latestGestationWeek = sorted[0]?.gestationweek;
@@ -102,7 +103,7 @@ const Weight = ({ patient }) => {
         gestationWeek: latestGestationWeek,
       });
     }
-  }, [safePatientData]);
+  }, [patient]);
 
   // UI logic
   function getWeightChangeUI(change, direction) {

@@ -10,7 +10,6 @@ import Weight from "../charts/Weight";
 import BloodPressure from "../charts/BloodPressure";
 import { Tooltip } from "react-tooltip";
 import { ChartErrorBoundary, safeArray } from "../utils/patientDataGuard.js";
-import SafeChartWrapper from "../components/SafeChartWrapper.jsx";
 
 const Overview = ({ patient, setActiveTab }) => {
   // Ensure safe data access for charts
@@ -22,25 +21,19 @@ const Overview = ({ patient, setActiveTab }) => {
     <div className="p-overview">
       <div className="grid-3">
         <div className="chart" style={{ overflow: "visible" }}>
-          <SafeChartWrapper fallbackMessage="Weight chart loading...">
-            <ChartErrorBoundary>
-              <Weight patient={safeTriages} />
-            </ChartErrorBoundary>
-          </SafeChartWrapper>
+          <ChartErrorBoundary>
+            <Weight patient={safeTriages} />
+          </ChartErrorBoundary>
         </div>
         <div className="chart fetal">
-          <SafeChartWrapper fallbackMessage="Fetal chart loading...">
-            <ChartErrorBoundary>
-              <Fetal patient={safeFetalInfos} />
-            </ChartErrorBoundary>
-          </SafeChartWrapper>
+          <ChartErrorBoundary>
+            <Fetal patient={safeFetalInfos} />
+          </ChartErrorBoundary>
         </div>
         <div className="chart">
-          <SafeChartWrapper fallbackMessage="Risk assessment loading...">
-            <ChartErrorBoundary>
-              <Predisposition patient={patient} setActiveTab={setActiveTab} />
-            </ChartErrorBoundary>
-          </SafeChartWrapper>
+          <ChartErrorBoundary>
+            <Predisposition patient={patient} setActiveTab={setActiveTab} />
+          </ChartErrorBoundary>
         </div>
       </div>
       <div className="grid-2">
