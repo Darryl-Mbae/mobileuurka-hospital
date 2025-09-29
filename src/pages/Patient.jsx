@@ -7,19 +7,15 @@ import {
   validatePatientData,
   createEmptyPatient,
   safePatientFields,
-  safeGet,
-  safeArray,
 } from "../utils/patientDataGuard.js";
 import {
   createEmergencyPatient,
   shouldUseEmergencyMode,
   markChartErrors,
 } from "../utils/emergencyPatientFix.js";
-import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { IoFlagSharp } from "react-icons/io5";
 import defaultImg from "../assets/images/Default.png";
 import { Tooltip } from "react-tooltip";
-import { LuBell } from "react-icons/lu";
 import Chat from "../components/Chat";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import Overview from "../patient/Overview";
@@ -32,7 +28,7 @@ import Note from "../patient/Note";
 import Notepad from "./Notepad";
 import { FaRegCopy } from "react-icons/fa";
 import { TiTick } from "react-icons/ti";
-import { HiBellAlert, HiMiniPencilSquare } from "react-icons/hi2";
+import { HiMiniPencilSquare } from "react-icons/hi2";
 import Alerts from "../dialog/Alerts.jsx";
 import { FaRegBell } from "react-icons/fa6";
 import { FiChevronDown } from "react-icons/fi";
@@ -59,12 +55,10 @@ const Patient = ({ id }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
-  const [alerts, setAlerts] = useState();
   const currentUser = useSelector((s) => s.user.currentUser);
   const dispatch = useDispatch();
   const isMobile = useIsMobile();
   const [mobileView, setMobileView] = useState("Summary"); // "Sabi", "Summary", "Analytics"
-  const [open, setOpen] = useState(false);
 
   const options = ["Sabi", "Summary", "Analytics"];
   const [profilePic, setProfilePic] = useState(defaultImg);
@@ -555,7 +549,7 @@ const Patient = ({ id }) => {
               {item.label === "Next Visit" && (
                 <HiMiniPencilSquare
                   style={{ cursor: "pointer", color: "#585858" }}
-                  onClick={() => handleEditNextVisit(item.value)}
+                  onClick={() => handleEditNextVisit()}
                   title="Edit Next Visit"
                 />
               )}
@@ -601,7 +595,7 @@ const Patient = ({ id }) => {
   );
 
   // Handler function to handle the edit click
-  const handleEditNextVisit = (currentValue) => {
+  const handleEditNextVisit = () => {
     setNextVisitChange(true); // This will show the date input
   };
 

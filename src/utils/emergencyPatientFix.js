@@ -275,7 +275,6 @@ export const clearChartErrors = () => {
 
 export default {
   initEmergencyPatientFix,
-  SafeChartWrapper,
   createEmergencyPatient,
   shouldUseEmergencyMode,
   markChartErrors,

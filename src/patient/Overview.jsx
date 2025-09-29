@@ -38,43 +38,33 @@ const Overview = ({ patient, setActiveTab }) => {
       </div>
       <div className="grid-2">
         <div className="chart x2">
-          <SafeChartWrapper fallbackMessage="Risk assessment loading...">
-            <ChartErrorBoundary>
-              <Riskassessment patient={patient} />
-            </ChartErrorBoundary>
-          </SafeChartWrapper>
+          <ChartErrorBoundary>
+            <Riskassessment patient={patient} />
+          </ChartErrorBoundary>
         </div>
         <div className="chart lab">
-          <SafeChartWrapper fallbackMessage="Lab results loading...">
-            <ChartErrorBoundary>
-              <Lab patient={safeLabworks} />
-            </ChartErrorBoundary>
-          </SafeChartWrapper>
+          <ChartErrorBoundary>
+            <Lab patient={safeLabworks} />
+          </ChartErrorBoundary>
         </div>
       </div>
       <div className="grid-2 reverse">
         <div className="chart ">
-          <SafeChartWrapper fallbackMessage="Medications loading...">
-            <ChartErrorBoundary>
-              <Medications patient={patient} setActiveTab={setActiveTab} />
-            </ChartErrorBoundary>
-          </SafeChartWrapper>
+          <ChartErrorBoundary>
+            <Medications patient={patient} setActiveTab={setActiveTab} />
+          </ChartErrorBoundary>
         </div>
         <div className="chart x2 bt">
           <div className="inner-grid">
             <div className="in-chart one" >
-              <SafeChartWrapper fallbackMessage="Blood pressure loading...">
-                <ChartErrorBoundary>
-                  <BloodPressure patient={safeTriages} />
-                </ChartErrorBoundary>
-              </SafeChartWrapper>
+              <ChartErrorBoundary>
+                <BloodPressure patient={safeTriages} />
+              </ChartErrorBoundary>
             </div>
             <div className="in-chart two">
-              <SafeChartWrapper fallbackMessage="Symptoms loading...">
-                <ChartErrorBoundary>
-                  <Symptom patient={patient} setActiveTab={setActiveTab} />
-                </ChartErrorBoundary>
-              </SafeChartWrapper>
+              <ChartErrorBoundary>
+                <Symptom patient={patient} setActiveTab={setActiveTab} />
+              </ChartErrorBoundary>
             </div>
           </div>
         </div>
