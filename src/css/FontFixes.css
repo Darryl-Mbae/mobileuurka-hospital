@@ -36,12 +36,23 @@ input, textarea, select, button {
 /* Safe font loading for older browsers */
 .font-loading {
   font-family: system-ui, -apple-system, sans-serif;
-  visibility: hidden;
+  visibility: visible; /* Always show content */
 }
 
 .font-loaded {
   font-family: var(--font-family-primary);
   visibility: visible;
+}
+
+/* Android safe mode - always visible */
+.android-safe-mode {
+  visibility: visible !important;
+  font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important;
+}
+
+.android-safe-mode * {
+  font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important;
+  visibility: visible !important;
 }
 
 /* Fallback for when fonts fail to load */

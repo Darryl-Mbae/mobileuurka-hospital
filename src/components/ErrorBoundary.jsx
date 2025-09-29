@@ -40,7 +40,10 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI
+      // Apply emergency font fix immediately
+      document.body.style.fontFamily = 'system-ui, -apple-system, Roboto, Arial, sans-serif';
+      
+      // Fallback UI with safe fonts
       return (
         <div style={{
           padding: '20px',
@@ -50,16 +53,33 @@ class ErrorBoundary extends React.Component {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          fontFamily: 'system-ui, -apple-system, Roboto, Arial, sans-serif',
+          visibility: 'visible'
         }}>
-          <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>
+          <h2 style={{ 
+            color: '#dc3545', 
+            marginBottom: '20px',
+            fontFamily: 'system-ui, -apple-system, Roboto, Arial, sans-serif'
+          }}>
             Something went wrong
           </h2>
-          <p style={{ marginBottom: '20px', color: '#6c757d' }}>
+          <p style={{ 
+            marginBottom: '20px', 
+            color: '#6c757d',
+            fontFamily: 'system-ui, -apple-system, Roboto, Arial, sans-serif'
+          }}>
             The application encountered an error. This might be due to browser compatibility issues.
           </p>
           <button 
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              // Clear any font-related storage before reload
+              try {
+                localStorage.removeItem('fontCache');
+                sessionStorage.clear();
+              } catch (e) {}
+              window.location.reload();
+            }}
             style={{
               padding: '10px 20px',
               backgroundColor: '#007bff',
@@ -67,21 +87,25 @@ class ErrorBoundary extends React.Component {
               border: 'none',
               borderRadius: '5px',
               cursor: 'pointer',
-              fontSize: '16px'
+              fontSize: '16px',
+              fontFamily: 'system-ui, -apple-system, Roboto, Arial, sans-serif'
             }}
           >
             Reload Page
           </button>
           {process.env.NODE_ENV === 'development' && (
             <details style={{ marginTop: '20px', textAlign: 'left' }}>
-              <summary>Error Details (Development)</summary>
+              <summary style={{ fontFamily: 'system-ui, -apple-system, Roboto, Arial, sans-serif' }}>
+                Error Details (Development)
+              </summary>
               <pre style={{ 
                 backgroundColor: '#f8f9fa', 
                 padding: '10px', 
                 borderRadius: '5px',
                 fontSize: '12px',
                 overflow: 'auto',
-                maxWidth: '90vw'
+                maxWidth: '90vw',
+                fontFamily: 'monospace'
               }}>
                 {this.state.error && this.state.error.toString()}
                 <br />

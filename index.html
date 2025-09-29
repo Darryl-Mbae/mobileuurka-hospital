@@ -5,6 +5,53 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, user-scalable=no" />
     
+    <!-- Fallback refresh for stuck pages -->
+    <script>
+      setTimeout(function() {
+        if (document.getElementById('initial-loading') && document.getElementById('initial-loading').style.display !== 'none') {
+          console.warn('Page appears stuck, attempting recovery');
+          document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;"><h2>Loading...</h2><p>If this persists, please refresh the page.</p><button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Refresh Now</button></div>';
+        }
+      }, 10000);
+    </script>
+    
+    <!-- Emergency font fix for Android -->
+    <script>
+      (function() {
+        var ua = navigator.userAgent;
+        var androidMatch = ua.match(/Android (\d+(?:\.\d+)?)/);
+        var isOldAndroid = androidMatch && parseFloat(androidMatch[1]) <= 10;
+        
+        if (isOldAndroid) {
+          console.log('🚨 Old Android detected, applying emergency font fix');
+          
+          // Block font loading immediately
+          var style = document.createElement('style');
+          style.textContent = '* { font-family: system-ui, -apple-system, Roboto, Arial, sans-serif !important; } @font-face { font-family: "Inter"; src: local("Roboto"); }';
+          document.head.appendChild(style);
+          
+          // Set CSS variables
+          document.documentElement.style.setProperty('--font-family-primary', 'system-ui, -apple-system, Roboto, Arial, sans-serif');
+          document.documentElement.style.setProperty('--font-family-fallback', 'system-ui, -apple-system, Roboto, Arial, sans-serif');
+          
+          // Block font loading APIs
+          if (window.FontFace) {
+            window.FontFace = function() { return { load: function() { return Promise.resolve(); } }; };
+          }
+          
+          // Add error handler
+          window.addEventListener('error', function(e) {
+            if (e.message && (e.message.includes('font') || e.message.includes('CFF') || e.message.includes('OTS'))) {
+              console.warn('Font error blocked:', e.message);
+              e.stopPropagation();
+              e.preventDefault();
+              return false;
+            }
+          }, true);
+        }
+      })();
+    </script>
+    
     <!-- Mobile Web App Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -71,7 +118,46 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading screen with safe fonts -->
+      <div id="initial-loading" style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+        background: white;
+        flex-direction: column;
+      ">
+        <div style="
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #007bff;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 20px;
+        "></div>
+        <p style="
+          color: #666;
+          font-size: 16px;
+          font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+        ">Loading...</p>
+      </div>
+    </div>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Hide loading screen once React takes over */
+      #root:not(:empty) #initial-loading {
+        display: none;
+      }
+    </style>
+    
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

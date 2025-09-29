@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Debug Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Roboto, Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <h1>Android Compatibility Test</h1>
+    
+    <div class="test-section">
+        <h2>Device Information</h2>
+        <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+        <p><strong>Android Version:</strong> <span id="androidVersion"></span></p>
+        <p><strong>Is Old Android:</strong> <span id="isOldAndroid"></span></p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Font Support</h2>
+        <p><strong>Font Loading API:</strong> <span id="fontApi"></span></p>
+        <p><strong>CSS.supports:</strong> <span id="cssSupports"></span></p>
+        <p><strong>Current Font:</strong> <span id="currentFont"></span></p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Tests</h2>
+        <button class="btn-primary" onclick="testFontLoading()">Test Font Loading</button>
+        <button class="btn-warning" onclick="simulateFontError()">Simulate Font Error</button>
+        <button class="btn-success" onclick="testAppLoad()">Test App Load</button>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>App Preview</h2>
+        <iframe src="/" width="100%" height="400" style="border: 1px solid #ddd;"></iframe>
+    </div>
+
+    <script>
+        // Device detection
+        function detectAndroidVersion() {
+            const userAgent = navigator.userAgent;
+            const match = userAgent.match(/Android (\d+(?:\.\d+)?)/);
+            return match ? parseFloat(match[1]) : null;
+        }
+        
+        function isOldAndroid() {
+            const version = detectAndroidVersion();
+            return version !== null && version <= 10;
+        }
+        
+        // Update device info
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('androidVersion').textContent = detectAndroidVersion() || 'Not Android';
+        document.getElementById('isOldAndroid').textContent = isOldAndroid() ? 'Yes' : 'No';
+        
+        // Update font support info
+        document.getElementById('fontApi').textContent = 'fonts' in document ? 'Supported' : 'Not Supported';
+        document.getElementById('cssSupports').textContent = window.CSS && CSS.supports ? 'Supported' : 'Not Supported';
+        document.getElementById('currentFont').textContent = getComputedStyle(document.body).fontFamily;
+        
+        // Test functions
+        function testFontLoading() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>Font Loading Test Results:</h3>';
+            
+            try {
+                if ('fonts' in document && document.fonts.check) {
+                    const interAvailable = document.fonts.check('1em Inter');
+                    results.innerHTML += `<p>Inter font available: ${interAvailable}</p>`;
+                } else {
+                    results.innerHTML += '<p>Font loading API not available</p>';
+                }
+                
+                results.innerHTML += '<p class="success">Font loading test completed successfully</p>';
+            } catch (error) {
+                results.innerHTML += `<p class="error">Font loading test failed: ${error.message}</p>`;
+            }
+        }
+        
+        function simulateFontError() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>Font Error Simulation:</h3>';
+            
+            try {
+                // Try to trigger a font error
+                const link = document.createElement('link');
+                link.href = 'data:font/woff2;base64,invalid-font-data';
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+                
+                results.innerHTML += '<p class="warning">Font error simulation attempted</p>';
+                
+                setTimeout(() => {
+                    link.remove();
+                    results.innerHTML += '<p>Cleanup completed</p>';
+                }, 1000);
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">Error during simulation: ${error.message}</p>`;
+            }
+        }
+        
+        function testAppLoad() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>App Load Test:</h3>';
+            
+            // Test if main app elements would work
+            const testDiv = document.createElement('div');
+            testDiv.style.fontFamily = 'system-ui, -apple-system, Roboto, Arial, sans-serif';
+            testDiv.textContent = 'Test content with safe fonts';
+            document.body.appendChild(testDiv);
+            
+            const computedFont = getComputedStyle(testDiv).fontFamily;
+            results.innerHTML += `<p>Test element font: ${computedFont}</p>`;
+            
+            testDiv.remove();
+            results.innerHTML += '<p class="success">App load test completed</p>';
+        }
+        
+        // Auto-run tests on old Android
+        if (isOldAndroid()) {
+            document.body.style.backgroundColor = '#fff3cd';
+            const warning = document.createElement('div');
+            warning.className = 'test-section warning';
+            warning.innerHTML = '<h2>⚠️ Old Android Detected</h2><p>Emergency font fixes should be active.</p>';
+            document.body.insertBefore(warning, document.body.firstChild);
+            
+            // Auto-run font test
+            setTimeout(testFontLoading, 1000);
+        }
+        
+        // Global error handler
+        window.addEventListener('error', function(event) {
+            const results = document.getElementById('testResults');
+            if (event.message && event.message.includes('font')) {
+                results.innerHTML += `<p class="error">Font error detected: ${event.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
