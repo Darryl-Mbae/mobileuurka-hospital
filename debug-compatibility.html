@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Compatibility Check - Mobileuurka</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .pass {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .fail {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .cache-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Browser Compatibility Check</h1>
+    <p>This page helps diagnose browser compatibility issues with Mobileuurka.</p>
+    
+    <div class="cache-info">
+        <h3>📱 Device Information</h3>
+        <div id="device-info"></div>
+    </div>
+    
+    <h3>🧪 Compatibility Tests</h3>
+    <div id="test-results"></div>
+    
+    <h3>🛠️ Actions</h3>
+    <button onclick="clearAllCaches()">Clear All Caches</button>
+    <button onclick="runTests()">Re-run Tests</button>
+    <button onclick="forceReload()">Force Reload</button>
+    <button onclick="goToApp()">Go to App</button>
+    
+    <div class="cache-info">
+        <h3>📋 Instructions for Colleagues</h3>
+        <ol>
+            <li><strong>If you see red "FAIL" results:</strong> Your browser doesn't support some modern features</li>
+            <li><strong>Try clearing caches:</strong> Click "Clear All Caches" button above</li>
+            <li><strong>Try force reload:</strong> Press Ctrl+Shift+R (or Cmd+Shift+R on Mac)</li>
+            <li><strong>Update your browser:</strong> Make sure you're using the latest version</li>
+            <li><strong>Try incognito/private mode:</strong> This bypasses cache issues</li>
+        </ol>
+    </div>
+
+    <script>
+        // Promise.withResolvers polyfill - Load immediately
+        if (!Promise.withResolvers) {
+            Promise.withResolvers = function () {
+                let resolve, reject;
+                const promise = new Promise((res, rej) => {
+                    resolve = res;
+                    reject = rej;
+                });
+                return { promise, resolve, reject };
+            };
+        }
+
+        function displayDeviceInfo() {
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Platform': navigator.platform,
+                'Language': navigator.language,
+                'Screen Size': `${screen.width}x${screen.height}`,
+                'Viewport Size': `${window.innerWidth}x${window.innerHeight}`,
+                'Timestamp': new Date().toISOString(),
+                'URL': window.location.href
+            };
+            
+            let html = '';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<strong>${key}:</strong> ${value}<br>`;
+            }
+            
+            document.getElementById('device-info').innerHTML = html;
+        }
+
+        function runTest(name, testFn) {
+            try {
+                const result = testFn();
+                return {
+                    name,
+                    passed: result,
+                    message: result ? 'PASS' : 'FAIL - Feature not supported'
+                };
+            } catch (error) {
+                return {
+                    name,
+                    passed: false,
+                    message: `FAIL - Error: ${error.message}`
+                };
+            }
+        }
+
+        function runTests() {
+            const tests = [
+                {
+                    name: 'Promise.withResolvers',
+                    test: () => {
+                        if (!Promise.withResolvers) return false;
+                        const { promise, resolve, reject } = Promise.withResolvers();
+                        resolve('test');
+                        return true;
+                    }
+                },
+                {
+                    name: 'Array.prototype.at',
+                    test: () => {
+                        const arr = [1, 2, 3];
+                        return typeof arr.at === 'function' && arr.at(-1) === 3;
+                    }
+                },
+                {
+                    name: 'String.prototype.replaceAll',
+                    test: () => {
+                        return typeof 'test'.replaceAll === 'function' && 'test test'.replaceAll('test', 'ok') === 'ok ok';
+                    }
+                },
+                {
+                    name: 'Object.hasOwn',
+                    test: () => {
+                        return typeof Object.hasOwn === 'function' && Object.hasOwn({a: 1}, 'a') === true;
+                    }
+                },
+                {
+                    name: 'Fetch API',
+                    test: () => typeof fetch === 'function'
+                },
+                {
+                    name: 'Local Storage',
+                    test: () => {
+                        try {
+                            localStorage.setItem('test', 'test');
+                            localStorage.removeItem('test');
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                },
+                {
+                    name: 'ES6 Classes',
+                    test: () => {
+                        try {
+                            eval('class Test {}');
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                },
+                {
+                    name: 'Arrow Functions',
+                    test: () => {
+                        try {
+                            eval('(() => true)()');
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
+                }
+            ];
+
+            let html = '';
+            let allPassed = true;
+
+            tests.forEach(({ name, test }) => {
+                const result = runTest(name, test);
+                const cssClass = result.passed ? 'pass' : 'fail';
+                html += `<div class="test-result ${cssClass}">
+                    <strong>${result.name}:</strong> ${result.message}
+                </div>`;
+                if (!result.passed) allPassed = false;
+            });
+
+            // Overall result
+            const overallClass = allPassed ? 'pass' : 'fail';
+            const overallMessage = allPassed ? 
+                '✅ All tests passed! Your browser should work fine with Mobileuurka.' :
+                '❌ Some tests failed. You may experience issues. Try the solutions below.';
+            
+            html = `<div class="test-result ${overallClass}">
+                <strong>Overall Result:</strong> ${overallMessage}
+            </div>` + html;
+
+            document.getElementById('test-results').innerHTML = html;
+        }
+
+        function clearAllCaches() {
+            try {
+                // Clear localStorage
+                localStorage.clear();
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                
+                // Clear service worker caches if available
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+                
+                alert('✅ Caches cleared! Try refreshing the page or going to the app.');
+            } catch (error) {
+                alert('❌ Error clearing caches: ' + error.message);
+            }
+        }
+
+        function forceReload() {
+            window.location.reload(true);
+        }
+
+        function goToApp() {
+            window.location.href = '/';
+        }
+
+        // Initialize page
+        displayDeviceInfo();
+        runTests();
+
+        // Auto-refresh device info every 5 seconds
+        setInterval(displayDeviceInfo, 5000);
+    </script>
+</body>
+</html>

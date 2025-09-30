@@ -15,6 +15,52 @@
       }, 15000);
     </script>
     
+    <!-- Critical Polyfills - Load First -->
+    <script>
+      // Promise.withResolvers polyfill - CRITICAL for compatibility
+      if (!Promise.withResolvers) {
+        Promise.withResolvers = function () {
+          let resolve, reject;
+          const promise = new Promise((res, rej) => {
+            resolve = res;
+            reject = rej;
+          });
+          return { promise, resolve, reject };
+        };
+      }
+      
+      // Array.prototype.at polyfill
+      if (!Array.prototype.at) {
+        Array.prototype.at = function (index) {
+          const len = this.length;
+          const relativeIndex = index < 0 ? len + index : index;
+          if (relativeIndex < 0 || relativeIndex >= len) {
+            return undefined;
+          }
+          return this[relativeIndex];
+        };
+      }
+      
+      // String.prototype.replaceAll polyfill
+      if (!String.prototype.replaceAll) {
+        String.prototype.replaceAll = function (searchValue, replaceValue) {
+          if (typeof searchValue === "string") {
+            return this.split(searchValue).join(replaceValue);
+          }
+          return this.replace(searchValue, replaceValue);
+        };
+      }
+      
+      // Object.hasOwn polyfill
+      if (!Object.hasOwn) {
+        Object.hasOwn = function (obj, prop) {
+          return Object.prototype.hasOwnProperty.call(obj, prop);
+        };
+      }
+      
+      console.log("✅ Critical polyfills loaded in HTML head");
+    </script>
+    
     <!-- Enhanced Android crash prevention -->
     <script>
       // Comprehensive Android crash prevention
@@ -209,6 +255,28 @@
         display: none;
       }
     </style>
+    
+    <!-- Cache busting for critical updates -->
+    <script>
+      // Add cache busting parameter for critical compatibility updates
+      const cacheVersion = "v2024.12.30.1"; // Update this when fixing compatibility issues
+      console.log("Cache version:", cacheVersion);
+      
+      // Force reload if old cache detected (for development/testing)
+      const lastVersion = localStorage.getItem('app-cache-version');
+      if (lastVersion && lastVersion !== cacheVersion) {
+        console.log("Cache version mismatch, clearing cache");
+        localStorage.setItem('app-cache-version', cacheVersion);
+        // Clear various caches
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+      } else {
+        localStorage.setItem('app-cache-version', cacheVersion);
+      }
+    </script>
     
     <script type="module" src="/src/main.jsx"></script>
   </body>

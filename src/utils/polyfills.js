@@ -240,4 +240,28 @@ if (!window.FontFace) {
   };
 }
 
-console.log("✅ Polyfills loaded successfully");
+// Cache detection and debugging
+const cacheInfo = {
+  timestamp: new Date().toISOString(),
+  userAgent: navigator.userAgent,
+  hasPromiseWithResolvers: !!Promise.withResolvers,
+  location: window.location.href
+};
+
+console.log("✅ Polyfills loaded successfully", cacheInfo);
+
+// Add specific debugging for Promise.withResolvers
+if (!Promise.withResolvers) {
+  console.error("❌ Promise.withResolvers polyfill failed to load!");
+} else {
+  console.log("✅ Promise.withResolvers is available");
+  
+  // Test the polyfill
+  try {
+    const { promise, resolve, reject } = Promise.withResolvers();
+    resolve("test");
+    promise.then(() => console.log("✅ Promise.withResolvers test passed"));
+  } catch (error) {
+    console.error("❌ Promise.withResolvers test failed:", error);
+  }
+}

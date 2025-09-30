@@ -15,6 +15,36 @@ class ErrorBoundary extends React.Component {
     // Log the error
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
+    // Check if it's a Promise.withResolvers compatibility error
+    const isPromiseWithResolversError = error.message && (
+      error.message.includes('Promise.withResolvers') ||
+      error.message.includes('withResolvers is not a function')
+    );
+    
+    if (isPromiseWithResolversError) {
+      console.error('❌ Promise.withResolvers compatibility error detected!');
+      console.log('Attempting to apply polyfill...');
+      
+      // Apply polyfill immediately
+      if (!Promise.withResolvers) {
+        Promise.withResolvers = function () {
+          let resolve, reject;
+          const promise = new Promise((res, rej) => {
+            resolve = res;
+            reject = rej;
+          });
+          return { promise, resolve, reject };
+        };
+        console.log('✅ Promise.withResolvers polyfill applied in ErrorBoundary');
+      }
+      
+      // Try to recover by reloading after a short delay
+      setTimeout(() => {
+        console.log('Attempting recovery reload...');
+        window.location.reload();
+      }, 2000);
+    }
+    
     // Check if it's a font-related error
     const isFontError = error.message && (
       error.message.includes('font') ||
@@ -70,6 +100,10 @@ class ErrorBoundary extends React.Component {
             fontFamily: 'system-ui, -apple-system, Roboto, Arial, sans-serif'
           }}>
             The application encountered an error. This might be due to browser compatibility issues.
+            {this.state.error?.message?.includes('Promise.withResolvers') && (
+              <><br /><strong>Detected:</strong> Browser compatibility issue with Promise.withResolvers. 
+              Please update your browser or clear your cache.</>
+            )}
           </p>
           <button 
             onClick={() => {
